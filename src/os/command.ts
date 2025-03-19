@@ -103,20 +103,7 @@ export class Command {
     }
 
     private execShell = (cmd: string, dir: string | undefined = undefined) =>
-        new Promise<ShellResponse>((resolve, reject) => {
-            // try{
-            //     const out = cp.spawn(cmd,{
-            //         cwd: dir,
-            //         shell: true
-            //     });
-            //     out.stdout.addListener
-            //     resolve(new ShellResponse(0, , undefined) );
-            // }
-            // catch(err){
-
-            // }
-            // shell.cd(dir);
-
+        new Promise<ShellResponse>((resolve, reject) => {            
             cp.exec(
                 cmd,
                 { cwd: dir, shell: isWindows() ? "cmd.exe" : "bash" },

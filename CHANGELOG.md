@@ -1,6 +1,10 @@
 # Change Log
 
 All notable changes to the "vs-cupl" extension will be documented in this file.
+## [v0.3.5]()
+- Stop forced toggle to chip view on window state change
+## [v0.3.4]
+ - Added support for optimization in cupl (setting in VS Cupl Settings)
 ## [v0.3.3] 
 - Chipview improvements
 ## [v0.3.1]

@@ -653,9 +653,9 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
             if (project.devicePins === undefined) {
                 return;
             }
-            providerChipView.setColors();
-            providerChipView.setDevice(project.devicePins);
-            providerPinView.setPins(project.devicePins);
+            // providerChipView.setColors();
+            // providerChipView.setDevice(project.devicePins);
+            // providerPinView.setPins(project.devicePins);
         }
     }
 
