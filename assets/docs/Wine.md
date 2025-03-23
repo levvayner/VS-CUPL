@@ -1,4 +1,4 @@
-# Wine installation
+# Wine Installation
 
 Wine is a system that translates the Windows API to linux kernel allowing Linux users to run some Windows applications.
 

@@ -1,6 +1,11 @@
 # Change Log
 
 All notable changes to the "vs-cupl" extension will be documented in this file.
+## [v0.3.7](https://github.com/levvayner/ATF15xx-cupl/tree/releases/v0.3.7)
+- Reworked state management
+- Implemented Environment Setup Guide
+- Tested on Windows
+
 ## [v0.3.5](https://github.com/levvayner/ATF15xx-cupl/tree/releases/v0.3.5)
 - Stop forced toggle to chip view on window state change
 ## v0.3.4

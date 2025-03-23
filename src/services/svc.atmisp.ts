@@ -15,6 +15,7 @@ import {
 import { projectFromTreeItem } from "./svc.project";
 import path = require("path");
 import { homedir } from "os";
+import { extensionState } from "../states/state.global";
 
 let lastKnownPath = "";
 
@@ -55,8 +56,8 @@ export async function runISP(project: Project) {
     }
     try {
         const command = new Command();
-        const extConf = vscode.workspace.getConfiguration("vs-cupl");
-        const atmISPBinPath = extConf.get("PathATMISP") as string ?? undefined;
+        //const extConf = vscode.workspace.getConfiguration("vs-cupl");
+        const atmISPBinPath = extensionState.pathATMISP;//  extConf.get("PathATMISP") as string ?? undefined;
 
         if(atmISPBinPath === undefined || atmISPBinPath === null){
             vscode.window.showErrorMessage("ATMISP Path is not correctly configured.");
@@ -89,10 +90,10 @@ export async function runISP(project: Project) {
                 return;
             }
             //execute
-            const prefixPath = path.join(homedir(), extConf.get("WinePrefix") as string ?? '.wine') ;
-            const drive = extConf.get("PathWinDrive") as string ?? 'drive_c';
+            const prefixPath = path.join(homedir(), extensionState.winePrefix ?? '.wine') ;
+            const drive = extensionState.pathWinDrive ?? 'drive_c';
             const cRoot = path.join(prefixPath, drive);
-            const arch = extConf.get("WineArch") ?? 'win32';
+            const arch = extensionState.wineArch ?? 'win32';
             const cmdString = `WINEPREFIX=${prefixPath} WINEARCH=${arch} wine "${ path.join(cRoot, atmISPBinPath)}" "${project.windowsChnFilePath}"`;
             const commandResponse = await command.runCommand(
                 "vs-cupl Build",
@@ -108,7 +109,7 @@ export async function runISP(project: Project) {
             }
         } else {
             //execute
-            const cmdString = `"${atmISPBinPath}" "${project.chnFilePath.fsPath}"`;
+            const cmdString = `"${path.join(extensionState.pathWinDrive ?? "C:\\", atmISPBinPath)}" "${project.chnFilePath.fsPath}"`;
             const commandResponse = await command.runCommand(
                 "vs-cupl Build",
                 project.projectPath.fsPath,

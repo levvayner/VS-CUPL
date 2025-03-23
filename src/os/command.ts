@@ -5,6 +5,12 @@ import { extensionState } from "../states/state.global";
 import path = require("path/posix");
 export let atfOutputChannel: vscode.OutputChannel;
 
+export enum ShellType {
+    cmd = "cmd.exe",
+    bash = "bash",
+    powershell = "powershell.exe",
+}
+
 export class Command {
     public debugMessages: boolean;
     public runInIntegratedTerminal;
@@ -23,7 +29,8 @@ export class Command {
     async runCommand(
         title: string,
         workingPath: string | undefined,
-        buildCommand: string
+        buildCommand: string,
+        commandProc : ShellType = ShellType.cmd
     ): Promise<ShellResponse> {
         const extConfig = vscode.workspace.getConfiguration("vs-cupl");
         
@@ -77,7 +84,8 @@ export class Command {
                 }
                 const cmdResponse = await this.execShell(
                     buildCommand,
-                    workingDirectory
+                    workingDirectory,
+                    commandProc
                 );
                 if (this.debugMessages) {
                     atfOutputChannel.appendLine(
@@ -90,12 +98,11 @@ export class Command {
                 //vscode.window.showInformationMessage(cmdResponse.responseText.replace('\r\n', '\n'));
                 return cmdResponse;
             } catch (err: any) {
-                atfOutputChannel.appendLine("\x1b[1;31m" + 
+                atfOutputChannel.appendLine(
                     " ** ERROR ** @ " +
                         new Date().toLocaleString() +
                         ":" +
-                        err.responseText.replace("\r\n", "\n")
-                        + "\x0b[1;37m" 
+                        err.responseText.replace("\r\n", "\n")                       
                 );
                 //vscode.window.showErrorMessage(err.responseError.message, err.responseError.stack);
                 return err;
@@ -103,11 +110,13 @@ export class Command {
         }
     }
 
-    private execShell = (cmd: string, dir: string | undefined = undefined) =>
+    private execShell = (cmd: string, dir: string | undefined = undefined, commandProc: ShellType = 
+        ShellType.cmd
+    ) =>
         new Promise<ShellResponse>((resolve, reject) => {            
             cp.exec(
                 cmd,
-                { cwd: dir, shell: isWindows() ? "cmd.exe" : "bash" },
+                { cwd: dir, shell: isWindows() ? commandProc : "bash" },
                 (err, out) => {
                     if (err) {
                         if (atfOutputChannel && this.debugMessages) {

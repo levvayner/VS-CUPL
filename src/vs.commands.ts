@@ -21,7 +21,8 @@ export const checkCuplDependencyCommand = "vs-cupl.checkCuplCommand";
 export const checkMiniproDependencyCommand = "vs-cupl.checkMiniproCommand";
 export const checkAtmispDependencyCommand = "vs-cupl.checkAtmispCommand";
 export const checkWineDependencyCommand = "vs-cupl.checkWineCommand";
-export const checkMsys2DependencyCommand = "vs-cupl.checkMsys2Command";
-
+export const checkWslDependencyCommand = "vs-cupl.checkWslCommand";
+export const checkUsbipdDependencyCommand = "vs-cupl.checkUsbipdCommand";
+export const checkOpenOcdDependencyCommand = "vs-cupl.checkOpenOcdCommand";
 
 

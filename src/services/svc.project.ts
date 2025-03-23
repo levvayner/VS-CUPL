@@ -177,10 +177,11 @@ export async function registerOpenProjectCommand(openProjectCommandName: string,
 	const projectFileProvider = await ProjectFilesProvider.instance();
 	const state = stateManager(context);
 	lastKnownPath = state.read('last-known-VS-project-path');
-	if(lastKnownPath === '' || lastKnownPath === undefined){
-		lastKnownPath = path.join(extensionState.pathWineBase ?? '', extensionState.pathWinDrive ?? (isWindows() ? 'C:\\' : 'drive_c'));
-	}
+	
 	const cmdOpenProjectHandler = async () => {
+        if(lastKnownPath === '' || lastKnownPath === undefined){
+            lastKnownPath = path.join(extensionState.pathWineBase ?? '', extensionState.pathWinDrive ?? (isWindows() ? 'C:\\' : 'drive_c'));
+        }
 		var projectRoot = await vscode.window.showOpenDialog({canSelectMany: false, 
 			canSelectFiles: true, canSelectFolders: false,
 			openLabel: "Open project", 

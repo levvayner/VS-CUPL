@@ -6,7 +6,7 @@ import {
 } from "../explorer/project-files-provider";
 import { Project } from "../project";
 import { projectFromTreeItem } from "./svc.project";
-import { Command, atfOutputChannel } from "../os/command";
+import { Command, ShellType, atfOutputChannel } from "../os/command";
 import path = require("path");
 import { stateProjects } from "../states/state.projects";
 import { isWindows } from "../os/platform";
@@ -85,12 +85,90 @@ export async function registerDeploySvfCommand(
 
 export async function executeDeploy(project: Project) {
     const command = new Command();
+    let usbipdPort = '';
+    let wslSvfPath = project.svfFilePath.fsPath;
     //execute
     atfOutputChannel.appendLine("Deploying SVF File to CPLD...");
     //on windows use SET instead of export and call command directly, istead of script
     const setEnvVar = isWindows() ? "SET FTDID=6014" : "export FTDID=6014";
+    if(isWindows()){
+        //perform wsl usbipd binding and passthrough
+        const execPolicy = await command.runCommand(
+            "vs-cupl Build",
+            `C:\\Program Files\\usbipd-win`,
+            `Set-ExecutionPolicy -ExecutionPolicy  Unrestricted -Scope LocalMachine`,
+            ShellType.powershell
+        );
+        if(execPolicy.responseCode !== 0){
+            atfOutputChannel.appendLine(
+                `Failed to set execution policy for usbipd-win. Restart VS Code as adminsitrator and try again`
+            );
+            return;
+        }
+
+        const usbipd = await command.runCommand(
+            "vs-cupl Build",
+            `C:\\Program Files\\usbipd-win`,
+            ` (./usbipd list | Select-String -List 0403:6014 -SimpleMatch) -split " " | Select-Object -First 1`,
+            ShellType.powershell
+        );
+        if(usbipd.responseCode !== 0){
+            atfOutputChannel.appendLine(
+                "Failed to find usbipd-win. Ensure your device is connected and usbipd is running"
+            );
+            return;
+        }
+        usbipdPort = usbipd.responseText.trim();
+
+        //bind usb device
+        const usbipdBind = await command.runCommand(
+            "vs-cupl Build",
+            `C:\\Program Files\\usbipd-win`,
+            `usbipd bind -b ${usbipdPort}`,
+            ShellType.powershell
+        );
+        if(usbipdBind.responseCode !== 0){
+            atfOutputChannel.appendLine(
+                `Failed to bind usbipd-win: ${usbipdBind.responseError.message}`
+            );
+            return;
+        }
+
+        //attach usb device
+        const usbipdAttach = await command.runCommand(
+            "vs-cupl Build",
+            `C:\\Program Files\\usbipd-win`,
+            `usbipd attach -b ${usbipdPort} --wsl`,
+            ShellType.powershell
+        );
+        if(usbipdAttach.responseCode !== 0){
+            atfOutputChannel.appendLine(
+                `Failed to attach usbipd-win: ${usbipdAttach.responseError.message}`
+            );
+            if(usbipdAttach.responseError.message.indexOf("is already attached") <= 0){
+                return;
+            }
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000)); //wait for usbipd to attach
+        
+        //get wsl path
+        const wslPath = await command.runCommand(
+            "vs-cupl Build",
+            `C:\\Program Files\\usbipd-win`,
+            `wsl -e wslpath "${wslSvfPath}"`,
+            ShellType.powershell
+        );
+        if(wslPath.responseCode !== 0){
+            atfOutputChannel.appendLine(
+                `Failed to get WSL path for file: ${wslPath.responseError.message}`
+            );
+            return;
+        }
+        wslSvfPath = wslPath.responseText.trim();
+    }
+
     const cmdText = isWindows()
-        ? GetOCDCommand(project)
+        ? `wsl -e ${getOCDCommand(project, DeployCommandType.Program, wslSvfPath)}`
         : `${setEnvVar} && chmod +x "${project.buildFilePath.fsPath}" && "${project.buildFilePath.fsPath}" 2>&1 | tee`;
     const response = await command.runCommand(
         "vs-cupl Deploy",
@@ -103,15 +181,33 @@ export async function executeDeploy(project: Project) {
         .map((e: string) => e.trim())
         .join("\n");
 
+    usbipdDetach(usbipdPort);
     if (response.responseCode !== 0 || errorResponse.length > 0) {
         atfOutputChannel.appendLine(
             `**Failed to deploy **\nErrors occured:\n------------------------\n${errorResponse}\n------------------------`
         );
+        
         return;
     }
     atfOutputChannel.appendLine("** Deployed SVF File to CPLD **");
     if (command.debugMessages) {
         atfOutputChannel.appendLine(response.responseText);
+    }
+}
+async function usbipdDetach(usbipdPort: string){
+    const command = new Command();
+    //attach usb device
+    const usbipdAttach = await command.runCommand(
+        "vs-cupl Build",
+        `C:\\Program Files\\usbipd-win`,
+        `./usbipd detach -b ${usbipdPort}`,
+        ShellType.powershell
+    );
+    if(usbipdAttach.responseCode !== 0){
+        atfOutputChannel.appendLine(
+            `Failed to detach usbipd-win: ${usbipdAttach.responseError.message}`
+        );
+        return;
     }
 }
 
@@ -186,7 +282,7 @@ async function updateDeploySVFScript(project: Project): Promise<boolean> {
         );
 
         var text = "# Executed on " + runDate.toLocaleString() + "\n";
-        text += GetOCDCommand(project);
+        text += getOCDCommand(project);
         editBuilder.replace(range, text);
     });
     var saved = await d.save();
@@ -227,7 +323,7 @@ async function runUpdateEraseScript(project: Project) {
         );
 
         var text = "# Executed ERASE on " + runDate.toLocaleString() + "\n";
-        text += GetOCDCommand(project, DeployCommandType.Erase);
+        text += getOCDCommand(project, DeployCommandType.Erase);
         editBuilder.replace(range, text);
     });
     var saved = await d.save();
@@ -236,32 +332,34 @@ async function runUpdateEraseScript(project: Project) {
     return saved;
 }
 
-function GetOCDCommand(
+function getOCDCommand(
     project: Project,
-    commandType: DeployCommandType = DeployCommandType.Program
+    commandType: DeployCommandType = DeployCommandType.Program,
+    customPath: string | undefined = undefined
 ) {
     const extConfig = vscode.workspace.getConfiguration("vs-cupl");
     const ocdBinPath = extConfig.get("PathOpenOcd") as string;
     const ocdDLPath = extConfig.get("PathOpenOcdDL") as string;
     const openOcdCode = project.device?.openOCDDeviceCode ?? "150403f";
     const svfPath =
-        commandType === DeployCommandType.Program
-            ? project.svfFilePath.fsPath
+        (commandType === DeployCommandType.Program
+            ? (customPath ?? project.svfFilePath.fsPath)
             : path.join(
                   extensionUri.fsPath,
                   "assets",
                   "bin",
                   "atf1504-svf",
                   "atf1504as-erase.svf"
-              );
-    const svfParameter = isWindows() ? `svf '${svfPath}'` : `svf ${svfPath}`; //linux version does not support single quotes
-    return `"${ocdBinPath}" -f "${path.join(
+              ) 
+        ).replace(/\\/gi, "/");
+    const svfParameter = isWindows() ? `svf ${svfPath}` : `svf ${svfPath}`; //linux version does not support single quotes
+    return `"${isWindows() ? 'openocd' : ocdBinPath}" -f "${path.join(
         ocdDLPath,
         "scripts",
         "interface",
         "ftdi",
         "um232h.cfg"
-    )}"  -c "adapter speed 400" -c "transport select jtag" -c "jtag newtap ${
+    ) .replace(/\\/gi, "/")}"  -c "adapter speed 400" -c "transport select jtag" -c "jtag newtap ${
         project.deviceName
     } tap -irlen 3 -expected-id 0x0${openOcdCode}" -c init -c "${svfParameter}"  -c "sleep 200" -c shutdown \n`;
 }

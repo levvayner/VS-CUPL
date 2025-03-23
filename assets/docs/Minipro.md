@@ -1,4 +1,4 @@
-# Minipro installation
+# Minipro Installation
 
 Minipro is a tool to program many different PLDs using TL866II programmer.
 - It requires MSYS2 or WSL (Windows Subsystem for Linux) to be installed on Windows. 

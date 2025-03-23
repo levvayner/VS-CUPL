@@ -3,7 +3,7 @@ import {
     ProjectFilesProvider,
     VSProjectTreeItem,
 } from "../explorer/project-files-provider";
-import { Command, atfOutputChannel } from "../os/command";
+import { Command, ShellType, atfOutputChannel } from "../os/command";
 import { Project } from "../project";
 import { uiIntentSelectTextFromArray } from "../ui.interactions";
 import { isWindows } from "../os/platform";
@@ -151,7 +151,9 @@ export async function runMiniPro(project: Project) {
     try {
         const command = new Command();
         const extConfig = vscode.workspace.getConfiguration("vs-cupl");
-        const miniproPath = extConfig.get<string>("PathMinipro") ?? "/usr/bin/minipro";
+        const miniproPath = extensionState.pathMinipro;//  extConfig.get<string>("PathMinipro") ?? "/usr/bin/minipro";
+        let usbipdPort = '';
+        let wslJedPath = project.jedFilePath.fsPath;
         //TODO: verify deviec name from minipro list before deploying
         // start with full name, take away letters until at least one shows up
         let srchString = project.deviceName;
@@ -161,14 +163,90 @@ export async function runMiniPro(project: Project) {
             );
             return;
         }
+        if(isWindows()){
+            //perform wsl usbipd binding and passthrough
+            const execPolicy = await command.runCommand(
+                "vs-cupl Build",
+                `C:\\Program Files\\usbipd-win`,
+                `Set-ExecutionPolicy -ExecutionPolicy  Unrestricted -Scope LocalMachine`,
+                ShellType.powershell
+            );
+            if(execPolicy.responseCode !== 0){
+                atfOutputChannel.appendLine(
+                    `Failed to set execution policy for usbipd-win. Restart VS Code as adminsitrator and try again`
+                );
+                return;
+            }
+
+            const usbipd = await command.runCommand(
+                "vs-cupl Build",
+                `C:\\Program Files\\usbipd-win`,
+                ` (./usbipd list | Select-String -List XGecu -SimpleMatch) -split " " | Select-Object -First 1`,
+                ShellType.powershell
+            );
+            if(usbipd.responseCode !== 0){
+                atfOutputChannel.appendLine(
+                    "Failed to find usbipd-win. Ensure your device is connected and usbipd is running"
+                );
+                return;
+            }
+            usbipdPort = usbipd.responseText.trim();
+
+            //bind usb device
+            const usbipdBind = await command.runCommand(
+                "vs-cupl Build",
+                `C:\\Program Files\\usbipd-win`,
+                `usbipd bind -b ${usbipdPort}`,
+                ShellType.powershell
+            );
+            if(usbipdBind.responseCode !== 0){
+                atfOutputChannel.appendLine(
+                    `Failed to bind usbipd-win: ${usbipdBind.responseError.message}`
+                );
+                return;
+            }
+
+            //attach usb device
+            const usbipdAttach = await command.runCommand(
+                "vs-cupl Build",
+                `C:\\Program Files\\usbipd-win`,
+                `usbipd attach -b ${usbipdPort} --wsl`,
+                ShellType.powershell
+            );
+            if(usbipdAttach.responseCode !== 0){
+                atfOutputChannel.appendLine(
+                    `Failed to attach usbipd-win: ${usbipdAttach.responseError.message}`
+                );
+                if(usbipdAttach.responseError.message.indexOf("is already attached") <= 0){
+                    return;
+                }
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000)); //wait for usbipd to attach
+            
+            //get wsl path
+            const wslPath = await command.runCommand(
+                "vs-cupl Build",
+                `C:\\Program Files\\usbipd-win`,
+                `wsl -e wslpath "${wslJedPath}"`,
+                ShellType.powershell
+            );
+            if(wslPath.responseCode !== 0){
+                atfOutputChannel.appendLine(
+                    `Failed to get WSL path for file: ${wslPath.responseError.message}`
+                );
+                return;
+            }
+            wslJedPath = wslPath.responseText.trim();
+        }
 
         let cmdString = '';
         if(extConfig.get('MiniproPerformHardwareCheck') as boolean === true ){
-            let cmdString = `${miniproPath} -t `;
+            let cmdString = isWindows() ? `wsl -e ${miniproPath} -t` : `${miniproPath} -t `;
             const miniProFound = await command.runCommand(
                 "vs-cupl Build",
                 project.projectPath.fsPath,
-                cmdString
+                cmdString,
+                ShellType.powershell
             );
             if (miniProFound.responseCode !== 0) {
                 if (
@@ -179,6 +257,10 @@ export async function runMiniPro(project: Project) {
                     atfOutputChannel.appendLine(
                         "No Minipro device found. Check your connection to your TL866+ programmer"
                     );
+                    if(isWindows()){
+                        usbipdDetach(usbipdPort);
+                    }
+                    
                     return;
                 }
                 //if error other than no programmer found, continue
@@ -190,11 +272,11 @@ export async function runMiniPro(project: Project) {
         var selectedDeviceName: string | undefined = undefined;
         while (srchString.length > 0 && !found) {
             cmdString = isWindows()
-                ? `${miniproPath} --logicic ${
-                      path.dirname( extensionState.pathMinipro)
-                  }\\logicic.xml --infoic ${
-                    path.dirname( extensionState.pathMinipro)
-                  }\\infoic.xml -L ${srchString}`
+                ? `wsl -e ${miniproPath} --logicic ${
+                      extensionState.pathMiniproShare
+                  }/logicic.xml --infoic ${
+                   extensionState.pathMiniproShare
+                  }/infoic.xml -L ${srchString}`
                 : `${miniproPath} -L ${srchString}`;
             const devices = await command.runCommand(
                 "vs-cupl Build",
@@ -216,6 +298,9 @@ export async function runMiniPro(project: Project) {
                 "Failed to deploy using mini pro. Failed to find device by this name: " +
                     project.deviceName
             );
+            if(isWindows()){
+                usbipdDetach(usbipdPort);
+            }
             return;
         }
 
@@ -264,21 +349,19 @@ export async function runMiniPro(project: Project) {
         if(extConfig.get('MiniproErrorOnIdMismatch') as boolean !== undefined && extConfig.get('MiniproErrorOnIdMismatch') as boolean !== true){
             miniproOptions += `-y `;
         } 
-        
-         
+        if(extConfig.get('MiniproCustomArgs') as string !== undefined && extConfig.get('MiniproCustomArgs') as string !== ""){
+            miniproOptions += extConfig.get('MiniproCustomArgs') as string + ' ';
+        } 
         
 
-        cmdString = `${miniproPath} ${
-            isWindows()
-                ? "--logicic " +
-                path.dirname( extensionState.pathMinipro) +
-                  "/logicic.xml --infoic " +
-                  path.dirname( extensionState.pathMinipro) +
-                  "/infoic.xml"
-                : ""
-        } -p "${selectedDeviceName}" -w "${
-            project.jedFilePath.fsPath
-        }"  2>&1${ isWindows() ? "" : "| tee"}`;
+        cmdString = 
+            (isWindows() ? `wsl -e ${miniproPath} ${miniproOptions}` + " --logicic " +
+            extensionState.pathMiniproShare +
+             "/logicic.xml --infoic " +
+             extensionState.pathMiniproShare +
+             "/infoic.xml "
+           : `${miniproPath} `) +
+          `-p "${selectedDeviceName}" -w "${wslJedPath}"  2>&1${ isWindows() ? "" : "| tee"}`;
         const resp = await command.runCommand(
             "vs-cupl Build",
             project.projectPath.fsPath,
@@ -295,6 +378,9 @@ export async function runMiniPro(project: Project) {
                 "Failed to upload " + project.projectName,
                 5000
             );
+            if(isWindows()){
+                usbipdDetach(usbipdPort);
+            }
             return;
         }
         if (resp.responseText.includes("Warning!")) {
@@ -311,6 +397,10 @@ export async function runMiniPro(project: Project) {
             );
         }
 
+        if(isWindows()){
+            usbipdDetach(usbipdPort);
+        }
+
         vscode.window.setStatusBarMessage(
             "Done Uploading " + project.projectName,
             5000
@@ -322,6 +412,23 @@ export async function runMiniPro(project: Project) {
         );
     }
 
+}
+
+async function usbipdDetach(usbipdPort: string){
+    const command = new Command();
+    //attach usb device
+    const usbipdAttach = await command.runCommand(
+        "vs-cupl Build",
+        `C:\\Program Files\\usbipd-win`,
+        `./usbipd detach -b ${usbipdPort}`,
+        ShellType.powershell
+    );
+    if(usbipdAttach.responseCode !== 0){
+        atfOutputChannel.appendLine(
+            `Failed to detach usbipd-win: ${usbipdAttach.responseError.message}`
+        );
+        return;
+    }
 }
 
 export async function runMiniProDump(project: Project) {
@@ -371,10 +478,10 @@ export async function runMiniProDump(project: Project) {
         while (srchString.length > 0 && !found) {
             cmdString = isWindows()
                 ? `${miniproPath} --logicic ${
-                    path.dirname( extensionState.pathMinipro)
-                  }\\logicic.xml --infoic ${
-                    path.dirname( extensionState.pathMinipro)
-                  }\\infoic.xml -L ${srchString}`
+                    extensionState.pathMiniproShare
+                  }/logicic.xml --infoic ${
+                    extensionState.pathMiniproShare
+                  }/infoic.xml -L ${srchString}`
                 : `${miniproPath} -L ${srchString}`;
             const devices = await command.runCommand(
                 "vs-cupl Build",
@@ -406,9 +513,9 @@ export async function runMiniProDump(project: Project) {
         cmdString = `${miniproPath} ${
             isWindows()
                 ? "--logicic " +
-                path.dirname( extensionState.pathMinipro) +
+                extensionState.pathMiniproShare +
                   "/logicic.xml --infoic " +
-                  path.dirname( extensionState.pathMinipro) +
+                  extensionState.pathMiniproShare +
                   "/infoic.xml"
                 : ""
         } -p "${
@@ -499,10 +606,10 @@ export async function runMiniProErase(project: Project) {
         while (srchString.length > 0 && !found) {
             cmdString = isWindows()
                 ? `${miniproPath} --logicic ${
-                    path.dirname( extensionState.pathMinipro)
-                  }\\logicic.xml --infoic ${
-                    path.dirname( extensionState.pathMinipro)
-                  }\\infoic.xml -L ${srchString}`
+                    extensionState.pathMiniproShare
+                  }/logicic.xml --infoic ${
+                    extensionState.pathMiniproShare
+                  }/infoic.xml -L ${srchString}`
                 : `${miniproPath} -L ${srchString}`;
             const devices = await command.runCommand(
                 "vs-cupl Build",
@@ -534,9 +641,9 @@ export async function runMiniProErase(project: Project) {
         cmdString = `${miniproPath} ${
             isWindows()
                 ? "--logicic " +
-                path.dirname( extensionState.pathMinipro) +
+                extensionState.pathMiniproShare +
                   "/logicic.xml --infoic " +
-                  path.dirname( extensionState.pathMinipro) +
+                  extensionState.pathMiniproShare +
                   "/infoic.xml"
                 : ""
         } -p "${selectedDeviceName /* project.deviceName */}" -E  2>&1 ${ isWindows() ? "" : "| tee"}`;

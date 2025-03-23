@@ -37,8 +37,8 @@ export async function checkForOpenOcd(){
     const command = new Command();
     return await command.runCommand(
         "vs-cupl Prerequisites",
-        path.dirname(extensionState.pathOpenOcd ?? extensionState.pathWinDrive ?? ""),
-        "openocd --version"
+        path.dirname(extensionState.pathWinDrive ?? ""),
+         isWindows() ? `wsl.exe openocd --version` : "openocd --version"
     );
 }
 
@@ -46,24 +46,35 @@ export async function checkForMinipro(){
     const command = new Command();
     return await command.runCommand(
         "vs-cupl Prerequisites",
-        path.dirname( extensionState.pathMinipro ?? extensionState.pathWinDrive ?? "" ),
-        "minipro --version"
+        isWindows() ? undefined : path.dirname( extensionState.pathMinipro ?? extensionState.pathWinDrive ?? "" ),
+        isWindows() ? `wsl.exe ${extensionState.pathMinipro} --version` : "minipro --version"
     );
 }
 
-export async function checkForMsys2(){
+export async function checkForWSL(){
     if(!isWindows()){
-        return {responseCode: -1, responseError: "MSYS2 only required on windows." } as ShellResponse;
+        return {responseCode: -1, responseError: "WSL only required on windows." } as ShellResponse;
     }
     const command = new Command();
     return await command.runCommand(
         "vs-cupl Prerequisites",
-        path.dirname( extensionState.pathWinDrive ?? "" ),
+        path.dirname( extensionState.pathWinDrive ?? "C:\\" ),
         //`wmic product get name | find "MSYS2"`
-        "dir msys64 /D"
+        "Wsl --list --verbose"
     );
 }
 
+export async function checkForWslUsbIpd(){
+    if(!isWindows()){
+        return {responseCode: -1, responseError: "USBIPD only required on windows." } as ShellResponse;
+    }
+    const command = new Command();
+    return await command.runCommand(
+        "vs-cupl Prerequisites",
+        `C:\\Program Files\\usbipd-win\\`,
+        "usbipd --version"
+    );
+}
 
 export async function checkForAtmisp(){   
     const command = new Command();

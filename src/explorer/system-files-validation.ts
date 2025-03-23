@@ -23,7 +23,7 @@ export async function registerCheckPrerequisite(
         //const ocdBinPath = extConfig.get("PathOpenOcd") as string;
         let failedAny = false;
         const command = new Command();
-        atfOutputChannel.appendLine("Running Pre-requisite checks");
+        atfOutputChannel.appendLine("Running Prerequisite checks");
         var cuplCheck = await checkForCupl();
         var wineCheck = await checkForWine();
         var openOCDCheck = await checkForOpenOcd();
@@ -37,7 +37,7 @@ export async function registerCheckPrerequisite(
                 "** Failed to load Cupl prerequisite: ** " + `${cuplBinPath}`
             );
             atfOutputChannel.appendLine(
-                "[Read about Pre-requisites](./README.md) "
+                "[Read about Prerequisites](./README.md) "
             );
             failedAny = true;
         } else {
@@ -171,8 +171,12 @@ exit`;
         atfOutputChannel.appendLine(
             failedAny === true
                 ? "** Failed ** preqrequisite checks! "
-                : "Passed Pre-requisite checks"
+                : "Passed Prerequisite checks"
         );
+
+        if(!failedAny){
+            await vscode.commands.executeCommand('setContext', 'VerifyPrerequisitesInstalled', true);
+        }
     };
     await context.subscriptions.push(
         vscode.commands.registerCommand(

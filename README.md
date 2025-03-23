@@ -30,7 +30,7 @@
 - Deployment
   - Output window to show all ineractions with third party software
 
-  - Pre-requisite check to ensure all tools are installed and configured
+  - Prerequisite check to ensure all tools are installed and configured
 
   - Supports deployment paths to TL886+ for DIP and other 24 and 28 pin CPLDs and homebrew programmer for QFP chips.
 

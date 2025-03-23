@@ -1,4 +1,4 @@
-# Wincupl installation
+# Wincupl Installation
 
 Wincupl is a program maintained by Microchip for writing code in CUPL language for various CPLDs.
 

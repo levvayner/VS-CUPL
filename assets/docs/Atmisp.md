@@ -1,4 +1,4 @@
-# ATMISP installation
+# ATMISP Installation
 
 ATMISP is a programming tool for Microchip ATF15xx CPLDs.
 - It can be used directly with an official ATDH1150USB 

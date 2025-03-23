@@ -3,7 +3,7 @@
     "displayName": "VS Cupl",
     "publisher": "VaynerSystems",
     "description": "Tools for ATMEL and Lattice CPLD programming projects.\n Helps create and manage projects and connect to tools.",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "pricing": "Free",
     "repository": {
         "url": "https://github.com/levvayner/ATF15xx-cupl",
@@ -37,61 +37,100 @@
                 "description": "A guide to configure the development environment needed for CUPL development and deployment.",
                 "steps": [
                     {
-                        "id": "checkCupl",
-                        "title": "Check for Wincupl",
-                        "description": "This step will check for Wincupl.\n[Check](command:vs-cupl.checkCuplCommand)",                        
+                        "id": "linux-wine",
+                        "title": "Linux Platform: Wine",
+                        "description": "Has wine installation been verified?\n [Check](command:vs-cupl.checkWineCommand)",
+                        "when": "isLinux",
                         "media": {
-                            "markdown": "assets/docs/Wincupl.md"                            
+                            "markdown": "assets/docs/Wine.md"
                         },
-                        "completionEvents": ["onContext:VerifyCuplInstalled"]                       
+                        "completionEvents": [
+                            "onContext:VerifyWineInstalled"
+                        ]
+                    },
+                    {
+                        "id": "windows-wsl",
+                        "title": "Windows Platform: WSL",
+                        "description": "Has WSL installation been verified?\n [Check](command:vs-cupl.checkWslCommand)",
+                        "when": "isWindows",
+                        "media": {
+                            "markdown": "assets/docs/WSL.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyWslInstalled"
+                        ]
+                    },
+                    {
+                        "id": "windows-wsl-usbipd",
+                        "title": "Windows Platform: WSL USBIPD-WIN",
+                        "description": "Has WSL USBIPD installation been verified?\n [Check](command:vs-cupl.checkUsbipdCommand)",
+                        "when": "isWindows",
+                        "media": {
+                            "markdown": "assets/docs/WSLUsbIpd.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyWSLUsbIpdInstalled"
+                        ]
+                    },
+                    
+                    {
+                        "id": "checkCupl",
+                        "title": "Wincupl",
+                        "description": "This step will Wincupl.\n[Check](command:vs-cupl.checkCuplCommand)",
+                        "media": {
+                            "markdown": "assets/docs/Wincupl.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyCuplInstalled"
+                        ]
                     },
                     {
                         "id": "checkMinipro",
-                        "title": "Check for Minipro",
-                        "description": "This step will check for Minnipro.\n[Check](command:vs-cupl.checkMiniproCommand)",
+                        "title": "Minipro",
+                        "description": "This step will Minipro.\n[Check](command:vs-cupl.checkMiniproCommand)",
                         "media": {
                             "markdown": "assets/docs/Minipro.md"
                         },
                         "completionEvents": [
-							"onContext:VerifyMiniproInstalled"
-						]
+                            "onContext:VerifyMiniproInstalled"
+                        ]
                     },
                     {
+                        "id": "checkOpenOcd",
+                        "title": "Open OCD",
+                        "description": "This step will OpenOCD.\n[Check](command:vs-cupl.checkOpenOcdCommand)",
+                        "media": {
+                            "markdown": "assets/docs/OpenOcd.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyOpenOcdInstalled"
+                        ]
+                    },
+                    
+                    {
                         "id": "checkAtmpisp",
-                        "title": "Check for ATMISP",
-                        "description": "This step will check for ATMISP.\n[Check](command:vs-cupl.checkAtmispCommand)",
+                        "title": "ATMISP",
+                        "description": "This step will ATMISP.\n[Check](command:vs-cupl.checkAtmispCommand)",
                         "media": {
                             "markdown": "assets/docs/Atmisp.md"
                         },
                         "completionEvents": [
-							"onContext:VerifyAtmispInstalled"
-						]
-                    },
-                    {
-						"id": "linux-wine",
-						"title": "Linux Platform: Wine",
-						"description": "Has wine installation been verified?\n [Check](command:vs-cupl.checkWineCommand)",
-						"when": "isLinux",
-						"media": {
-							"markdown": "assets/docs/Wine.md"
-						},
-                        "completionEvents": [
-                            "onContext:VerifyWineInstalled"
+                            "onContext:VerifyAtmispInstalled"
                         ]
-					},
+                    }
+                    ,
                     {
-						"id": "windows-msys2",
-						"title": "Windows Platform: MSYS2",
-						"description": "Has MSYS2 installation been verified?\n [Check](command:vs-cupl.checkMsys2Command)",
-						"when": "isWindows",
-						"media": {
-							"markdown": "assets/docs/Msys2.md"
-						},
+                        "id": "verifyAll",
+                        "title": "Verify Environment is Ready",
+                        "description": "This step will verify that all prerequisites have been fulfilled.\n[Check](command:vs-cupl.checkPrerequisite)",
+                        "media": {
+                            "markdown": "assets/docs/VerifyAll.md"
+                        },
                         "completionEvents": [
-                            "onContext:VerifyMsys2Installed"
-                        ]
-					}
-
+                            "onContext:VerifyPrerequisitesInstalled"
+                        ],
+                        "when": "VerifyOpenOcdInstalled == true && VerifyMiniproInstalled == true && VerifyCuplInstalled == true && VerifyAtmispInstalled == true && ((VerifyWineInstalled == true && isLinux) || (VerifyWslInstalled == true && VerifyWSLUsbIpdInstalled == true && isWindows))"
+                    }
                 ]
             }
         ],
@@ -132,28 +171,16 @@
                         ],
                         "enumDescriptions": [
                             "Run in VS Code output window",
-                            "Run in VS Code terminal"
+                            "Run in VS Code terminal\n** !!WARNING!! WILL BREAK PROCESSES **"
+                        ],
+                        "enumItemLabels": [
+                            "Output",
+                            "Terminal"
                         ],
                         "description": "Run commands in VS Code integrated terminal?"
                     }
                 }
-            },
-            {
-                "title": "Environment",
-                "properties": {
-                    "vs-cupl.VerifyCuplInstalled":{
-                        "type": "boolean",
-                        "default": false,
-                        "description": "Has CUPL installation been verified?"
-                    },
-                    "vs-cupl.VerifyMiniproInstalled":{
-                        "type": "boolean",
-                        "default": false,
-                        "description": "Has Minipro installation been verified?"
-                    }
-                }
-                
-            },
+            },           
             {
                 "title": "Paths",
                 "properties": {
@@ -164,13 +191,18 @@
                     },
                     "vs-cupl.PathOpenOcdDL": {
                         "type": "string",
-                        "default": "/usr/share/openocd",
+                        "default": "/usr/share/local/openocd",
                         "description": "Open OCD Data path"
                     },
                     "vs-cupl.PathMinipro": {
                         "type": "string",
                         "default": "/usr/bin/minipro",
                         "description": "Path to minipro binary"
+                    },
+                    "vs-cupl.PathMiniproShare": {
+                        "type": "string",
+                        "default": "/usr/share/minipro",
+                        "description": "Minipro share path"
                     },
                     "vs-cupl.PathWinDrive": {
                         "type": "string",
@@ -242,33 +274,39 @@
                 "properties": {
                     "vs-cupl.MiniproPerformHardwareCheck": {
                         "type": "boolean",
-                        "default": true,                        
-                        "description": "Perform hardware check before programming?"
+                        "default": true,
+                        "description": "Perform hardware check before programming?",
+                        "order": 3
                     },
                     "vs-cupl.MiniproPerformUnprotect": {
                         "type": "boolean",
-                        "default": false,                        
-                        "description": "Unprotect before programming?"
+                        "default": false,
+                        "description": "Unprotect before programming?"                        ,
+                        "order": 4
                     },
                     "vs-cupl.MiniproPerformProtect": {
                         "type": "boolean",
-                        "default": false,                        
-                        "description": "Protect after programming?"
+                        "default": false,
+                        "description": "Protect after programming?",
+                        "order": 5
                     },
                     "vs-cupl.MiniproSkipVerify": {
                         "type": "boolean",
-                        "default": false,                        
-                        "description": "Skip verifying program"
+                        "default": false,
+                        "description": "Skip verifying program",
+                        "order": 6
                     },
                     "vs-cupl.MiniproSkipErase": {
                         "type": "boolean",
-                        "default": false,                        
-                        "description": "Skip erasing before programming"
+                        "default": false,
+                        "description": "Skip erasing before programming",
+                        "order": 7
                     },
                     "vs-cupl.MiniproErrorOnIdMismatch": {
                         "type": "boolean",
-                        "default": true,                        
-                        "description": "Error if device is does not match?"
+                        "default": true,
+                        "description": "Error if device ID does not match?",
+                        "order": 1
                     },
                     "vs-cupl.MiniproFileSizeMismatch": {
                         "type": "string",
@@ -276,16 +314,35 @@
                         "enum": [
                             "Error",
                             "Warning",
-                            "Ignore"                            
-                        ],               
-                        "description": "How should file size missmatch be handled?"
+                            "Ignore"
+                        ],
+                        "description": "How should file size missmatch be handled?",
+                        "order": 2
                     },
                     "vs-cupl.MiniproOptionVpp": {
                         "type": "number",
-                        "default": 0,    
-                        "enum":[
-                            0,9, 9.5, 10, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15.5, 16, 16.5, 17, 18, 19, 21
-                        ],       
+                        "default": 0,
+                        "enum": [
+                            0,
+                            9,
+                            9.5,
+                            10,
+                            11,
+                            11.5,
+                            12,
+                            12.5,
+                            13,
+                            13.5,
+                            14,
+                            14.5,
+                            15.5,
+                            16,
+                            16.5,
+                            17,
+                            18,
+                            19,
+                            21
+                        ],
                         "enumDescriptions": [
                             "AUTO",
                             "9V - TL866II+ only",
@@ -306,32 +363,54 @@
                             "18V - TL866A/CS only",
                             "19V - TL866II+ only",
                             "21V - TL866A/CS only"
-                            
-                        ],             
-                        "description": "Set Progamming Voltage"
+                        ],
+                        "description": "Set Progamming Voltage"                        ,
+                        "order": 8
                     },
                     "vs-cupl.MiniproOptionVdd": {
                         "type": "number",
-                        "default": 0,       
-                        "enum":[
-                            0, 3.3, 4, 4.5, 5, 5.5, 6.5
-                        ],     
+                        "default": 0,
+                        "enum": [
+                            0,
+                            3.3,
+                            4,
+                            4.5,
+                            5,
+                            5.5,
+                            6.5
+                        ],
                         "enumDescriptions": [
-                            "AUTO", "3.3v", "4v", "4.5v", "5v", "5.5v", "6.5v"
-                        ],           
-                        "description": "Set VDD Write Voltage"
+                            "AUTO",
+                            "3.3v",
+                            "4v",
+                            "4.5v",
+                            "5v",
+                            "5.5v",
+                            "6.5v"
+                        ],
+                        "description": "Set VDD Write Voltage"                        ,
+                        "order": 9
                     },
                     "vs-cupl.MiniproOptionVcc": {
                         "type": "number",
-                        "default": "1",                        
+                        "default": "1",
                         "description": "Set VCC Verify Voltage (0 - AUTO)"
+                        ,
+                        "order": 10
                     },
                     "vs-cupl.MiniproOptionPulse": {
                         "type": "number",
-                        "default": 0,                        
+                        "default": 0,
                         "description": "Set Programming Pulse Delay (0 - 65535 usec)",
                         "minimum": 0,
-                        "maximum": 65535
+                        "maximum": 65535                        ,
+                        "order": 11
+                    },
+                    "vs-cupl.MiniproCustomArgs": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Set additional minipro parameters",
+                        "order": 12
                     }
                 }
             },
@@ -372,7 +451,6 @@
                     }
                 }
             }
-            
         ],
         "iconThemes": [
             {
@@ -901,7 +979,6 @@
                 "title": "Show Active Project Panel"
             }
         ]
-        
     },
     "scripts": {
         "vscode:prepublish": "npm run package",
@@ -931,8 +1008,9 @@
         "webpack-cli": "^5.0.1"
     },
     "dependencies": {
-        "resolve-cwd": "^3.0.0",
         "@vscode/vsce": "^2.15.0",
+        "resolve-cwd": "^3.0.0",
+        "vsce": "^2.15.0",
         "yo": "^4.3.1"
     }
 }

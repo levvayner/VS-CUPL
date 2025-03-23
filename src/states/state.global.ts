@@ -17,6 +17,7 @@ export class StateGlobal {
     private _pathCuplFitters: string | undefined;
     private _pathATMISP: string | undefined;
     private _pathMiniro : string | undefined;
+    private _pathMiniroShare : string | undefined;    
     private _pathOpenOcd: string | undefined;
     private _pathOpenOcdDl: string | undefined;
 
@@ -41,8 +42,7 @@ export class StateGlobal {
             //start welcome guide to install
             const extConf = vscode.workspace.getConfiguration("vs-cupl");
             extConf.update('IsLinux', isWindows() === false);
-
-            context.globalState.update("vs-cupl.extension-configured", true);
+            vscode.commands.executeCommand('workbench.action.openWalkthrough', 'VaynerSystems.vs-cupl#cupl-dev-install', false);
         }
         this.loadPaths();
 
@@ -70,6 +70,7 @@ export class StateGlobal {
         this._pathCuplDl = extConf.get('PathCuplDl') as string;
         this._pathCuplFitters = extConf.get('PathCuplFitters') as string;
         this._pathMiniro =  extConf.get('PathMinipro') as string;
+        this._pathMiniroShare = extConf.get('PathMiniproShare') as string;
         this._pathOpenOcd =  extConf.get('PathOpenOcd') as string;
         this._pathOpenOcdDl = extConf.get('PathOpenOcdDl') as string;
         this._pathWinDrive = extConf.get('PathWinDrive') as string;
@@ -104,7 +105,7 @@ export class StateGlobal {
     ///C:\ for windows, drive_c for linux
     public get pathWinDrive(){
         return isWindows() || this._pathWineBase === undefined ?  
-            this._pathWinDrive : 
+            (this._pathWinDrive  === 'drive_c' ? 'C:\\' : this._pathWinDrive) : 
             path.join(this._pathWineBase, this._pathWinDrive ?? '');
     }
     public get pathWinTemp(){
@@ -132,7 +133,10 @@ export class StateGlobal {
         return this._pathATMISP;
     }
     public get pathMinipro(){        
-        return this._pathMiniro ?? (isWindows() ? "C:\\msys64\\home\\%USERNAME%\\minipro" : "usr/bin/minipro");
+        return this._pathMiniro ?? ("/usr/bin/minipro");
+    }
+    public get pathMiniproShare(){        
+        return this._pathMiniroShare ?? ("/usr/share/minipro");
     }
     public get pathOpenOcd(){
         return this._pathOpenOcd;
