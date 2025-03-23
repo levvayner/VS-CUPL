@@ -20,6 +20,9 @@ export class Project {
     public readonly projectPath: vscode.Uri;
     public readonly projectName: string;
     public readonly buildFilePath: vscode.Uri;
+
+    public readonly cuplOptimizationLevel: number = 1;
+    
     private _windowsPldFilePath: string = "";
     private _windowsJedFilePath: string = "";
     private _windowsChnFilePath: string = "";
@@ -173,10 +176,10 @@ export class Project {
             return;
         }
         const extConfig = vscode.workspace.getConfiguration("vs-cupl");
-        //const workingWindowsFolder = path.join( (extConfig.get('WinCPath') as string).replace('~',homedir()), (extConfig.get('WinTempPath') as string));
+        //const workingWindowsFolder = path.join( (extConfig.get('PathWinDrive') as string).replace('~',homedir()), (extConfig.get('WinTempPath') as string));
         const workingWindowsFolder = path.join(
             "c:\\",
-            extConfig.get("WinTempPath") as string
+            extConfig.get("PathWinTemp") as string
         );
         console.log(`Initializing project ${this.projectName}`);
         //(this.winBaseFolder + this.winTempPath).replace(/\//gi,'\\');

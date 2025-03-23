@@ -1,7 +1,8 @@
 import * as cp from "child_process";
 import * as vscode from "vscode";
-import { ProjectFilesProvider } from "../explorer/project-files-provider";
 import { isWindows } from "./platform";
+import { extensionState } from "../states/state.global";
+import path = require("path/posix");
 export let atfOutputChannel: vscode.OutputChannel;
 
 export class Command {
@@ -25,8 +26,7 @@ export class Command {
         buildCommand: string
     ): Promise<ShellResponse> {
         const extConfig = vscode.workspace.getConfiguration("vs-cupl");
-        const projectFileProvider = await ProjectFilesProvider.instance();
-
+        
         this.debugMessages = extConfig.get("DebugLevel") as boolean;
         if (this.runInIntegratedTerminal) {
             // call terminal to run md file
@@ -42,8 +42,8 @@ export class Command {
                 t.sendText(
                     `cd "${
                         isWindows()
-                            ? projectFileProvider.winBaseFolder
-                            : projectFileProvider.wineBaseFolder
+                            ? extensionState.pathWinDrive
+                            : path.join(extensionState.pathWineBase ??'',extensionState.pathWinDrive??'')
                     }"`
                 );
             }
@@ -73,7 +73,7 @@ export class Command {
                             ? workingPath
                             : isWindows()
                             ? undefined
-                            : projectFileProvider.wineBaseFolder;
+                            : extensionState.pathWineBase;
                 }
                 const cmdResponse = await this.execShell(
                     buildCommand,
@@ -90,11 +90,12 @@ export class Command {
                 //vscode.window.showInformationMessage(cmdResponse.responseText.replace('\r\n', '\n'));
                 return cmdResponse;
             } catch (err: any) {
-                atfOutputChannel.appendLine(
-                    " @ " +
+                atfOutputChannel.appendLine("\x1b[1;31m" + 
+                    " ** ERROR ** @ " +
                         new Date().toLocaleString() +
                         ":" +
                         err.responseText.replace("\r\n", "\n")
+                        + "\x0b[1;37m" 
                 );
                 //vscode.window.showErrorMessage(err.responseError.message, err.responseError.stack);
                 return err;
@@ -123,6 +124,31 @@ export class Command {
                 }
             );
         });
+
+        private execPowerShell = (cmd: string, dir: string | undefined = undefined) =>
+            new Promise<ShellResponse>((resolve, reject) => {            
+                if(!isWindows() ){
+                    return;
+                }
+                cp.exec(
+                    cmd,
+                    { cwd: dir, shell: "powershell.exe" },
+                    (err, out) => {
+                        if (err) {
+                            if (atfOutputChannel && this.debugMessages) {
+                                atfOutputChannel.appendLine(
+                                    `Error executing: ${cmd}\nOutput:\n${out}\nError Details:\n${err.message}`
+                                );
+                            }
+    
+                            return reject(
+                                new ShellResponse((err as any).code, out, err)
+                            );
+                        }
+                        return resolve(new ShellResponse(0, out, undefined));
+                    }
+                );
+            });
 }
 
 export class ShellResponse {

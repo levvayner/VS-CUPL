@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
 import { Project } from "../project";
-import { stateProjects } from "../state.projects";
+import { stateProjects } from "../states/state.projects";
 import { atfOutputChannel } from "../os/command";
 import { configureProjectCommand } from "../vs.commands";
+import { extensionState } from "../states/state.global";
 /*
 Custom pin layout viewer
 
@@ -77,7 +78,7 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
                 console.log(`[Configure Project] `);
                 vscode.commands.executeCommand(
                     configureProjectCommand,
-                    stateProjects.activeProject?.projectPath
+                    extensionState.activeProject?.projectPath
                 );
                 return;
             }
@@ -97,14 +98,14 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
 
     public openProjectActiveProject(project: Project | undefined) {
         if (project === undefined) {
-            stateProjects.setActiveProject(undefined);
+            //extensionState.setActiveProject(undefined);
             this.setProject(undefined);
             return;
         }
         if (project.devicePins) {
             const pins = project.devicePins;
             if (pins) {
-                stateProjects.setActiveProject(project);
+                //extensionState.setActiveProject(project);
                 this.setProject(project);
             } else {
                 atfOutputChannel.appendLine(
@@ -127,7 +128,7 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
         if (project.devicePins === undefined) {
             return;
         }
-        providerActiveProject.openProjectActiveProject(project);
+        extensionState.setActiveProject(project);
     }
 
     checkActiveProjectForWorkspaceFolder(
@@ -143,7 +144,7 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
             if (project === undefined) {
                 return;
             }
-            providerActiveProject.openProjectActiveProject(project);
+            extensionState.setActiveProject(project);
         } else if (
             workspaceFolderEvent.removed &&
             workspaceFolderEvent.removed.length > 0
@@ -155,13 +156,13 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
                 return;
             }
             //TODO: check if selected Active Project View is of this project
-            providerActiveProject.openProjectActiveProject(project);
+            extensionState.setActiveProject(project);
         }
     }
 
     checkActiveProjectForTextEditor(editor: vscode.TextEditor | undefined) {
         if (editor === undefined) {
-            providerActiveProject.openProjectActiveProject(undefined);
+            //extensionState.setActiveProject(undefined);
             return;
         }
         //if(editor.document.fileName.endsWith('.prj') ||editor.document.fileName.endsWith('.pld') ){
@@ -169,7 +170,9 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
         const project = stateProjects.getOpenProject(
             vscode.Uri.file(editor.document.fileName)
         );
-        providerActiveProject.openProjectActiveProject(project);
+        if(project !== undefined){
+            extensionState.setActiveProject(project);
+        }
         //}
     }
 
@@ -191,7 +194,7 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
             if (project.devicePins === undefined) {
                 return;
             }
-            providerActiveProject.openProjectActiveProject(project);
+            extensionState.setActiveProject(project);
         }
     }
 

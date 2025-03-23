@@ -5,22 +5,14 @@ import { Project } from "../project";
 import { isWindows } from "../os/platform";
 import { atfOutputChannel } from "../os/command";
 import { projectTasksProvider } from "./project-tasks-provider";
-import { stateProjects } from "../state.projects";
+import { stateProjects } from "../states/state.projects";
 import { providerChipView } from "../editor/chip-view";
 import { pathExists } from "./fileFunctions";
+import { extensionState } from "../states/state.global";
 
 export class ProjectFilesProvider
     implements vscode.TreeDataProvider<ProjectTreeViewEntry>
-{
-    public readonly winBaseFolder: string;
-    public readonly wineBaseFolder: string;
-    public readonly wineBinPath: string;
-    //public readonly cuplBinPath: string;
-    //   public readonly openOcdBinPath: string;
-    //   public readonly openOcdDataPath: string;
-    //   public readonly atmIspBinPath: string;
-    public readonly winTempPath: string;
-    public readonly miniproPath: string;
+{    
     public readonly workingLinuxFolder: string;
     public readonly workingWindowsFolder: string;
 
@@ -35,19 +27,6 @@ export class ProjectFilesProvider
         return ProjectFilesProvider._projectFileProvider;
     }
     constructor() {
-        this.winBaseFolder = "C:\\";
-        const extConfig = vscode.workspace.getConfiguration("vs-cupl");
-        this.wineBinPath = extConfig.get("WinePath") ?? "/usr/lib/wine";
-        this.wineBaseFolder =
-            (extConfig.get("WinCPath") as string).replace(
-                "~/",
-                homedir + "/"
-            ) ?? homedir + "/.wine/drive_c/";
-        //this.cuplBinPath = isWindows() ? `${this.winBaseFolder}${(extConfig.get('CuplBinPath'))}`: `${this.wineBaseFolder}/${(extConfig.get('CuplBinPath'))}`;
-        this.winTempPath = extConfig.get("WinTempPath") ?? "temp";
-        this.miniproPath =
-            extConfig.get("MiniproPath") ??
-            (isWindows() ? "C:\\msys64\\home\\%USERNAME%\\minipro" : "usr/bin");
         vscode.commands.registerCommand(
             "vs-cupl-project-files.on_item_clicked",
             (item) => this.openFile(item)
@@ -56,9 +35,9 @@ export class ProjectFilesProvider
             "vs-cupl-project-files.refreshEntry",
             () => this.refresh()
         );
-        this.workingLinuxFolder = this.wineBaseFolder + "/" + this.winTempPath;
+        this.workingLinuxFolder = path.join(extensionState.pathWineBase ?? '',extensionState.pathWinDrive ?? 'drive_c');//  this.wineBaseFolder + "/" + this.winTempPath;
         this.workingWindowsFolder = (
-            this.winBaseFolder + this.winTempPath
+            path.join((extensionState.pathWinDrive ?? 'C:\\') ,extensionState.pathWinTemp ?? 'temp')
         ).replace(/\//gi, "\\");
 
         this._onDidChangeTreeData = new vscode.EventEmitter<

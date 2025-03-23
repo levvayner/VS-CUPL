@@ -95,15 +95,15 @@ export async function translateToWindowsTempPath(
     );
 }
 
-export async function translateToLinuxPath(linuxPath: string): Promise<string> {
-    const projectFileProvider = await ProjectFilesProvider.instance();
-    return linuxPath
-        .replace(
-            projectFileProvider.winBaseFolder,
-            projectFileProvider.wineBaseFolder
-        )
-        .replace(/\\/gi, "/");
-}
+// export async function translateToLinuxPath(linuxPath: string): Promise<string> {
+//     const projectFileProvider = await ProjectFilesProvider.instance();
+//     return linuxPath
+//         .replace(
+//             projectFileProvider.winBaseFolder,
+//             projectFileProvider.wineBaseFolder
+//         )
+//         .replace(/\\/gi, "/");
+// }
 
 export async function registerOpenInExplorerCommand(
     command: string,

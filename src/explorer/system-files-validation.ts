@@ -1,8 +1,9 @@
 import { Command, ShellResponse, atfOutputChannel } from "../os/command";
 import * as vscode from "vscode";
-import { ProjectFilesProvider } from "./project-files-provider";
 import { isWindows } from "../os/platform";
 import path = require("path");
+import { extensionState } from "../states/state.global";
+import { checkForCupl, checkForMinipro, checkForOpenOcd, checkForWine } from "../extension/dev-environment";
 // export class PrerequisiteValidation{
 //     validOCDFound = false;
 //     validATMISPFound = false;
@@ -13,41 +14,26 @@ export async function registerCheckPrerequisite(
     checkPrerequisiteCommandName: string,
     context: vscode.ExtensionContext
 ) {
-    const projectFileProvider = await ProjectFilesProvider.instance();
     const cmdCheckPrerequisiteHandler = async () => {
-        const extConfig = vscode.workspace.getConfiguration("vs-cupl");
-        const cuplBinPath = extConfig.get("CuplBinPath") as string;
-        const ocdBinPath = extConfig.get("OpenOCDBinPath") as string;
+
+        const cuplBinPath = extensionState.pathCupl;
+        const ocdBinPath = extensionState.pathOpenOcd ?? '';
+        //const extConfig = vscode.workspace.getConfiguration("vs-cupl");
+        //const cuplBinPath = extConfig.get("PathCupl") as string;
+        //const ocdBinPath = extConfig.get("PathOpenOcd") as string;
         let failedAny = false;
         const command = new Command();
         atfOutputChannel.appendLine("Running Pre-requisite checks");
-        var cuplCheck = await command.runCommand(
-            "vs-cupl Prerequisites",
-            context.extensionPath,
-            isWindows() ? cuplBinPath : `wine ${cuplBinPath}`
-        );
-        var wineCheck = isWindows()
-            ? ({
-                  responseCode: 0,
-                  responseText: "Bypass. Running on Windows",
-              } as ShellResponse)
-            : await command.runCommand(
-                  "vs-cupl Prerequisites",
-                  context.extensionPath,
-                  "wine --version"
-              );
-        var openOCDCheck = await command.runCommand(
-            "vs-cupl Prerequisites",
-            path.dirname(ocdBinPath),
-            "openocd --version"
-        );
-        var miniproCheck = await command.runCommand(
-            "vs-cupl Prerequisites",
-            projectFileProvider.miniproPath,
-            "minipro --version"
-        );
+        var cuplCheck = await checkForCupl();
+        var wineCheck = await checkForWine();
+        var openOCDCheck = await checkForOpenOcd();
+        var miniproCheck = await checkForMinipro();
+        
         if (cuplCheck.responseCode !== 0) {
             vscode.window.showErrorMessage(
+                "** Failed to load Cupl prerequisite: ** " + `${cuplBinPath}`
+            );
+            atfOutputChannel.appendLine(
                 "** Failed to load Cupl prerequisite: ** " + `${cuplBinPath}`
             );
             atfOutputChannel.appendLine(
@@ -118,7 +104,7 @@ sudo dpkg -i ../minipro_0.4-1_amd64.deb`;
             );
             var pathResp = await command.runCommand(
                 "vs-cupl Prerequisites",
-                projectFileProvider.miniproPath,
+                path.dirname( extensionState.pathMinipro),
                 "echo %PATH%"
             );
             atfOutputChannel.appendLine(`# ------- \n${pathResp.responseText}`);
@@ -126,7 +112,7 @@ sudo dpkg -i ../minipro_0.4-1_amd64.deb`;
                 const cmdPathAdd = `cd c:\\msys64\\home\\%USERNAME%\\minipro\nSETX PATH "%PATH%;%cd%;C:\\msys64\\Usr\\bin"`;
                 const cmdPathAddResponse = await command.runCommand(
                     "",
-                    projectFileProvider.miniproPath,
+                    path.dirname( extensionState.pathMinipro),
                     cmdPathAdd
                 );
                 miniproCheck = await command.runCommand(

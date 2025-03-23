@@ -14,7 +14,7 @@ import {
 } from "./project-files-provider";
 import { getDeviceConfiguration, uiEnterProjectName } from "../ui.interactions";
 import path = require("path");
-import { stateProjects } from "../state.projects";
+import { stateProjects } from "../states/state.projects";
 import { pathExists } from "./fileFunctions";
 
 export async function defineProjectFile(projectPath: vscode.Uri) {

@@ -220,12 +220,12 @@ This extension contributes the following settings:
 
 *Can be configured in File > Preferences > Settings `` |`` Extensions > VS Cupl*
 
-* `vs-cupl.WinePath`: Set wine binary path (default: /usr/bin/wine).
+* `vs-cupl.PathWine`: Set wine binary path (default: /usr/bin/wine).
 * `vs-cupl.OpenOCDPath`: Set OpenOCD binary path (default: /usr/bin/openocd).
-* `vs-cupl.MiniproPath`: Set minipro binary path (default: /usr/bin/minipro).
-* `vs-cupl.WinCPath`: Set Windows C:\ path (default: /home/user1/.wine/drive_c).
-*  `vs-cupl.CuplBinPath`: Cupl executable path relative to WinePath (default: Wincupl/Shared/ for c:\\Wincupl\\Shared\\cupl.exe)
-* `vs-cupl.AtmIspBinPath`: ATMISP executable path (default: ATMEL_PLS_Tools/ATMISP/ATMISP.exe)
+* `vs-cupl.PathMinipro`: Set minipro binary path (default: /usr/bin/minipro).
+* `vs-cupl.PathWinDrive`: Set Windows C:\ path (default: /home/user1/.wine/drive_c).
+* `vs-cupl.PathCupl`: Cupl executable path relative to PathWine (default: Wincupl/Shared/ for c:\\Wincupl\\Shared\\cupl.exe)
+* `vs-cupl.PathATMISP`: ATMISP executable path (default: ATMEL_PLS_Tools/ATMISP/ATMISP.exe)
 * `vs-cupl.WinTempPath`: Temp path on C:\ drive (default: temp)
 * `vs-cupl.DebugLevel`: Show Debug Level Messages
 * `vs-cupl.CuplDefinitions`: Chose CUPL definition file (.dl) to use

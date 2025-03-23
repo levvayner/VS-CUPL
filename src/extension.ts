@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { registerDeployJedCommand } from "./svc.deploy-jed";
+import { registerDeployJedCommand } from "./services/svc.deploy-jed";
 import {
     registerCloneProjectCommand,
     registerCloseProjectCommand,
@@ -8,9 +8,9 @@ import {
     registerDeleteFileCommand,
     registerImportProjectCommand,
     registerOpenProjectCommand,
-} from "./svc.project";
-import { registerCompileProjectCommand } from "./svc.build";
-import { registerISPCommand } from "./svc.atmisp";
+} from "./services/svc.project";
+import { registerCompileProjectCommand } from "./services/svc.build";
+import { registerISPCommand } from "./services/svc.atmisp";
 import {
     ProjectFilesProvider,
     VSProjectTreeItem,
@@ -20,7 +20,7 @@ import {
     registerMiniProCommand,
     registerMiniProDumpCommand,
     registerMiniProEraseCommand,
-} from "./svc.minipro";
+} from "./services/svc.minipro";
 import {
     ProjectTasksProvider,
     projectTasksProvider,
@@ -31,8 +31,8 @@ import { registerVariableExtensionProvider } from "./editor/variableProvider";
 import {
     registerDeploySvfCommand,
     registerEraseSvfCommand,
-} from "./svc.deploy-svf";
-import { StateProjects } from "./state.projects";
+} from "./services/svc.deploy-svf";
+import { StateProjects } from "./states/state.projects";
 import {
     registerOpenSettingsCommand,
     registerEditFileCommand,
@@ -41,11 +41,16 @@ import { registerSemanticTokenProvider } from "./inspect/sematic-token-provider"
 import { registerChipViewPanelProvider } from "./editor/chip-view";
 import { registerPinViewPanelProvider } from "./editor/pin-view";
 import { registerActiveProjectPanelProvider } from "./editor/active-project-view";
+import { extensionState } from "./states/state.global";
+import { checkForAtmisp, checkForCupl, checkForMinipro, checkForMsys2 } from "./extension/dev-environment";
+import { workspace, ConfigurationTarget, window, commands, Uri } from "vscode";
+import { Command } from "./os/command";
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log("Activating VS VS Programmer extension");
 
     extensionUri = context.extensionUri;
+    await setupEnvironment(context);
 
     await registerProjectViewProviders(context);
     await registerCommands(context);
@@ -53,7 +58,81 @@ export async function activate(context: vscode.ExtensionContext) {
     await registerCodeProvider(context);
 }
 export function deactivate() {}
-export let extensionUri: vscode.Uri;
+export let extensionUri: Uri;
+
+async function setupEnvironment(context: vscode.ExtensionContext){
+    context.subscriptions.push(commands.registerCommand(cmd.checkCuplDependencyCommand, async() => {
+        var cuplResult = await checkForCupl();
+        if(cuplResult.responseCode !== 0) {// 0 is windows standard for normal exit
+            window.showErrorMessage('CUPL not found!');
+        }else {
+            commands.executeCommand('setContext', 'VerifyCuplInstalled', true);
+            // const extConf = workspace.getConfiguration("vs-cupl");
+            // var isCuplVerified =  extConf.get("VerifyCuplInstalled") ?? false;
+            // extConf.update("vs-cupl.VerifyCuplInstalled", true).then(() =>{
+            //     window.showWarningMessage("Verified!");
+            // });
+        }
+    }));
+    context.subscriptions.push(commands.registerCommand(cmd.checkMiniproDependencyCommand, async() => {
+        var miniproResult = await checkForMinipro();
+        if(miniproResult.responseCode !== 0) {// 0 is windows standard for normal exit
+            window.showErrorMessage('Minipro not found!');            
+        }else {
+            commands.executeCommand('setContext', 'VerifyMiniproInstalled', true);
+            // const extConf = workspace.getConfiguration("vs-cupl");
+            // var isMiniprolVerified =  extConf.get("VerifyMiniproInstalled") ?? false;
+            // extConf.update("VerifyMiniproInstalled", true).then(() =>{
+            //     window.showWarningMessage("Verified!");
+            // });
+        }
+    }));
+    context.subscriptions.push(commands.registerCommand(cmd.checkWineDependencyCommand, async() => {
+        var wineResult = await checkForMinipro();
+        if(wineResult.responseCode !== 0) {// 0 is windows standard for normal exit
+            window.showErrorMessage('Minipro not found!');
+        }else {
+            commands.executeCommand('setContext', 'VerifyWineInstalled', true);
+            // const extConf = workspace.getConfiguration("vs-cupl");
+            // var isMiniprolVerified =  extConf.get("VerifyMiniproInstalled") ?? false;
+            // extConf.update("VerifyMiniproInstalled", true).then(() =>{
+            //     window.showWarningMessage("Verified!");
+            // });
+        }
+    }));
+    context.subscriptions.push(commands.registerCommand(cmd.checkMsys2DependencyCommand, async() => {
+        var msys2Result = await checkForMsys2();
+        if(msys2Result.responseCode !== 0) {// 0 is windows standard for normal exit
+            window.showErrorMessage('MSYS2 not found!');
+        }else {
+            if(msys2Result.responseText.indexOf('File Not Found') > 0){
+                //needs to be installed
+            }
+            else{
+                commands.executeCommand('setContext', 'VerifyMsys2Installed', true);
+            }
+            
+        }
+    }));
+    context.subscriptions.push(commands.registerCommand(cmd.checkAtmispDependencyCommand, async() => {
+        var atmispResult = await checkForAtmisp();
+        if(atmispResult.responseCode !== 0) {// 0 is windows standard for normal exit
+            window.showErrorMessage('ATMISP not found!');
+        }else {
+            if(atmispResult.responseText.indexOf('File Not Found') > 0){
+                //needs to be installed
+            }
+            else{
+                commands.executeCommand('setContext', 'VerifyAtmispInstalled', true);
+            }
+            
+        }
+    }));
+    
+    
+
+    extensionState.activate(context);
+}
 
 async function registerCommands(context: vscode.ExtensionContext) {
     await registerOpenInExplorerCommand(cmd.openInExplorerCommand, context);

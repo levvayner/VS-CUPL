@@ -17,3 +17,11 @@ export const runMiniProDumpCommand = "vs-cupl.runMiniProDump";
 export const runMiniProEraseChipCommand = "vs-cupl.eraseChipMiniPro";
 export const checkPrerequisiteCommand = "vs-cupl.checkPrerequisite";
 export const openInExplorerCommand = "vs-cupl.openInExplorer";
+export const checkCuplDependencyCommand = "vs-cupl.checkCuplCommand";
+export const checkMiniproDependencyCommand = "vs-cupl.checkMiniproCommand";
+export const checkAtmispDependencyCommand = "vs-cupl.checkAtmispCommand";
+export const checkWineDependencyCommand = "vs-cupl.checkWineCommand";
+export const checkMsys2DependencyCommand = "vs-cupl.checkMsys2Command";
+
+
+
