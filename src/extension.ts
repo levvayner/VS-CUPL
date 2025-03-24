@@ -78,6 +78,7 @@ async function setupEnvironment(context: vscode.ExtensionContext){
 
     context.subscriptions.push(commands.registerCommand(cmd.checkOpenOcdDependencyCommand, async() => {
         var openOcdResult = await checkForOpenOcd();
+        var cmdExecution = new Command();
         if(openOcdResult.responseCode !== 0) {// 0 is windows standard for normal exit
             window.showErrorMessage('Open OCD not found!', 'Install').then(async (selection) => {
                 if(selection === 'Install'){
@@ -124,7 +125,7 @@ async function setupEnvironment(context: vscode.ExtensionContext){
                         }                 
                     ];
                        
-                    var cmdExecution = new Command();
+                    
                     var result = new ShellResponse(-1, '', '');
                     for(let command of miniproInstallWslCommands){
                         result = await cmdExecution.runCommand(
@@ -159,11 +160,26 @@ async function setupEnvironment(context: vscode.ExtensionContext){
                       
         }else {
             await commands.executeCommand('setContext', 'VerifyOpenOcdInstalled', true);
-            // const extConf = workspace.getConfiguration("vs-cupl");
-            // var isMiniprolVerified =  extConf.get("VerifyMiniproInstalled") ?? false;
-            // extConf.update("VerifyMiniproInstalled", true).then(() =>{
-            //     window.showWarningMessage("Verified!");
-            // });
+            //update config, set openocd path
+            var openocdPath = await cmdExecution.runCommand(
+                'Get OpenOCD Path',
+                isWindows() ? extensionState.pathWinDrive : '/',
+                `which openocd`
+            );
+            if(openocdPath.responseCode !== 0){
+                //error, could not verify open ocd path
+            }else{
+                const ocdBinPath = openocdPath.responseText.trim();
+                const ocdDlPath = openocdPath.responseText.trim().replace('/bin/','/share/');
+                var config = workspace.getConfiguration("vs-cupl");
+                config.update("PathOpenOcd", ocdBinPath).then(() =>{
+                    atfOutputChannel.appendLine(`Verified OCD Bin Path ${ocdBinPath}`);
+                });
+                config.update("PathOpenOcdDl", ocdDlPath).then(() =>{
+                    atfOutputChannel.appendLine(`Verified OCD DL Path ${ocdDlPath}`);
+                });
+            }
+            
         }
     }));
 

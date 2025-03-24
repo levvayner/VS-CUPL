@@ -6,6 +6,7 @@ import {
     ProjectFilesProvider,
 } from "./project-files-provider";
 import path = require("path");
+import { extensionState } from "../states/state.global";
 
 /// source is full path to file
 /// Copies selected file to working folder on windows path
@@ -58,7 +59,7 @@ export async function copyToLinux(sourceFile: string, destinationPath: string) {
         .trim();
     const cmdCopyFilesFromWorkingFolder = `mkdir -p "${
         destinationPath + "/build/"
-    }" && cp -fR ${projectFileProvider.workingLinuxFolder}${
+    }" && cp -fR ${ extensionState.pathWinTemp}${
         path.sep
     }${sourceFile} ${destinationPath}`;
     const cpResult = await command.runCommand(

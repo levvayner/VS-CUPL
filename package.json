@@ -189,7 +189,7 @@
                         "default": "/usr/bin/openocd",
                         "description": "Path to OpenOCD binary"
                     },
-                    "vs-cupl.PathOpenOcdDL": {
+                    "vs-cupl.PathOpenOcdDl": {
                         "type": "string",
                         "default": "/usr/share/local/openocd",
                         "description": "Open OCD Data path"

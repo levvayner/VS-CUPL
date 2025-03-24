@@ -6,7 +6,7 @@ import {
 } from "../explorer/project-files-provider";
 import { Project } from "../project";
 import { projectFromTreeItem } from "./svc.project";
-import { Command, ShellType, atfOutputChannel } from "../os/command";
+import { Command, ShellResponse, ShellType, atfOutputChannel } from "../os/command";
 import path = require("path");
 import { stateProjects } from "../states/state.projects";
 import { isWindows } from "../os/platform";
@@ -169,7 +169,7 @@ export async function executeDeploy(project: Project) {
 
     const cmdText = isWindows()
         ? `wsl -e ${getOCDCommand(project, DeployCommandType.Program, wslSvfPath)}`
-        : `${setEnvVar} && chmod +x "${project.buildFilePath.fsPath}" && "${project.buildFilePath.fsPath}" 2>&1 | tee`;
+        : `${setEnvVar} && ${getOCDCommand(project, DeployCommandType.Program)} && chmod +x "${project.buildFilePath.fsPath}" && "${project.buildFilePath.fsPath}" 2>&1 | tee`;
     const response = await command.runCommand(
         "vs-cupl Deploy",
         project.projectPath.fsPath,
@@ -184,7 +184,7 @@ export async function executeDeploy(project: Project) {
     usbipdDetach(usbipdPort);
     if (response.responseCode !== 0 || errorResponse.length > 0) {
         atfOutputChannel.appendLine(
-            `**Failed to deploy **\nErrors occured:\n------------------------\n${errorResponse}\n------------------------`
+            `**Failed to deploy **\nErrors occured:\n------------------------\n${ errorResponse.length > 0 ? errorResponse : response.responseError.message}\n------------------------`
         );
         
         return;
@@ -195,6 +195,9 @@ export async function executeDeploy(project: Project) {
     }
 }
 async function usbipdDetach(usbipdPort: string){
+    if(!isWindows()) {
+        return {responseCode: -1,responseText: "Only needed on windows." } as ShellResponse;
+    }
     const command = new Command();
     //attach usb device
     const usbipdAttach = await command.runCommand(
@@ -339,7 +342,7 @@ function getOCDCommand(
 ) {
     const extConfig = vscode.workspace.getConfiguration("vs-cupl");
     const ocdBinPath = extConfig.get("PathOpenOcd") as string;
-    const ocdDLPath = extConfig.get("PathOpenOcdDL") as string;
+    const ocdDLPath = extConfig.get("PathOpenOcdDl") as string;
     const openOcdCode = project.device?.openOCDDeviceCode ?? "150403f";
     const svfPath =
         (commandType === DeployCommandType.Program

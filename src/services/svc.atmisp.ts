@@ -92,9 +92,8 @@ export async function runISP(project: Project) {
             //execute
             const prefixPath = path.join(homedir(), extensionState.winePrefix ?? '.wine') ;
             const drive = extensionState.pathWinDrive ?? 'drive_c';
-            const cRoot = path.join(prefixPath, drive);
             const arch = extensionState.wineArch ?? 'win32';
-            const cmdString = `WINEPREFIX=${prefixPath} WINEARCH=${arch} wine "${ path.join(cRoot, atmISPBinPath)}" "${project.windowsChnFilePath}"`;
+            const cmdString = `WINEPREFIX=${prefixPath} WINEARCH=${arch} wine "${ path.join(drive, atmISPBinPath)}" "${project.windowsChnFilePath}"`;
             const commandResponse = await command.runCommand(
                 "vs-cupl Build",
                 undefined,
@@ -128,9 +127,7 @@ export async function runISP(project: Project) {
             const copyCmd = `find ./ -maxdepth 1 -mmin -2 -type f -name "*.svf" -exec cp "{}" ${project.svfFilePath.fsPath} \\;`;
             const commandCopyToLinuxResult = await command.runCommand(
                 "vs-cupl Build",
-                (
-                    await ProjectFilesProvider.instance()
-                ).workingLinuxFolder,
+                extensionState.pathWinTemp,
                 copyCmd
             );
             if (commandCopyToLinuxResult.responseCode !== 0) {
