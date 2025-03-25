@@ -120,6 +120,7 @@ export class StateProjects {
             undefined
         ) {
             this._supportsCompileCommands.push(project.projectName);
+            this._supportsCompileCommands.push(project.projectPath.fsPath);
         }
 
         if (
@@ -129,8 +130,10 @@ export class StateProjects {
             const programmer = project.deviceProgrammer;
             if (programmer === DeviceDeploymentType.minipro) {
                 this._supportsDeployToMiniproCommands.push(project.projectName);
+                this._supportsDeployToMiniproCommands.push(project.projectPath.fsPath);
             } else if (programmer === DeviceDeploymentType.atmisp) {
                 this._supportsExportToAtmIspCommands.push(project.projectName);
+                this._supportsExportToAtmIspCommands.push(project.projectPath.fsPath);
             }
         }
 
@@ -140,6 +143,7 @@ export class StateProjects {
         ) {
             if (project.deviceProgrammer === DeviceDeploymentType.atmisp) {
                 this._supportsOpenOCDCCommands.push(project.projectName);
+                this._supportsOpenOCDCCommands.push(project.projectPath.fsPath);
             }
         }
 

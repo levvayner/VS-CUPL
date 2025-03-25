@@ -22,6 +22,8 @@ import { providerChipView } from "../editor/chip-view";
 import { pathExists } from "../explorer/fileFunctions";
 import { extensionState } from "../states/state.global";
 import { isWindows } from "../os/platform";
+import { ProjectCreatePanel } from "../modules/project-configurator/svc.configurator";
+import { extensionUri } from "../extension";
 
 let command = new Command();
 let lastKnownPath = '';
@@ -135,35 +137,38 @@ export async function registerConfigureProjectCommand(
     const cmdConfigureProjectHandler = async (
         treeItem: VSProjectTreeItem | vscode.Uri
     ) => {
-        const project = await projectFromTreeItem(treeItem);
+        //const project = await projectFromTreeItem(treeItem);
+        const project = extensionState.activeProject;
         if (!project) {
             atfOutputChannel.appendLine(`Unable to read project information`);
 
             return;
         }
 
-        var updatedProject = await defineProjectFile(project.prjFilePath);
+        ProjectCreatePanel.createOrShow(extensionUri);
 
-        if (!updatedProject) {
-            atfOutputChannel.appendLine(
-                ` Cannot create new project definition`
-            );
-            return;
-        }
-        //update PLD
-        await updatePLD(updatedProject);
-        const prjData = JSON.stringify(updatedProject.device, null, 4);
-        await vscode.workspace.fs.createDirectory(updatedProject.projectPath);
-        await vscode.workspace.fs.writeFile(
-            updatedProject.prjFilePath,
-            new TextEncoder().encode(prjData)
-        );
+        // var updatedProject = await defineProjectFile(project.prjFilePath);
 
-        //update open projects
-        stateProjects.updateProject(updatedProject);
+        // if (!updatedProject) {
+        //     atfOutputChannel.appendLine(
+        //         ` Cannot create new project definition`
+        //     );
+        //     return;
+        // }
+        // //update PLD
+        // await updatePLD(updatedProject);
+        // const prjData = JSON.stringify(updatedProject.device, null, 4);
+        // await vscode.workspace.fs.createDirectory(updatedProject.projectPath);
+        // await vscode.workspace.fs.writeFile(
+        //     updatedProject.prjFilePath,
+        //     new TextEncoder().encode(prjData)
+        // );
 
-        //show pins
-        await providerChipView.openProjectChipView(updatedProject);
+        // //update open projects
+        // stateProjects.updateProject(updatedProject);
+
+        // //show pins
+        // await providerChipView.openProjectChipView(updatedProject);
     };
     await context.subscriptions.push(
         vscode.commands.registerCommand(

@@ -7,6 +7,7 @@ import { Project } from "../project";
 import { projectFromTreeItem } from "./svc.project";
 import { atfOutputChannel } from "../os/command";
 import { DeviceDeploymentType } from "../devices/devices";
+import { extensionState } from "../states/state.global";
 
 export async function registerDeployJedCommand(
     cmdDeployJed: string,
@@ -16,7 +17,7 @@ export async function registerDeployJedCommand(
     const cmdRegisterDeployJdecHandler = async (
         treeItem: VSProjectTreeItem | vscode.Uri
     ) => {
-        const project = await projectFromTreeItem(treeItem);
+        const project = extensionState.activeProject ;//await projectFromTreeItem(treeItem);
         if (!project) {
             atfOutputChannel.appendLine(
                 `Failed to deploy JEDEC file. Unable to read project information`

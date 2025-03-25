@@ -149,7 +149,26 @@
                 "key": "ctrl+shift+b",
                 "mac": "shift+cmd+b",
                 "when": "resourceExtname =~ /.*\\.pld$/ || resourceExtname =~ /.*\\.prj$/"
+            },
+            {
+                "command": "vs-cupl.runMiniProDump",
+                "key": "f4",
+                "mac": "f4",
+                "when": "resourceDirname in vscupl.projectCanDeployToMinipro"
+            },
+            {
+                "command": "vs-cupl.deployJed",
+                "key": "f5",
+                "mac": "f5",
+                "when": "resourceDirname in vscupl.projectCanDeployToMinipro"
+            },
+            {
+                "command": "vs-cupl.configureProject",
+                "key": "f6",
+                "mac": "f6"
+                
             }
+            
         ],
         "configuration": [
             {
@@ -975,7 +994,12 @@
             {
                 "command": "vs-cupl.showActiveProject",
                 "title": "Show Active Project Panel"
+            },
+            {
+                "command": "catCoding.start",
+                "title": "Start Cat Coding"
             }
+
         ]
     },
     "scripts": {
