@@ -40,12 +40,9 @@ export class StateGlobal {
         this._isConfigured = context.globalState.get("vs-cupl.extension-configured") as boolean ?? false;
         if(!this._isConfigured){
             //start welcome guide to install
-            const extConf = vscode.workspace.getConfiguration("vs-cupl");
-            extConf.update('IsLinux', isWindows() === false);
             vscode.commands.executeCommand('workbench.action.openWalkthrough', 'VaynerSystems.vs-cupl#cupl-dev-install', false);
         }
         this.loadPaths();
-
     }
 
     public get activeProject() {
@@ -107,6 +104,10 @@ export class StateGlobal {
         return isWindows() || this._pathWineBase === undefined ?  
             (this._pathWinDrive  === 'drive_c' ? 'C:\\' : this._pathWinDrive) : 
             path.join(this._pathWineBase, this._pathWinDrive ?? '');
+    }
+    public get pathSystemRoot(){
+        return (isWindows() ? extensionState.pathWinDrive : extensionState.pathWineBase )??
+        isWindows() ? 'C:\\' : homedir();
     }
     public get pathWinTemp(){
         if(this.pathWinDrive === undefined) {

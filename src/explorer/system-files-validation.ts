@@ -176,6 +176,7 @@ exit`;
 
         if(!failedAny){
             await vscode.commands.executeCommand('setContext', 'VerifyPrerequisitesInstalled', true);
+            context.globalState.update("vs-cupl.extension-configured", true);
         }
     };
     await context.subscriptions.push(

@@ -1,0 +1,25 @@
+<svg width="260" height="128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="260" height="128" fill="#1e1e1e"/>
+
+  <!-- Left: code icon -->
+  <rect x="16" y="48" width="40" height="32" rx="4" fill="#2a2a2a" stroke="#444"/>
+  <text x="36" y="68" text-anchor="middle" font-family="monospace" font-size="10" fill="#00ffcc">&lt;/&gt;</text>
+
+  <!-- Right: chip block -->
+  <rect x="204" y="48" width="40" height="32" rx="4" fill="#2a2a2a" stroke="#444"/>
+  <circle cx="224" cy="64" r="3" fill="#00ffcc"/>
+  <line x1="224" y1="64" x2="230" y2="64" stroke="#00ffcc" stroke-width="1"/>
+
+  <!-- Center: programmer block -->
+  <rect x="96" y="36" width="68" height="56" rx="6" fill="#2d2d2d" stroke="#444"/>
+  <text x="130" y="64" text-anchor="middle" font-family="monospace" font-size="10" fill="#ffaa00">MINI PRO</text>
+
+  <!-- Arrows -->
+  <!-- Left arrow -->
+  <polygon points="76,64 84,58 84,62 96,62 96,66 84,66 84,70" fill="#ffaa00"/>
+  <!-- Right arrow -->
+  <polygon points="164,64 172,58 172,62 184,62 184,66 172,66 172,70" fill="#ffaa00"/>
+
+  <!-- Label -->
+  <text x="130" y="120" text-anchor="middle" font-family="monospace" font-size="20" fill="#00ffcc">Mini Pro</text>
+</svg>

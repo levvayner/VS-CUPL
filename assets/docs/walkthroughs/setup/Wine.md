@@ -1,5 +1,7 @@
 # Wine Installation
 
+![](images/wine.svg)
+
 Wine is a system that translates the Windows API to linux kernel allowing Linux users to run some Windows applications.
 
 Wine can be installed on most machines by using the official repository and os install method.

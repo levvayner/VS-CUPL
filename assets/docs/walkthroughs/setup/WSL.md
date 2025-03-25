@@ -1,5 +1,7 @@
 # WSL Installation
 
+![](images/wsl.svg)
+
 WSL is Microsoft's Windows Subsystem for Linux.
 It allows to use applications designed for linux from your windows computer.
 

@@ -49,7 +49,7 @@
         const projDevicePackageType = project?.deviceConfiguration?.packageType;
         const projDeviceManufacturer = project?.deviceConfiguration?.manufacturer;
         const projDeviceCode = project?.deviceConfiguration?.deviceCode;
-        const projPinOffset = project?.deviceConfiguration?.topLeftPinOffset ?? 0;
+        const projPinOffset = project?._devicePins?.pinOffset ?? 0;
 
         const divProjName = document.getElementsByClassName('project-name')[0];
         const divProjDeviceName = document.getElementsByClassName('project-device-name')[0];

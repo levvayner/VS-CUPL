@@ -33,16 +33,16 @@
         "walkthroughs": [
             {
                 "id": "cupl-dev-install",
-                "title": "CUPL Development Enviroment configuration",
+                "title": "CUPL Development Enviroment",
                 "description": "A guide to configure the development environment needed for CUPL development and deployment.",
                 "steps": [
                     {
                         "id": "linux-wine",
                         "title": "Linux Platform: Wine",
-                        "description": "Has wine installation been verified?\n [Check](command:vs-cupl.checkWineCommand)",
+                        "description": "Is WINE installed?\n [Check](command:vs-cupl.checkWineCommand)",
                         "when": "isLinux",
                         "media": {
-                            "markdown": "assets/docs/Wine.md"
+                            "markdown": "assets/docs/walkthroughs/setup/Wine.md"
                         },
                         "completionEvents": [
                             "onContext:VerifyWineInstalled"
@@ -51,10 +51,10 @@
                     {
                         "id": "windows-wsl",
                         "title": "Windows Platform: WSL",
-                        "description": "Has WSL installation been verified?\n [Check](command:vs-cupl.checkWslCommand)",
+                        "description": "Is WSL enabled?\n [Check](command:vs-cupl.checkWslCommand)",
                         "when": "isWindows",
                         "media": {
-                            "markdown": "assets/docs/WSL.md"
+                            "markdown": "assets/docs/walkthroughs/setup/WSL.md"
                         },
                         "completionEvents": [
                             "onContext:VerifyWslInstalled"
@@ -63,10 +63,10 @@
                     {
                         "id": "windows-wsl-usbipd",
                         "title": "Windows Platform: WSL USBIPD-WIN",
-                        "description": "Has WSL USBIPD installation been verified?\n [Check](command:vs-cupl.checkUsbipdCommand)",
+                        "description": "Is WSL USBIPD installed?\n [Check](command:vs-cupl.checkUsbipdCommand)",
                         "when": "isWindows",
                         "media": {
-                            "markdown": "assets/docs/WSLUsbIpd.md"
+                            "markdown": "assets/docs/walkthroughs/setup/WSLUsbIpd.md"
                         },
                         "completionEvents": [
                             "onContext:VerifyWSLUsbIpdInstalled"
@@ -76,20 +76,32 @@
                     {
                         "id": "checkCupl",
                         "title": "Wincupl",
-                        "description": "This step will Wincupl.\n[Check](command:vs-cupl.checkCuplCommand)",
+                        "description": "This step will check for Wincupl.\n[Check](command:vs-cupl.checkCuplCommand)",
                         "media": {
-                            "markdown": "assets/docs/Wincupl.md"
+                            "markdown": "assets/docs/walkthroughs/setup/Wincupl.md"
                         },
                         "completionEvents": [
                             "onContext:VerifyCuplInstalled"
                         ]
                     },
                     {
+                        "id": "checkAtmpisp",
+                        "title": "ATMISP",
+                        "description": "This step will check for ATMISP.\n[Check](command:vs-cupl.checkAtmispCommand)",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/Atmisp.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyAtmispInstalled"
+                        ]
+                    }
+                    ,
+                    {
                         "id": "checkMinipro",
                         "title": "Minipro",
-                        "description": "This step will Minipro.\n[Check](command:vs-cupl.checkMiniproCommand)",
+                        "description": "This step will check for Minipro. If not installed, we'll attempt to install it.\n[Check](command:vs-cupl.checkMiniproCommand)",
                         "media": {
-                            "markdown": "assets/docs/Minipro.md"
+                            "markdown": "assets/docs/walkthroughs/setup/Minipro.md"
                         },
                         "completionEvents": [
                             "onContext:VerifyMiniproInstalled"
@@ -98,38 +110,24 @@
                     {
                         "id": "checkOpenOcd",
                         "title": "Open OCD",
-                        "description": "This step will OpenOCD.\n[Check](command:vs-cupl.checkOpenOcdCommand)",
+                        "description": "This step will check for OpenOCD. If not installed, we'll attempt to install it.\n[Check](command:vs-cupl.checkOpenOcdCommand)",
                         "media": {
-                            "markdown": "assets/docs/OpenOcd.md"
+                            "markdown": "assets/docs/walkthroughs/setup/OpenOcd.md"
                         },
                         "completionEvents": [
                             "onContext:VerifyOpenOcdInstalled"
                         ]
-                    },
-                    
-                    {
-                        "id": "checkAtmpisp",
-                        "title": "ATMISP",
-                        "description": "This step will ATMISP.\n[Check](command:vs-cupl.checkAtmispCommand)",
-                        "media": {
-                            "markdown": "assets/docs/Atmisp.md"
-                        },
-                        "completionEvents": [
-                            "onContext:VerifyAtmispInstalled"
-                        ]
-                    }
-                    ,
+                    },   
                     {
                         "id": "verifyAll",
                         "title": "Verify Environment is Ready",
-                        "description": "This step will verify that all prerequisites have been fulfilled.\n[Check](command:vs-cupl.checkPrerequisite)",
+                        "description": "Verify all prerequisites are fulfilled.\n[Check](command:vs-cupl.checkPrerequisite)",
                         "media": {
-                            "markdown": "assets/docs/VerifyAll.md"
+                            "markdown": "assets/docs/walkthroughs/setup/VerifyAll.md"
                         },
                         "completionEvents": [
                             "onContext:VerifyPrerequisitesInstalled"
-                        ],
-                        "when": "VerifyOpenOcdInstalled == true && VerifyMiniproInstalled == true && VerifyCuplInstalled == true && VerifyAtmispInstalled == true && ((VerifyWineInstalled == true && isLinux) || (VerifyWslInstalled == true && VerifyWSLUsbIpdInstalled == true && isWindows))"
+                        ]                        
                     }
                 ]
             }
