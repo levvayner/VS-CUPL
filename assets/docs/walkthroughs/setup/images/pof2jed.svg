@@ -1,0 +1,25 @@
+<svg width="260" height="128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="260" height="128" fill="#1e1e1e"/>
+
+  <!-- Code block -->
+  <rect x="16" y="36" width="60" height="56" rx="4" fill="#2a2a2a" stroke="#444"/>
+  <text x="46" y="56" text-anchor="middle" font-family="monospace" font-size="10" fill="#00ffcc">&lt;/&gt;</text>
+  <line x1="20" y1="64" x2="72" y2="64" stroke="#888" stroke-width="1"/>
+  <line x1="20" y1="70" x2="66" y2="70" stroke="#ffaa00" stroke-width="1"/>
+  <line x1="20" y1="76" x2="62" y2="76" stroke="#00ffcc" stroke-width="1"/>
+
+  <!-- Small arrow -->
+  <polygon points="94,64 102,58 102,62 134,62 134,66 102,66 102,70" fill="#ffaa00"/>
+
+  <!-- Logic block -->
+  <rect x="146" y="36" width="98" height="56" rx="6" fill="#2d2d2d" stroke="#444"/>
+  <circle cx="160" cy="50" r="3" fill="#00ffcc"/>
+  <circle cx="160" cy="64" r="3" fill="#00ffcc"/>
+  <circle cx="160" cy="78" r="3" fill="#00ffcc"/>
+  <line x1="160" y1="50" x2="154" y2="50" stroke="#00ffcc" stroke-width="1"/>
+  <line x1="160" y1="64" x2="154" y2="64" stroke="#00ffcc" stroke-width="1"/>
+  <line x1="160" y1="78" x2="154" y2="78" stroke="#00ffcc" stroke-width="1"/>
+
+  <!-- Label -->
+  <text x="130" y="120" text-anchor="middle" font-family="monospace" font-size="20" fill="#00ffcc">POF2JED</text>
+</svg>

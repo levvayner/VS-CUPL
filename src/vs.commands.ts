@@ -20,6 +20,7 @@ export const openInExplorerCommand = "vs-cupl.openInExplorer";
 export const checkCuplDependencyCommand = "vs-cupl.checkCuplCommand";
 export const checkMiniproDependencyCommand = "vs-cupl.checkMiniproCommand";
 export const checkAtmispDependencyCommand = "vs-cupl.checkAtmispCommand";
+export const checkPof2JedDependencyCommand = "vs-cupl.checkPof2JedCommand";
 export const checkWineDependencyCommand = "vs-cupl.checkWineCommand";
 export const checkWslDependencyCommand = "vs-cupl.checkWslCommand";
 export const checkUsbipdDependencyCommand = "vs-cupl.checkUsbipdCommand";

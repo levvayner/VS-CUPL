@@ -108,7 +108,7 @@ export const deviceList = [
     {
         manufacturer: DeviceManufacturer.atmel,
         packageType: DevicePackageType.dip,
-        pinCount: 28,
+        pinCount: 24,
         deviceCode: "v750cext",
         deviceName: " ATF750C, ATF750CL, ATF750LVC, ATF750LVCL | powerdown",
         programmer: "minipro",

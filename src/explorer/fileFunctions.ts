@@ -18,7 +18,8 @@ export async function copyToWindows(
     const command = new Command();
     const projectFileProvider = await ProjectFilesProvider.instance();
     const fileToCopy = sourceFile.substring(0, sourceFile.lastIndexOf("/"));
-    const cmdCopyFilesToWorkingFolder = `mkdir -p "${projectFileProvider.workingLinuxFolder}" && cp -fR ${sourceFile} ${projectFileProvider.workingLinuxFolder}`;
+    const pathToCopy = path.join( extensionState.pathWinTemp, extensionState.activeProject?.projectName?? '');
+    const cmdCopyFilesToWorkingFolder = `mkdir -p "${pathToCopy}" && cp -fR ${sourceFile} ${pathToCopy}`;
     const cpResult = await command.runCommand(
         "vs-cupl Build",
         fileToCopy,
@@ -46,6 +47,7 @@ export async function copyToLinux(sourceFile: string, destinationPath: string) {
     //copy results back
     const command = new Command();
     const projectFileProvider = await ProjectFilesProvider.instance();
+    const pathToCopy = path.join( extensionState.pathWinTemp, extensionState.activeProject?.projectName?? '');
     const fileToCopy = sourceFile.substring(0, sourceFile.lastIndexOf("/"));
     if (fileToCopy.substring(0, fileToCopy.lastIndexOf(".")).length > 9) {
         atfOutputChannel.appendLine(
@@ -59,7 +61,7 @@ export async function copyToLinux(sourceFile: string, destinationPath: string) {
         .trim();
     const cmdCopyFilesFromWorkingFolder = `mkdir -p "${
         destinationPath + "/build/"
-    }" && cp -fR ${ extensionState.pathWinTemp}${
+    }" && cp -fR ${ pathToCopy}${
         path.sep
     }${sourceFile} ${destinationPath}`;
     const cpResult = await command.runCommand(
@@ -74,7 +76,7 @@ export async function copyToLinux(sourceFile: string, destinationPath: string) {
     }
     if (command.debugMessages) {
         atfOutputChannel.appendLine(
-            `Copy to Linux command for file ${sourceFile} to ${destinationPath} ${
+            `Copy to Linux command for file ${sourceFile} in ${pathToCopy} to ${destinationPath} ${
                 cpResult.responseCode === 0
                     ? "completed successfully"
                     : "failed"
@@ -85,16 +87,16 @@ export async function copyToLinux(sourceFile: string, destinationPath: string) {
     return cpResult;
 }
 
-export async function translateToWindowsTempPath(
-    linuxPath: string
-): Promise<string> {
-    const projectFileProvider = await ProjectFilesProvider.instance();
-    return (
-        projectFileProvider.workingWindowsFolder +
-        "\\" +
-        linuxPath.replace(/\//gi, "\\")
-    );
-}
+// export async function translateToWindowsTempPath(
+//     linuxPath: string
+// ): Promise<string> {
+//     const projectFileProvider = await ProjectFilesProvider.instance();
+//     return (
+//         projectFileProvider.workingWindowsFolder +
+//         "\\" +
+//         linuxPath.replace(/\//gi, "\\")
+//     );
+// }
 
 // export async function translateToLinuxPath(linuxPath: string): Promise<string> {
 //     const projectFileProvider = await ProjectFilesProvider.instance();

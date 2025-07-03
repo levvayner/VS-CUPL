@@ -44,7 +44,12 @@ export function registerActiveProjectPanelProvider(
         ),
         vscode.window.onDidChangeWindowState(
             providerActiveProject.checkActiveProjectForWindowState
-        )
+        ),
+        // vscode.workspace.onDidChangeConfiguration(
+        //     (e: vscode.ConfigurationChangeEvent) => {
+               
+        //     }
+        // )
     );
 }
 

@@ -9,9 +9,7 @@ import {
     backupFile,
     cloneProject,
     createProject,
-    createPLD,
-    defineProjectFile,
-    updatePLD,
+    createPLD    
 } from "../explorer/project-file-functions";
 import {
     ProjectFilesProvider,
@@ -138,14 +136,19 @@ export async function registerConfigureProjectCommand(
         treeItem: VSProjectTreeItem | vscode.Uri
     ) => {
         //const project = await projectFromTreeItem(treeItem);
-        const project = extensionState.activeProject;
+        let project = (treeItem as VSProjectTreeItem).project;
         if (!project) {
-            atfOutputChannel.appendLine(`Unable to read project information`);
-
-            return;
+             //if((treeItem as VSProjectTreeItem) === undefined){
+            project = stateProjects.getOpenProject(treeItem as vscode.Uri) || project;
+            //}
+            if (!project) {
+                atfOutputChannel.appendLine(`Unable to read project information`);
+                return;
+            }
         }
+       
 
-        ProjectCreatePanel.createOrShow(extensionUri);
+        ProjectCreatePanel.createOrShow(extensionUri,project);
 
         // var updatedProject = await defineProjectFile(project.prjFilePath);
 
@@ -170,7 +173,7 @@ export async function registerConfigureProjectCommand(
         // //show pins
         // await providerChipView.openProjectChipView(updatedProject);
     };
-    await context.subscriptions.push(
+    context.subscriptions.push(
         vscode.commands.registerCommand(
             configureProjectCommandName,
             cmdConfigureProjectHandler

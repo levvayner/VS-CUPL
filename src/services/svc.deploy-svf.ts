@@ -41,8 +41,8 @@ export async function registerEraseSvfCommand(
             return;
         }
         await runUpdateEraseScript(project);
-
-        await executeDeploy(project);
+        
+        await executeDeploy(project, DeployCommandType.Erase);
     };
     context.subscriptions.push(
         vscode.commands.registerCommand(cmdEraseSvf, cmdEraseSvfHandler)
@@ -73,7 +73,7 @@ export async function registerDeploySvfCommand(
         }
         await runUpdateDeployScript(project);
 
-        await executeDeploy(project);
+        await executeDeploy(project, DeployCommandType.Program);
 
         await (await ProjectFilesProvider.instance()).refresh();
     };
@@ -83,10 +83,17 @@ export async function registerDeploySvfCommand(
     );
 }
 
-export async function executeDeploy(project: Project) {
+export async function executeDeploy(project: Project, deploymentCommandType: DeployCommandType) {
     const command = new Command();
     let usbipdPort = '';
-    let wslSvfPath = project.svfFilePath.fsPath;
+    let wslSvfPath = deploymentCommandType === DeployCommandType.Program? project.svfFilePath.fsPath
+    : path.join(
+          extensionUri.fsPath,
+          "assets",
+          "svf",
+          project.deviceName?.toLowerCase() ?? '',
+          `${project.deviceName?.toLowerCase()}-erase.svf`
+      ) ;
     //execute
     atfOutputChannel.appendLine("Deploying SVF File to CPLD...");
     //on windows use SET instead of export and call command directly, istead of script
@@ -168,8 +175,8 @@ export async function executeDeploy(project: Project) {
     }
 
     const cmdText = isWindows()
-        ? `wsl -e ${getOCDCommand(project, DeployCommandType.Program, wslSvfPath)}`
-        : `${setEnvVar} && ${getOCDCommand(project, DeployCommandType.Program)} && chmod +x "${project.buildFilePath.fsPath}" && "${project.buildFilePath.fsPath}" 2>&1 | tee`;
+        ? `wsl -e ${getOCDCommand(project, deploymentCommandType, wslSvfPath)}`
+        : `${setEnvVar} && ${getOCDCommand(project, deploymentCommandType)} && chmod +x "${project.buildFilePath.fsPath}" && "${project.buildFilePath.fsPath}" 2>&1 | tee`;
     const response = await command.runCommand(
         "vs-cupl Deploy",
         project.projectPath.fsPath,
@@ -348,12 +355,12 @@ function getOCDCommand(
         (commandType === DeployCommandType.Program
             ? (customPath ?? project.svfFilePath.fsPath)
             : path.join(
-                  extensionUri.fsPath,
-                  "assets",
-                  "bin",
-                  "atf1504-svf",
-                  "atf1504as-erase.svf"
-              ) 
+                extensionUri.fsPath,
+                "assets",
+                "svf",
+                project.deviceName?.toLowerCase() ?? '',
+                `${project.deviceName?.toLowerCase()}-erase.svf`
+            )
         ).replace(/\\/gi, "/");
     const svfParameter = isWindows() ? `svf ${svfPath}` : `svf ${svfPath}`; //linux version does not support single quotes
     return `"${isWindows() ? 'openocd' : ocdBinPath}" -f "${path.join(

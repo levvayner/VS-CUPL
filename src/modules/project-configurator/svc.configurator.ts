@@ -1,11 +1,19 @@
 import * as vscode from 'vscode';
+import { pinConfigurations } from '../../devices/pin-configurations';
+import { deviceList } from '../../devices/devices';
+import { extensionState } from '../../states/state.global';
+import { TextEncoder } from 'util';
+import { Project } from '../../project';
+import { stateProjects } from '../../states/state.projects';
+import { updatePLD } from '../../explorer/project-file-functions';
 
-const cats = {
-	'Coding Cat': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
-	'Compiling Cat': 'https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif',
-	'Testing Cat': 'https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif'
+// enum ProjectViewType{
+//     projectConfiguration = 1
+// }
+
+const pageTemplates = {
+    'projectConfiguration': 'assets/html/projectConfiguration.html'    
 };
-
 
 export function activateConfigurator(context: vscode.ExtensionContext){
 
@@ -27,8 +35,8 @@ function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
 		// Enable javascript in the webview
 		enableScripts: true,
 
-		// And restrict the webview to only loading content from our extension's `media` directory.
-		localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
+		// And restrict the webview to only loading content from our extension's `assets` directory.
+		localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'assets')]
 	};
 }
 
@@ -36,33 +44,59 @@ function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
 export class ProjectCreatePanel{
 
     public static newProjectPanel : ProjectCreatePanel | undefined;
+    public static openProjectPanels : ProjectCreatePanel[]  = [];
+
     public static readonly viewType = 'createCuplProject';
 
     private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionUri: vscode.Uri;
 	private _disposables: vscode.Disposable[] = [];
 
-    public static createOrShow(extensionUri: vscode.Uri) {
+    public static createOrShow(extensionUri: vscode.Uri, project: Project) {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
 
-		// If we already have a panel, show it.
-		if (ProjectCreatePanel.newProjectPanel) {
-			ProjectCreatePanel.newProjectPanel._panel.reveal(column);
-			return;
-		}
+        let activePanel : vscode.WebviewPanel;
+        //if new project, create panel
+        if(project === undefined){
+            // Otherwise, create a new panel.
+            activePanel = vscode.window.createWebviewPanel(
+                ProjectCreatePanel.viewType,
+                'New Project',
+                column || vscode.ViewColumn.One,
+                getWebviewOptions(extensionUri),
+            );
+            ProjectCreatePanel.newProjectPanel = new ProjectCreatePanel(activePanel, extensionUri);
+            activePanel.webview.postMessage({ type: "initialize", data: {pinConfigurations:pinConfigurations, deviceList: deviceList}});        
+        }else{
+            //check if we already have the window, if so show it
+            const existingPanel = this.openProjectPanels.find(pa => pa._panel.title === project.projectName);
+            if(existingPanel !== undefined){
+                existingPanel._panel.reveal(column);
+            }
+            else{
+                activePanel = vscode.window.createWebviewPanel(
+                    ProjectCreatePanel.viewType,
+                    project.projectName,
+                    column || vscode.ViewColumn.One,
+                    getWebviewOptions(extensionUri),
+                );
+                const newPanel = new ProjectCreatePanel(activePanel, extensionUri);
+                this.openProjectPanels.push(newPanel);
+                activePanel.webview.postMessage({ type: "initialize", data: {pinConfigurations:pinConfigurations, deviceList: deviceList, project: project}});        
+                activePanel.onDidDispose(() =>{
+                    activePanel.onDidDispose(() =>{
+                    const idx = ProjectCreatePanel.openProjectPanels.indexOf(newPanel);
+                    ProjectCreatePanel.openProjectPanels.splice(idx,1);
+                });
+                });
+            }
+            
+        }
+    }
 
-		// Otherwise, create a new panel.
-		const panel = vscode.window.createWebviewPanel(
-			ProjectCreatePanel.viewType,
-			'New Project',
-			column || vscode.ViewColumn.One,
-			getWebviewOptions(extensionUri),
-		);
-
-		ProjectCreatePanel.newProjectPanel = new ProjectCreatePanel(panel, extensionUri);
-	}
+	    
 
 	public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
 		ProjectCreatePanel.newProjectPanel = new ProjectCreatePanel(panel, extensionUri);
@@ -91,12 +125,29 @@ export class ProjectCreatePanel{
 		);
 
 		// Handle messages from the webview
-		this._panel.webview.onDidReceiveMessage(
-			message => {
+		this._panel.webview.onDidReceiveMessage(async(message)			=> {
 				switch (message.command) {
 					case 'alert':
 						vscode.window.showErrorMessage(message.text);
 						return;
+                    case 'refresh':
+                        this._update();
+                        const project = stateProjects.openProjects.find(p => p.projectName === message.data);
+                        panel.webview.postMessage({ type: "initialize", data: {pinConfigurations:pinConfigurations, deviceList: deviceList, project: project}});
+                        return;
+                    case 'save':
+                        const projectConfig = JSON.stringify( message.data, null, 4);
+                        const encodedConfig = new TextEncoder().encode(projectConfig);
+                        const workingProject = stateProjects.openProjects.find(p => p.projectName === message.data.projectName);
+                        if(workingProject !== undefined){
+                            await vscode.workspace.fs.writeFile(
+                                workingProject.prjFilePath,
+                                encodedConfig
+                            );
+                            updatePLD(message.data);
+                        }
+                        
+                        
 				}
 			},
 			null,
@@ -127,32 +178,17 @@ export class ProjectCreatePanel{
 
 	private _update() {
 		const webview = this._panel.webview;
+        this._updatePanel(webview);
+    }
 
-		// Vary the webview's content based on where it is located in the editor.
-		switch (this._panel.viewColumn) {
-			case vscode.ViewColumn.Two:
-				this._updateForCat(webview, 'Compiling Cat');
-				return;
-
-			case vscode.ViewColumn.Three:
-				this._updateForCat(webview, 'Testing Cat');
-				return;
-
-			case vscode.ViewColumn.One:
-			default:
-				this._updateForCat(webview, 'Coding Cat');
-				return;
-		}
+	private _updatePanel(webview: vscode.Webview) {
+		
+		this._panel.webview.html = this._getHtmlForWebview(webview, 'projectConfiguration');
 	}
 
-	private _updateForCat(webview: vscode.Webview, catName: keyof typeof cats) {
-		this._panel.title = catName;
-		this._panel.webview.html = this._getHtmlForWebview(webview, cats[catName]);
-	}
-
-	private _getHtmlForWebview(webview: vscode.Webview, catGifPath: string) {
+	private _getHtmlForWebview(webview: vscode.Webview, htmlTemplatePath: string) {
 		// Local path to main script run in the webview
-		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js');
+		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, "assets", "js", "projectConfigurator.js");
 
 		// And the uri we use to load this script in the webview
 		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
@@ -164,6 +200,15 @@ export class ProjectCreatePanel{
 		// Uri to load styles into webview
 		const stylesResetUri = webview.asWebviewUri(styleResetPath);
 		const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+
+        const styleVSCodeUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(
+                this._extensionUri,
+                "assets",
+                "css",
+                "vscode.css"
+            )
+        );
 
 		// Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();
@@ -180,17 +225,105 @@ export class ProjectCreatePanel{
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+                <title>Project Configuration</title>
 				<link href="${stylesResetUri}" rel="stylesheet">
-				<link href="${stylesMainUri}" rel="stylesheet">
-
-				<title>Cat Coding</title>
+				<link href="${styleVSCodeUri}" rel="stylesheet">
+				<link href="${stylesMainUri}" rel="stylesheet">				
 			</head>
 			<body>
-				<img src="${catGifPath}" width="300" />
-				<h1 id="lines-of-code-counter">0</h1>
+                
+                <div class="wide">
+                    <div class="header-row">
+                        <div id="projectName">
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-title">
+                            <b>Manufacturer</b>
+                        </div>
+                        <div class="data-entry">
+                            <select id="deviceManufacturer" onChange="webViewHandleClickEvent" >
+                            </select>
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-title">
+                            <b>Socket</b>
+                        </div>
+                        <div class="data-entry">
+                            <select id="deviceSocket" onChange="webViewHandleClickEvent" >
+                            </select>
+                        </div>
+                    </div>       
+                    <div class="data-row">
+                        <div class="data-title">
+                            <b>Pins</b>
+                        </div>
+                        <div class="data-entry">
+                            <select id="devicePinCount" onChange="webViewHandleClickEvent" >
+                            </select>
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-title">
+                            <b>Model</b>
+                        </div>
+                        <div class="data-entry">
+                            <select id="deviceModel" onChange="webViewHandleClickEvent" >
+                            </select>
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-title">
+                            <b>Configuration</b>
+                        </div>
+                        <div class="data-entry">
+                            <select id="deviceConfiguration" onChange="webViewHandleClickEvent" >
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <br/>
 
-				<script nonce="${nonce}" src="${scriptUri}"></script>
+                    <div class="data-row">
+                        <div class="data-title">
+                            <b>Device Name</b>
+                        </div>
+                        <div class="data-entry">
+                            <input readonly id="deviceName" />
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-title">
+                            <b>Device Code</b>
+                        </div>
+                        <div class="data-entry">
+                            <input readonly id="deviceCode" />
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-title">
+                            <b>Pin Offset</b>
+                        </div>
+                        <div class="data-entry">
+                            <input readonly id="pinOffset" />
+                        </div>
+                    </div>
+
+                    <div class="action-row">
+                        <div class="button">
+                            <input type="button" id="clear" value="Clear" />
+                        </div>
+                         <div class="button">
+                            <input type="button" id="refresh" value="Reset" />
+                        </div>
+                        <div class="button">
+                            <input type="button" id="save" value="Save" />
+                        </div>
+                    </div>
+                </div>
+                <div id="errorPanel"></div>
+                <script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
 	}

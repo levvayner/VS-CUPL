@@ -93,7 +93,7 @@ export async function runISP(project: Project) {
             const prefixPath = path.join(homedir(), extensionState.winePrefix ?? '.wine') ;
             const drive = extensionState.pathWinDrive ?? 'drive_c';
             const arch = extensionState.wineArch ?? 'win32';
-            const cmdString = `WINEPREFIX=${prefixPath} WINEARCH=${arch} wine "${ path.join(drive, atmISPBinPath)}" "${project.windowsChnFilePath}"`;
+            const cmdString = `WINEPREFIX=${prefixPath} WINEARCH=${arch} wine "${ path.join(prefixPath, drive, atmISPBinPath)}" "${project.windowsChnFilePath}"`;
             const commandResponse = await command.runCommand(
                 "vs-cupl Build",
                 undefined,
@@ -124,10 +124,12 @@ export async function runISP(project: Project) {
         }
 
         if (!isWindows()) {
+            // since we have no way to automate the file name used to create the SVF file:
+            // find .svf files that have modified within the past 2 minutes
             const copyCmd = `find ./ -maxdepth 1 -mmin -2 -type f -name "*.svf" -exec cp "{}" ${project.svfFilePath.fsPath} \\;`;
             const commandCopyToLinuxResult = await command.runCommand(
                 "vs-cupl Build",
-                extensionState.pathWinTemp,
+                path.join(extensionState.pathWinTemp,project.projectName),
                 copyCmd
             );
             if (commandCopyToLinuxResult.responseCode !== 0) {
@@ -136,13 +138,16 @@ export async function runISP(project: Project) {
                 );
                 return;
             }
+            if(extensionState.debugEnabled){
+                atfOutputChannel.appendLine("Copying SVF file back. \nResult:" + commandCopyToLinuxResult.responseText);
+            }
         }
 
         //check svf file
         const date = new Date();
-        const updatedSVF =
-            (await vscode.workspace.fs.stat(project.svfFilePath)).mtime >
-            date.setTime(date.getTime() - 1000);
+        const svfUpdated = (await vscode.workspace.fs.stat(project.svfFilePath)).mtime;
+        const tenSecondsAgo = date.setTime(date.getTime() - 10000);
+        const updatedSVF = svfUpdated  > tenSecondsAgo;
 
         atfOutputChannel.appendLine(
             updatedSVF

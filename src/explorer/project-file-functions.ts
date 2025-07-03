@@ -16,8 +16,10 @@ import { getDeviceConfiguration, uiEnterProjectName } from "../ui.interactions";
 import path = require("path");
 import { stateProjects } from "../states/state.projects";
 import { pathExists } from "./fileFunctions";
+import { configureProjectCommand } from "../vs.commands";
+import { extensionState } from "../states/state.global";
 
-export async function defineProjectFile(projectPath: vscode.Uri) {
+export async function defineProjectFile(projectPath: vscode.Uri) {    
     let device = await getDeviceConfiguration();
 
     if (device === undefined) {
@@ -29,12 +31,14 @@ export async function defineProjectFile(projectPath: vscode.Uri) {
 
     const newProject = await Project.newProject(projectPath);
     newProject.device = device;
+    vscode.commands.executeCommand(
+        configureProjectCommand,
+        projectPath
+    )
     return newProject;
 }
 
 export async function createPLD(project: Project) {
-    //find out device type
-    // const deviceConfiguration = await getDeviceConfiguration();
     const createTime = new Date();
 
     var projectText = `Name     ${project.projectName} ;

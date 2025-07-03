@@ -56,6 +56,9 @@ export class StateProjects {
     public static async init() {
         stateProjects = new StateProjects();
         await stateProjects.refreshOpenProjects();
+        if(extensionState.activeProject === undefined){
+            extensionState.setActiveProject(stateProjects.openProjects[0]);
+        }
     }
 
     public removeProject(project: Project) {
@@ -80,9 +83,10 @@ export class StateProjects {
         for (let i = 0; i < projectFiles.length; i++) {
             const project = await Project.openProject(projectFiles[i]);
             await this.loadProjectFilesAndArrays(project, files);
+            
         }
         debug("Refreshing open projects");
-
+        
         return this._openProjects;
     }
 

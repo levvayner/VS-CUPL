@@ -89,3 +89,66 @@ input::placeholder,
 textarea::placeholder {
 	color: var(--vscode-input-placeholderForeground);
 }
+.wide{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.header-row{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 16pt;
+    padding: 10px 20px;
+    margin: 0 0 20px 0;    
+    border: solid 2px var(--vscode-inlineChat-border);
+    border-width: 0 0 3px 0;
+}
+.data-row{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 24px;
+    margin:5px 0px;
+}
+.action-row{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    height: 24px;
+    padding: auto;
+}
+.data-title{
+    font-weight: 800;
+}
+.data-entry{
+    font-weight: 400;
+}
+input:not([type='button']){
+    width: 312px !important;
+}
+select{
+    width:320px;
+}
+.button{
+    margin:5px 10px;
+}
+input[type='button']:hover{
+    background-color: #43414e;
+    cursor: pointer;
+}
+input[type='button']:active{
+    background-color: #7d7991;
+    cursor: grabbing;
+}
+#errorPanel{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    color: white; background: #504b4b; opacity: .8;
+    z-index: 1000;
+    padding: 20px 40px;
+}
+
+

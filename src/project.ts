@@ -178,23 +178,25 @@ export class Project {
         const extConfig = vscode.workspace.getConfiguration("vs-cupl");
         //const workingWindowsFolder = path.join( (extConfig.get('PathWinDrive') as string).replace('~',homedir()), (extConfig.get('WinTempPath') as string));
         const workingWindowsFolder = path.join(
-            "c:\\",
+            `c:`,
             extConfig.get("PathWinTemp") as string
         );
         console.log(`Initializing project ${this.projectName}`);
         //(this.winBaseFolder + this.winTempPath).replace(/\//gi,'\\');
-        this.windowsPldFilePath =
-            workingWindowsFolder.replace(/\\\\/gi, "\\") +
-            "\\" +
-            this.projectName +
-            ".pld";
-        this.windowsJedFilePath =
-            workingWindowsFolder.replace(/\\\\/gi, "\\") +
-            "\\" +
-            this.projectName +
-            ".jed";
-        this.windowsChnFilePath =
-            workingWindowsFolder + "\\" + this.projectName + ".chn";
+        this.windowsPldFilePath = path
+            .join(workingWindowsFolder, this.projectName,this.projectName + '.pld')
+            .replace(/\//g, '\\');
+
+            // workingWindowsFolder.replace(/\\\\/gi, "\\") +
+            // "\\" +
+            // this.projectName +
+            // ".pld";
+        this.windowsJedFilePath = path
+            .join(workingWindowsFolder, this.projectName,this.projectName + '.jed')
+            .replace(/\//g, '\\');
+        this.windowsChnFilePath = path
+        .join(workingWindowsFolder, this.projectName,this.projectName + '.chn')
+        .replace(/\//g, '\\');
         if (!pathExists(this.projectPath.fsPath)) {
             await vscode.workspace.fs.createDirectory(this.projectPath);
         }

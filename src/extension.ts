@@ -87,6 +87,9 @@ async function registerCommands(context: vscode.ExtensionContext) {
 }
 
 async function registerProjectViewProviders(context: vscode.ExtensionContext) {
+    await registerActiveProjectPanelProvider(context);
+    await registerChipViewPanelProvider(context);
+    await registerPinViewPanelProvider(context);
     await StateProjects.init();
     await ProjectTasksProvider.init();
     const projectFileProvider = await ProjectFilesProvider.instance();
@@ -109,9 +112,7 @@ async function registerProjectViewProviders(context: vscode.ExtensionContext) {
         projectTasksProvider
     );
 
-    await registerActiveProjectPanelProvider(context);
-    await registerChipViewPanelProvider(context);
-    await registerPinViewPanelProvider(context);
+   
 }
 
 async function registerCodeProvider(context: vscode.ExtensionContext) {

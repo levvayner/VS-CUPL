@@ -16,6 +16,7 @@ export class StateGlobal {
     private _pathCuplDl: string | undefined;
     private _pathCuplFitters: string | undefined;
     private _pathATMISP: string | undefined;
+    private _pathPof2Jed: string | undefined;
     private _pathMiniro : string | undefined;
     private _pathMiniroShare : string | undefined;    
     private _pathOpenOcd: string | undefined;
@@ -70,6 +71,7 @@ export class StateGlobal {
         this._pathMiniroShare = extConf.get('PathMiniproShare') as string;
         this._pathOpenOcd =  extConf.get('PathOpenOcd') as string;
         this._pathOpenOcdDl = extConf.get('PathOpenOcdDl') as string;
+        this._pathPof2Jed = extConf.get('PathPof2Jed') as string;
         this._pathWinDrive = extConf.get('PathWinDrive') as string;
         this._pathWinTemp = extConf.get('PathWinTemp') as string;    
         
@@ -103,7 +105,8 @@ export class StateGlobal {
     public get pathWinDrive(){
         return isWindows() || this._pathWineBase === undefined ?  
             (this._pathWinDrive  === 'drive_c' ? 'C:\\' : this._pathWinDrive) : 
-            path.join(this._pathWineBase, this._pathWinDrive ?? '');
+            //path.join(this._pathWineBase, this._pathWinDrive ?? '');
+            this._pathWinDrive ?? 'drive_c';
     }
     public get pathSystemRoot(){
         return (isWindows() ? extensionState.pathWinDrive : extensionState.pathWineBase )??
@@ -113,25 +116,29 @@ export class StateGlobal {
         if(this.pathWinDrive === undefined) {
             return '';
         }
-        return path.join(this.pathWinDrive, this._pathWinTemp ?? 'temp');
+        return isWindows() ? path.join(this.pathWinDrive, this._pathWinTemp ?? 'temp'):
+            path.join(this.pathWineBase ?? '', this.pathWinDrive, this._pathWinTemp ?? 'temp');
     }
     public get pathCupl(){
         return this._pathCupl ?? isWindows()
             ? "C:\\Wincupl\\Shared\\cupl.exe"
-            : "~/.wine/drive_c/Wincupl/Shared/cupl.exe";
+            : `${this._pathWineBase}/drive_c/Wincupl/Shared/cupl.exe`;
     }
     public get pathCuplDl(){
         return this._pathCuplDl ?? isWindows()
             ? "C:\\Wincupl\\shared"
-            : "~/.wine/drive_c/Wincupl/shared/";
+            : `${this._pathWineBase}/drive_c/Wincupl/shared/`;
     }
     public get pathCuplFitters(){
         return this._pathCuplFitters ?? isWindows()
             ? "C:\\Wincupl\\WinCupl\\Fitters"
-            : "~/.wine/drive_c/Wincupl/WinCupl/Fitters/";        
+            : `${this._pathWineBase}/drive_c/Wincupl/WinCupl/Fitters/`;        
     }
     public get pathATMISP(){
         return this._pathATMISP;
+    }
+    public get pathPOF2JED(){
+        return this._pathPof2Jed;
     }
     public get pathMinipro(){        
         return this._pathMiniro ?? ("/usr/bin/minipro");

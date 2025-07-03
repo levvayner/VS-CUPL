@@ -105,9 +105,9 @@ This folder can represent one product that has seceral chips or projects.
 ```./winetricks mfc42```
 
 ### Download and copy to wine windows folder
->[Dwsbc32.ocx](assets/bin/Dwsbc32.ocx) to ~/.wine/drive_c/windows/system32
+>[Dwsbc32.ocx](assets/bin/Dwsbc32.ocx) to ~/[winePrefix]/drive_c/windows/system32
 
->[ftd2xx.dll](assets/bin/ftd2xx.dll) to ~/.wine/drive_c/windows/syswow64
+>[ftd2xx.dll](assets/bin/ftd2xx.dll) to ~/[winePrefix]/drive_c/windows/syswow64
 
 ### **Prochip 5.0.1**
 Need to have Atmel ProChip (5.0.1) installed [Download ProChip 5.0.1](https://www.microchip.com/prochiplicensing/#/)
@@ -226,6 +226,8 @@ This extension contributes the following settings:
 * `vs-cupl.PathWinDrive`: Set Windows C:\ path (default: /home/user1/.wine/drive_c).
 * `vs-cupl.PathCupl`: Cupl executable path relative to PathWine (default: Wincupl/Shared/ for c:\\Wincupl\\Shared\\cupl.exe)
 * `vs-cupl.PathATMISP`: ATMISP executable path (default: ATMEL_PLS_Tools/ATMISP/ATMISP.exe)
+* `vs-cupl.PathPof2Jed`: POF2JED executable path (default: c:\POF2JED\bin\POF2JED.exe)
+
 * `vs-cupl.WinTempPath`: Temp path on C:\ drive (default: temp)
 * `vs-cupl.DebugLevel`: Show Debug Level Messages
 * `vs-cupl.CuplDefinitions`: Chose CUPL definition file (.dl) to use

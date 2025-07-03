@@ -13,8 +13,8 @@ import { extensionState } from "../states/state.global";
 export class ProjectFilesProvider
     implements vscode.TreeDataProvider<ProjectTreeViewEntry>
 {    
-    public readonly workingLinuxFolder: string;
-    public readonly workingWindowsFolder: string;
+    //public readonly workingLinuxFolder: string;
+    //public readonly workingWindowsFolder: string;
 
     private workspaceRoot: string = "";
     private static _projectFileProvider: ProjectFilesProvider;
@@ -35,10 +35,10 @@ export class ProjectFilesProvider
             "vs-cupl-project-files.refreshEntry",
             () => this.refresh()
         );
-        this.workingLinuxFolder = path.join(extensionState.pathWineBase ?? '',extensionState.pathWinDrive ?? 'drive_c');//  this.wineBaseFolder + "/" + this.winTempPath;
-        this.workingWindowsFolder = (
-            path.join((extensionState.pathWinDrive ?? 'C:\\') ,extensionState.pathWinTemp ?? 'temp')
-        ).replace(/\//gi, "\\");
+        //this.workingLinuxFolder = path.join(extensionState.pathWineBase ?? '',extensionState.pathWinDrive ?? 'drive_c');//  this.wineBaseFolder + "/" + this.winTempPath;
+        //this.workingWindowsFolder = (extensionState.pathWinTemp ?? 'temp'
+            //path.join((extensionState.pathWinDrive ?? 'C:\\') ,extensionState.pathWinTemp ?? 'temp')
+        //);//.replace(/\//gi, "\\");
 
         this._onDidChangeTreeData = new vscode.EventEmitter<
             VSProjectTreeItem | undefined | null | void

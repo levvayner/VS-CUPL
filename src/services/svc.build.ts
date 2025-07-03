@@ -78,7 +78,7 @@ export async function buildProject(project: Project) {
     const cuplWindowsFittersPath = getWindowsPath(cuplFittersPath);
 
     const libPath = path.join(
-        await cuplWindowsDLPath,
+        isWindows() ? cuplWindowsDLPath : cuplDLPath,
         extensionState.cuplDefinitions
     );
 

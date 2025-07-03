@@ -14,7 +14,6 @@ import path = require("path");
 import { extensionState } from "../states/state.global";
 /*
 Custom pin layout viewer
-
 */
 export let providerChipView: ChipViewProvider;
 
@@ -34,12 +33,6 @@ export function registerChipViewPanelProvider(
             providerChipView.show();
         })
     );
-
-    // const prj = stateProjects.openProjects[0];
-    // if(prj){
-    //     providerChipView.openProjectChipView(prj);
-    // }
-
     context.subscriptions.push(
         vscode.window.onDidChangeActiveColorTheme(
             providerChipView.updateThemeColors
@@ -57,10 +50,6 @@ export function registerChipViewPanelProvider(
             providerChipView.checkIfChipIsNeededForWindowState
         )
     );
-    // vscode.workspace.onDidOpenTextDocument(providerChipView.checkIfChipIsNeededForDocument);
-    // vscode.workspace.onDidChangeWorkspaceFolders(providerChipView.checkIfChipIsNeededForWorkspaceFolder);
-    // vscode.window.onDidChangeActiveTextEditor(providerChipView.checkIfChipIsNeededForTextEditor);
-    // vscode.window.onDidChangeWindowState(providerChipView.checkIfChipIsNeededForWindowState);
 }
 
 export class ChipViewProvider implements vscode.WebviewViewProvider {
@@ -620,18 +609,18 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
         editor: vscode.TextEditor | undefined
     ) {
         if (editor === undefined) {
-            extensionState.setActiveProject(undefined);
-            providerChipView.setDevice(undefined);
-            providerChipView.setColors();
+            //extensionState.setActiveProject(undefined);
+            //providerChipView.setDevice(undefined);
+            //providerChipView.setColors();
             return;
         }
-        if (
-            editor.document.fileName.endsWith(".prj") ||
-            editor.document.fileName.endsWith(".pld") ||
-            editor.document.fileName.endsWith(".jed") ||
-            editor.document.fileName.endsWith(".svf") ||
-            editor.document.fileName.endsWith(".chn")
-        ) {
+        const isValidRootPathFile = editor.document.fileName.endsWith(".prj") ||
+        editor.document.fileName.endsWith(".pld") ||
+        editor.document.fileName.endsWith(".jed") ||
+        editor.document.fileName.endsWith(".svf") ||
+        editor.document.fileName.endsWith(".chn");
+        const isValidBuildPathFile = editor.document.fileName.indexOf(`build`) > 0 && editor.document.fileName.endsWith(".sh");
+        if (isValidRootPathFile || isValidBuildPathFile) {
             //const project = stateProjects.openProjects.find(p => p.projectPath.fsPath === editor.document.fileName.substring(editor.document.fileName.lastIndexOf(path.sep)));
             const project = await Project.openProject(
                 vscode.Uri.file(editor.document.fileName)

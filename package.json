@@ -97,6 +97,20 @@
                     }
                     ,
                     {
+                        "id": "checkPof2Jed",
+                        "title": "POF2JED",
+                        "description": "This step will check for POF2JED.\n[Check](command:vs-cupl.checkPof2JedCommand)",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/Pof2Jed.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyPof2JedInstalled"
+                        ]
+                    }
+                    
+                    ,
+
+                    {
                         "id": "checkMinipro",
                         "title": "Minipro",
                         "description": "This step will check for Minipro. If not installed, we'll attempt to install it.\n[Check](command:vs-cupl.checkMiniproCommand)",
@@ -249,6 +263,11 @@
                     "vs-cupl.PathATMISP": {
                         "type": "string",
                         "default": "ATMISP7/ATMISP.exe",
+                        "description": "Path of ASMISP.exe relative to C:\\"
+                    },
+                    "vs-cupl.PathPof2Jed": {
+                        "type": "string",
+                        "default": "POF2JED/bin/POF2JED.exe",
                         "description": "Path of ASMISP.exe relative to C:\\"
                     }
                 }

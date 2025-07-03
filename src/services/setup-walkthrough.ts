@@ -1,4 +1,4 @@
-import { checkForAtmisp, checkForCupl, checkForMinipro, checkForOpenOcd, checkForWine, checkForWSL, checkForWslUsbIpd } from "../extension/dev-environment";
+import { checkForAtmisp, checkForCupl, checkForMinipro, checkForOpenOcd, checkForPof2Jed, checkForWine, checkForWSL, checkForWslUsbIpd } from "../extension/dev-environment";
 import { commands, Uri, window, workspace, ExtensionContext } from "vscode";
 import { atfOutputChannel, Command, ShellResponse, ShellType } from "../os/command";
 import { isWindows } from "../os/platform";
@@ -38,7 +38,8 @@ export async function registerWalkthroughTools(context: ExtensionContext){
     registerCommand(cmd.checkWineDependencyCommand,     installWineDependency);
     registerCommand(cmd.checkWslDependencyCommand,      installWslDependency);
     registerCommand(cmd.checkUsbipdDependencyCommand,   installWslUsbDependency);
-    registerCommand(cmd.checkAtmispDependencyCommand,   installAtmispDependency);   
+    registerCommand(cmd.checkAtmispDependencyCommand,   installAtmIspDependency);   
+    registerCommand(cmd.checkPof2JedDependencyCommand, installPof2JedDependency);
 }
 /* Tools */
 export async function installCuplDependency(){
@@ -133,7 +134,7 @@ export async function installMiniproDependency(){
     }
 }
 
-export async function installAtmispDependency(){
+export async function installAtmIspDependency(){
     var atmispResult = await checkForAtmisp();
         if(atmispResult.responseCode !== 0) {// 0 is windows standard for normal exit
             window.showWarningMessage('ATMISP not found!', 'Install').then(async (selection) => {
@@ -211,6 +212,81 @@ export async function installAtmispDependency(){
         const sourceFile = Uri.joinPath(extensionUri, 'assets/bin/ftd2xx.dll');
         const destFile =  Uri.file( path.join( path.dirname( path.join(extensionState.pathWinDrive ?? '', extensionState.pathATMISP??'') ?? ''),  'ftd2xx.dll'));
         await workspace.fs.copy(sourceFile, destFile, {overwrite: true});
+}
+
+export async function installPof2JedDependency(){
+    var pof2jedResult = await checkForPof2Jed();
+        if(pof2jedResult.responseCode !== 0) {// 0 is windows standard for normal exit
+            window.showWarningMessage('Pof2Jed not found!', 'Install').then(async (selection) => {
+                if(selection === 'Install'){;
+
+                var atmIspInstallWslCommands = [
+                    {
+                        cmd: 'apt install unzip wget -y',
+                        dir: extensionState.pathWinDrive,
+                        useWsl: true
+                    },{
+                        cmd: 'mkdir -p /tmp/pof2jed',
+                        dir: extensionState.pathWinDrive,
+                        useWsl: true
+                    },
+                    {
+                        cmd: 'chmod 777 /tmp/pof2jed',
+                        dir: extensionState.pathWinDrive,
+                        useWsl: true
+                    },
+                    {
+                        cmd: 'wget https://ww1.microchip.com/downloads/archive/pof2jed.zip',
+                        dir: isWindows() ? 'c:\\temp' : '/tmp/pof2jed',
+                        useWsl: true
+                        
+                    },{
+                        cmd: 'unzip -o pof2jed.zip ',
+                        dir: isWindows() ? 'c:\\temp' : '/tmp/pof2jed',
+                        useWsl: true
+                    },{
+                        cmd: 'rm pof2jed.zip ',
+                        dir: isWindows() ? 'c:\\temp' : '/tmp/pof2jed',
+                        useWsl: true
+                    },{
+                        cmd: 'chmod +x POF2JED_setup.exe',
+                        dir: isWindows() ? 'c:\\temp' : '/tmp/pof2jed',
+                        useWsl: true
+                    },
+                    {
+                        cmd: 'POF2JED_setup.exe',
+                        dir: isWindows() ? 'c:\\temp' : '/tmp/pof2jed',
+                        useWsl: false
+                    } 
+                ];
+                var cmdExecution = new Command();
+                var result = new ShellResponse(-1, '', '');
+                for(let command of atmIspInstallWslCommands){
+                    result = await cmdExecution.runCommand(
+                        'POF2JED install',
+                        isWindows() ? command.dir : extensionState.pathWinDrive,
+                        isWindows() && command.useWsl ? `wsl.exe -u root --cd ${command.dir} ${command.cmd}` : `${command.cmd}`
+                    );
+                    if(result.responseCode !== 0){
+                        window.showErrorMessage('POF2JED installation step failed: ' + result.responseError.message);    
+                        atfOutputChannel.appendLine(`[POF2JED Deployment] **ERROR** ${result.responseError.message}`);                             
+                    }
+                    else{                       
+                        atfOutputChannel.appendLine(`[POF2JED Deployment] ${result.responseText}`);
+                    }
+                }  
+            }});   
+
+            
+        }else {
+            if(pof2jedResult.responseText.indexOf('File Not Found') > 0){
+                //needs to be installed
+            }
+            else{
+                await commands.executeCommand('setContext', 'VerifyPof2JedInstalled', true);
+            }
+            
+        }
 }
 
 /* Environments */
