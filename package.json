@@ -220,6 +220,11 @@
                             "Terminal"
                         ],
                         "description": "Run commands in VS Code integrated terminal?"
+                    },
+                    "vs-cupl.CompletedWalkthrough": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Completed On-boarding Walkthrough"
                     }
                 }
             },           

@@ -176,7 +176,8 @@ exit`;
 
         if(!failedAny){
             await vscode.commands.executeCommand('setContext', 'VerifyPrerequisitesInstalled', true);
-            context.globalState.update("vs-cupl.extension-configured", true);
+            //context.globalState.update("vs-cupl.extension-configured", true);
+            vscode.workspace.getConfiguration("vs-cupl").set("CompletedWalkthrough",true);
         }
     };
     await context.subscriptions.push(

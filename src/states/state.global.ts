@@ -38,7 +38,7 @@ export class StateGlobal {
     }
 
     public activate(context: vscode.ExtensionContext){
-        this._isConfigured = context.globalState.get("vs-cupl.extension-configured") as boolean ?? false;
+        this._isConfigured = (vscode.workspace.getConfiguration("vs-cupl").get("CompletedWalkthrough") as boolean) ?? false;// context.globalState.get("vs-cupl.extension-configured") as boolean ?? false;
         if(!this._isConfigured){
             //start welcome guide to install
             vscode.commands.executeCommand('workbench.action.openWalkthrough', 'VaynerSystems.vs-cupl#cupl-dev-install', false);

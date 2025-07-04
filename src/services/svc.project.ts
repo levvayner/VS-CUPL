@@ -20,8 +20,6 @@ import { providerChipView } from "../editor/chip-view";
 import { pathExists } from "../explorer/fileFunctions";
 import { extensionState } from "../states/state.global";
 import { isWindows } from "../os/platform";
-import { ProjectCreatePanel } from "../modules/project-configurator/svc.configurator";
-import { extensionUri } from "../extension";
 import { PLDProjectEditorProvider } from "../modules/project-configurator/projectEditor";
 
 let command = new Command();

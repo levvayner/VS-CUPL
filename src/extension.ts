@@ -43,7 +43,6 @@ import { registerActiveProjectPanelProvider } from "./editor/active-project-view
 import { extensionState } from "./states/state.global";
 import path = require("path/posix");
 import { registerWalkthroughTools } from "./services/setup-walkthrough";
-import { activateConfigurator } from "./modules/project-configurator/svc.configurator";
 import { PLDProjectEditorProvider } from "./modules/project-configurator/projectEditor";
 
 export let extensionUri: vscode.Uri;
@@ -62,7 +61,7 @@ export function deactivate() {}
 
 async function setupEnvironment(context: vscode.ExtensionContext){
     await registerWalkthroughTools(context);
-    activateConfigurator(context);
+    
     extensionState.activate(context);
 }
 

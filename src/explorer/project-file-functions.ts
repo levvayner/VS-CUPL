@@ -12,29 +12,16 @@ import {
     VSProjectTreeItem,
     ProjectFilesProvider,
 } from "./project-files-provider";
-import { getDeviceConfiguration, uiEnterProjectName } from "../ui.interactions";
+import { uiEnterProjectName } from "../ui.interactions";
 import path = require("path");
 import { stateProjects } from "../states/state.projects";
 import { pathExists } from "./fileFunctions";
-import { configureProjectCommand } from "../vs.commands";
-import { extensionState } from "../states/state.global";
+import { PLDProjectEditorProvider } from "../modules/project-configurator/projectEditor";
 
 export async function defineProjectFile(projectPath: vscode.Uri) {    
-    let device = await getDeviceConfiguration();
-
-    if (device === undefined) {
-        atfOutputChannel.appendLine(
-            "Cannot create prj file. No device specified!"
-        );
-        return;
-    }
-
     const newProject = await Project.newProject(projectPath);
-    newProject.device = device;
-    vscode.commands.executeCommand(
-        configureProjectCommand,
-        projectPath
-    )
+    vscode.commands.executeCommand('vscode.openWith', newProject.prjFilePath, PLDProjectEditorProvider.viewType);
+    
     return newProject;
 }
 
