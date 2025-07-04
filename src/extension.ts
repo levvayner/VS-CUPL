@@ -44,6 +44,7 @@ import { extensionState } from "./states/state.global";
 import path = require("path/posix");
 import { registerWalkthroughTools } from "./services/setup-walkthrough";
 import { activateConfigurator } from "./modules/project-configurator/svc.configurator";
+import { PLDProjectEditorProvider } from "./modules/project-configurator/projectEditor";
 
 export let extensionUri: vscode.Uri;
 export async function activate(context: vscode.ExtensionContext) {
@@ -90,6 +91,7 @@ async function registerProjectViewProviders(context: vscode.ExtensionContext) {
     await registerActiveProjectPanelProvider(context);
     await registerChipViewPanelProvider(context);
     await registerPinViewPanelProvider(context);
+    await PLDProjectEditorProvider.register(context);
     await StateProjects.init();
     await ProjectTasksProvider.init();
     const projectFileProvider = await ProjectFilesProvider.instance();

@@ -59,9 +59,10 @@ export class DeviceConfiguration {
     packageType: DevicePackageType = DevicePackageType.dip;
     pinCount: number = 20;
     deviceCode: string = "";
-    deviceName: string = ""; // ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP,programmer:
+    deviceName: string = ""; // ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP:
     programmer: DeviceDeploymentType = DeviceDeploymentType.any;
     deviceUniqueName: string = "";
+    deviceOptions: string | undefined = "";
     pinConfiguration: string | undefined;
     usesPldNameFieldForJedFile: boolean = false;
     openOCDDeviceCode: string | undefined;
@@ -101,27 +102,30 @@ export const deviceList = [
         packageType: DevicePackageType.dip,
         pinCount: 24,
         deviceCode: "v750cppk",
-        deviceName: " ATF750C, ATF750CL, ATF750LVC, ATF750LVCL | PPK",
+        deviceName: " ATF750C, ATF750CL, ATF750LVC, ATF750LVCL",
         programmer: "minipro",
         pinConfiguration: "v750",
+        deviceOptions: ["PPK"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
         packageType: DevicePackageType.dip,
         pinCount: 24,
         deviceCode: "v750cext",
-        deviceName: " ATF750C, ATF750CL, ATF750LVC, ATF750LVCL | powerdown",
+        deviceName: " ATF750C, ATF750CL, ATF750LVC, ATF750LVCL",
         programmer: "minipro",
         pinConfiguration: "v750",
+        deviceOptions: ["powerdown"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
         packageType: DevicePackageType.dip,
         pinCount: 24,
         deviceCode: "v750cextppk",
-        deviceName: "ATF750C, ATF750LVC | powerdown, PPK",
+        deviceName: "ATF750C, ATF750LVC",
         programmer: "minipro",
         pinConfiguration: "v750",
+        deviceOptions: ["powerdown","PPK"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -155,36 +159,40 @@ export const deviceList = [
         packageType: DevicePackageType.plcc,
         pinCount: 28,
         deviceCode: "v750cextlcc",
-        deviceName: "ATF750C, ATF750LVC | powerdown",
+        deviceName: "ATF750C, ATF750LVC",
         programmer: "minipro",
         pinConfiguration: "v750c",
+        deviceOptions: ["powerdown"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
         packageType: DevicePackageType.plcc,
         pinCount: 28,
         deviceCode: "v750cextppklcc",
-        deviceName: "ATF750C, ATF750LVC | powerdown, PPK",
+        deviceName: "ATF750C, ATF750LVC",
         programmer: "minipro",
         pinConfiguration: "v750c",
+        deviceOptions: ["powerdown", "PPK"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
         packageType: DevicePackageType.plcc,
         pinCount: 28,
         deviceCode: "v750cextlcc",
-        deviceName: "ATF750C, ATF750LVC | powerdown",
+        deviceName: "ATF750C, ATF750LVC",
         programmer: "minipro",
         pinConfiguration: "v750c",
+        deviceOptions: ["powerdown"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
         packageType: DevicePackageType.plcc,
         pinCount: 28,
         deviceCode: "v750cppklcc",
-        deviceName: "ATF750C, ATF750LVC | PPK",
+        deviceName: "ATF750C, ATF750LVC",
         programmer: "minipro",
         pinConfiguration: "v750c",
+        deviceOptions: ["PPK"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -242,10 +250,11 @@ export const deviceList = [
         pinCount: 44,
         deviceCode: "f1502ispplcc44",
         deviceName:
-            "ATF1502AS, ATF1502ASL, ATF1502ASV, ATF1502SE, ATF1502SEL | ISP",
+            "ATF1502AS, ATF1502ASL, ATF1502ASV, ATF1502SE, ATF1502SEL",
         programmer: "atmisp",
         pinConfiguration: "f1502",
         openOCDDeviceCode: "150203f",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -263,10 +272,11 @@ export const deviceList = [
         pinCount: 44,
         deviceCode: "f1502isptqfp44",
         deviceName:
-            "ATF1502AS, ATF1502ASL, ATF1502ASV, ATF1502SE, ATF1502SEL | ISP",
+            "ATF1502AS, ATF1502ASL, ATF1502ASV, ATF1502SE, ATF1502SEL",
         programmer: "atmisp",
         pinConfiguration: "f1502",
         openOCDDeviceCode: "150203f",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -283,10 +293,11 @@ export const deviceList = [
         packageType: DevicePackageType.plcc,
         pinCount: 44,
         deviceCode: "f1504ispplcc44",
-        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP",
+        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1504",
-        openOCDDeviceCode: "150403f"
+        openOCDDeviceCode: "150403f",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -303,10 +314,11 @@ export const deviceList = [
         packageType: DevicePackageType.tqfp,
         pinCount: 44,
         deviceCode: "f1504isptqfp44",
-        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP",
+        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1504",
         openOCDDeviceCode: "151403f",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -322,9 +334,10 @@ export const deviceList = [
         packageType: DevicePackageType.plcc,
         pinCount: 68,
         deviceCode: "f1504ispplcc68",
-        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP",
+        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1504",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -340,9 +353,10 @@ export const deviceList = [
         packageType: DevicePackageType.plcc,
         pinCount: 84,
         deviceCode: "f1504ispplcc84",
-        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP",
+        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1504",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -367,18 +381,20 @@ export const deviceList = [
         packageType: DevicePackageType.pqfp,
         pinCount: 100,
         deviceCode: "f1504ispqfp100",
-        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP",
+        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1504",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
         packageType: DevicePackageType.tqfp,
         pinCount: 100,
         deviceCode: "f1504isptqfp100",
-        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP",
+        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1504",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -394,9 +410,10 @@ export const deviceList = [
         packageType: DevicePackageType.plcc,
         pinCount: 84,
         deviceCode: "f1508ispplcc84",
-        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP",
+        deviceName: "ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1508",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -412,9 +429,10 @@ export const deviceList = [
         packageType: DevicePackageType.pqfp,
         pinCount: 100,
         deviceCode: "f1508ispqfp100",
-        deviceName: "ATF1508AS, ATF1508ASL, ATF1508ASV, ATF1508ASVL | ISP",
+        deviceName: "ATF1508AS, ATF1508ASL, ATF1508ASV, ATF1508ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1508",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -430,9 +448,10 @@ export const deviceList = [
         packageType: DevicePackageType.tqfp,
         pinCount: 100,
         deviceCode: "f1508isptqfp100",
-        deviceName: "ATF1508AS, ATF1508ASL, ATF1508ASV, ATF1508ASVL | ISP",
+        deviceName: "ATF1508AS, ATF1508ASL, ATF1508ASV, ATF1508ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1508",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -449,10 +468,11 @@ export const deviceList = [
         packageType: DevicePackageType.pqfp,
         pinCount: 160,
         deviceCode: "f1508isppqfp160",
-        deviceName: "ATF1508AS, ATF1508ASL, ATF1508ASV, ATF1508ASVL | ISP",
+        deviceName: "ATF1508AS, ATF1508ASL, ATF1508ASV, ATF1508ASVL",
         programmer: "atmisp",
         pinConfiguration: "f1508",
         openOCDDeviceCode: "f151803f",
+        deviceOptions: ["ISP"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
@@ -477,18 +497,20 @@ export const deviceList = [
         packageType: DevicePackageType.dip,
         pinCount: 40,
         deviceCode: "v2500cppk",
-        deviceName: "ATF22LV10C, ATF22V10C | PPK",
+        deviceName: "ATF22LV10C, ATF22V10C",
         programmer: "minipro",
         pinConfiguration: "v2500",
+        deviceOptions: ["PPK"]
     },
     {
         manufacturer: DeviceManufacturer.atmel,
         packageType: DevicePackageType.plcc,
         pinCount: 44,
         deviceCode: "v2500cppklcc",
-        deviceName: "ATF2500C, ATF2500CL, ATF2500CQ, ATF2500CQL | PPK",
+        deviceName: "ATF2500C, ATF2500CL, ATF2500CQ, ATF2500CQL",
         programmer: "atmisp",
         pinConfiguration: "v2500",
+        deviceOptions: ["PPK"]
     },
     {
         manufacturer: DeviceManufacturer.lattice,
@@ -505,9 +527,10 @@ export const deviceList = [
         packageType: DevicePackageType.dip,
         pinCount: 20,
         deviceCode: "g16v8cp",
-        deviceName: "ATF16LV8C, ATF16V8C, ATF16V8CZ | powerdown",
+        deviceName: "ATF16LV8C, ATF16V8C, ATF16V8CZ",
         programmer: "minipro",
         pinConfiguration: "16v8",
+        deviceOptions: ["powerdown"]
     },
     {
         manufacturer: DeviceManufacturer.lattice,

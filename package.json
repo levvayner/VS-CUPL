@@ -157,6 +157,17 @@
                 "editor.semanticHighlighting.enabled": true
             }
         },
+        "customEditors": [
+            {
+                "viewType": "vs-cupl.projectEditor",
+                "displayName": "PLD Project",
+                "selector": [
+                    {
+                        "filenamePattern": "*.prj"
+                    }
+                ]
+            }
+        ],
         "keybindings": [
             {
                 "command": "vs-cupl.compileProject",

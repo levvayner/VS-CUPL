@@ -144,7 +144,9 @@ export class ProjectCreatePanel{
                                 workingProject.prjFilePath,
                                 encodedConfig
                             );
-                            updatePLD(message.data);
+                            //reload project
+                            workingProject.device = message.data;                            
+                            updatePLD(workingProject);
                         }
                         
                         
@@ -183,10 +185,10 @@ export class ProjectCreatePanel{
 
 	private _updatePanel(webview: vscode.Webview) {
 		
-		this._panel.webview.html = this._getHtmlForWebview(webview, 'projectConfiguration');
+		this._panel.webview.html = this._getHtmlForWebview(webview, this._panel.title);
 	}
 
-	private _getHtmlForWebview(webview: vscode.Webview, htmlTemplatePath: string) {
+	private _getHtmlForWebview(webview: vscode.Webview, title: string) {
 		// Local path to main script run in the webview
 		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, "assets", "js", "projectConfigurator.js");
 
@@ -225,7 +227,7 @@ export class ProjectCreatePanel{
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Project Configuration</title>
+                <title>${title}</title>
 				<link href="${stylesResetUri}" rel="stylesheet">
 				<link href="${styleVSCodeUri}" rel="stylesheet">
 				<link href="${stylesMainUri}" rel="stylesheet">				

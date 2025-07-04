@@ -34,6 +34,7 @@
     let pinConfigurations = oldState.pinConfigurations;
     let deviceList = oldState.deviceList;
     updateProjectView();
+    
 
     // handle form element
     function webViewHandleClickEvent(eventSource) {
@@ -160,6 +161,7 @@
                     command: "save",
                     data: Object.assign({"projectName": divProjectName.innerHTML},uniqueDevice),
                 });
+                vscode.setState()
                 break;
             }
 
@@ -167,7 +169,7 @@
                 const divProjectName = document.getElementById("projectName");
                 vscode.postMessage({
                     command:"refresh",
-                    data: divProjectName.innerHTML
+                    data: document.title
                 });
                 break;
             }
@@ -229,12 +231,10 @@
                     && d.packageType === socket 
                     && d.pinCount === Number(pinCount) 
                     && d.deviceName.indexOf(model) >= 0 
-                    && d.deviceName.indexOf('|') > 0
+                    && d.deviceOptions !== undefined
                 )
                 .map(de =>  
-                    de.deviceName
-                        .substring(de.deviceName.indexOf('|') + 1)
-                        .split(',')
+                    de.deviceOptions
                         .map( d => d.trim())
                     )
                 .flat()
@@ -257,7 +257,7 @@
                 && d.deviceName.indexOf(deviceModel) >= 0 
                 &&  (    
                         (deviceConfiguration === undefined || deviceConfiguration === null || deviceConfiguration.trim() === '') || 
-                        d.deviceName.indexOf('|') > 0 && d.deviceName.indexOf(deviceConfiguration) > 0
+                        (d.deviceOptions !== undefined && d.deviceOptions.indexOf(deviceConfiguration >= 0))
                     )
             );
         return Object.assign({"deviceUniqueName": deviceModel},device);
@@ -352,6 +352,13 @@
     function updateProjectView() {
         const errorPanel = document.getElementById("errorPanel");
         if (project === undefined || deviceList === undefined) {
+            //try to resolve
+            // const divProjectName = document.getElementById("projectName");
+            // vscode.postMessage({
+            //     command:"refresh",
+            //     data: document.title
+            // });
+
             errorPanel.innerText = "Error loading data";
             errorPanel.style.visibility = "visible";
             const refreshButton = document.createElement('input');
@@ -383,6 +390,8 @@
         const inputDeviceConfiguration = document.getElementById('deviceConfiguration');
         const inputPinOffset = document.getElementById("pinOffset") ?? 0;
 
+        const projDeviceOptions = project?.deviceConfiguration?.deviceOptions;
+
         populateDropdown(inputDeviceManufacturer, new Set(deviceList.map(de => de.manufacturer)));
 
         populateDropdown(inputDeviceSocket, getFilteredSocket(projDeviceManufacturer));
@@ -391,8 +400,8 @@
 
         populateDropdown(inputDeviceModel, getFilteredModels(projDeviceManufacturer, projDeviceSocket, projDevicePinCount));
         
-        document.getElementById("deviceName").value = projDeviceName;
-        populateDropdown(document.getElementById('deviceConfiguration'), getFilteredConfigurations(projDeviceManufacturer, projDeviceSocket, projDevicePinCount, projDeviceName));                
+        inputDeviceName.value = projDeviceName;
+        populateDropdown(inputDeviceConfiguration, getFilteredConfigurations(projDeviceManufacturer, projDeviceSocket, projDevicePinCount, projDeviceName));                
         
         divProjectName.innerHTML = projName;
         inputDeviceName.value = projDeviceName;
@@ -402,6 +411,7 @@
         inputDeviceCode.value = projDeviceCode;
         inputPinOffset.value = projPinOffset;
         inputDevicePinCount.value = projDevicePinCount;
+        inputDeviceConfiguration.value = projDeviceOptions;
 
         //divProjectName.addEventListener("blur",webViewHandleClickEvent);
         inputDeviceModel.addEventListener("change",webViewHandleClickEvent);
@@ -422,7 +432,7 @@
         console.log(`drew project-configurator component for ${projDeviceName}`);
 
         // Update the saved state
-        vscode.setState({ project: project });
+        vscode.setState({ project: project, loaded: true });
     }
 
     function populateDropdown(element, values){
