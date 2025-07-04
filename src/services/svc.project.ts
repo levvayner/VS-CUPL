@@ -22,6 +22,7 @@ import { extensionState } from "../states/state.global";
 import { isWindows } from "../os/platform";
 import { ProjectCreatePanel } from "../modules/project-configurator/svc.configurator";
 import { extensionUri } from "../extension";
+import { PLDProjectEditorProvider } from "../modules/project-configurator/projectEditor";
 
 let command = new Command();
 let lastKnownPath = '';
@@ -145,10 +146,11 @@ export async function registerConfigureProjectCommand(
                 atfOutputChannel.appendLine(`Unable to read project information`);
                 return;
             }
-        }
-       
+        }     
 
-        ProjectCreatePanel.createOrShow(extensionUri,project);
+    	vscode.commands.executeCommand('vscode.openWith', project.prjFilePath, PLDProjectEditorProvider.viewType);
+
+        //ProjectCreatePanel.createOrShow(extensionUri,project);
 
         // var updatedProject = await defineProjectFile(project.prjFilePath);
 

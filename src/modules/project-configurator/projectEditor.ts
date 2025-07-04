@@ -5,6 +5,8 @@ import { TextEncoder } from 'util';
 import { stateProjects } from '../../states/state.projects';
 import { updatePLD } from '../../explorer/project-file-functions';
 import { Project } from '../../project';
+import { pinConfigurations } from '../../devices/pin-configurations';
+import { deviceList } from '../../devices/devices';
 
 /**
  * Define the type of edits used in PLD Project files.
@@ -186,7 +188,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 			});
 	}
 
-	private static readonly viewType = 'vs-cupl.projectEditor';
+	public static readonly viewType = 'vs-cupl.projectEditor';
 
 	/**
 	 * Tracks all known webviews
@@ -229,6 +231,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 		listeners.push(document.onDidChangeContent(e => {
 			// Update all webviews when the document changes
 			for (const webviewPanel of this.webviews.get(document.uri)) {
+                console.log('Updating document ' + document.uri);
 				this.postMessage(webviewPanel, 'update', {
 					edits: e.edits,
 					content: e.content,
@@ -236,7 +239,9 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 			}
 		}));
 
-		document.onDidDispose(() => disposeAll(listeners));
+		document.onDidDispose(() => {
+            disposeAll(listeners);
+        });
 
 		return document;
 	}
@@ -258,22 +263,29 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 		webviewPanel.webview.onDidReceiveMessage(e => this.onMessage(document, e));
 
 		// Wait for the webview to be properly ready before we init
-		webviewPanel.webview.onDidReceiveMessage(e => {
-			if (e.type === 'ready') {
+		webviewPanel.webview.onDidReceiveMessage(async(message) => {
+			if (message.type === 'ready') {
 				if (document.uri.scheme === 'untitled') {
-					this.postMessage(webviewPanel, 'init', {
-						untitled: true,
-						editable: true,
-					});
+					this.postMessage(webviewPanel, 'initialize', {pinConfigurations:pinConfigurations, deviceList: deviceList});
 				} else {
 					const editable = vscode.workspace.fs.isWritableFileSystem(document.uri.scheme);
-
-					this.postMessage(webviewPanel, 'init', {
-						value: document.documentData,
-						editable,
-					});
+                    const project = stateProjects.getOpenProject(document.uri);
+					this.postMessage(webviewPanel, 'initialize', { pinConfigurations:pinConfigurations, deviceList: deviceList, project: project});
 				}
-			}
+			}else if (message.type === 'save'){
+                const projectConfig = JSON.stringify( message.data, null, 4);
+                const encodedConfig = new TextEncoder().encode(projectConfig);
+                const workingProject = stateProjects.getOpenProject(document.uri);
+                if(workingProject !== undefined){
+                await vscode.workspace.fs.writeFile(
+                    workingProject.prjFilePath,
+                    encodedConfig
+                );
+                //reload project
+                workingProject.device = message.data;                            
+                updatePLD(workingProject);
+            }
+            }
 		});
 	}
 

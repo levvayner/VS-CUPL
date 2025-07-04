@@ -33,7 +33,7 @@
     let project = oldState.project;
     let pinConfigurations = oldState.pinConfigurations;
     let deviceList = oldState.deviceList;
-    updateProjectView();
+    //updateProjectView();
     
 
     // handle form element
@@ -158,7 +158,7 @@
                 var uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceName.value, inputDeviceConfiguration.value);
                 
                 vscode.postMessage({
-                    command: "save",
+                    type: "save",
                     data: Object.assign({"projectName": divProjectName.innerHTML},uniqueDevice),
                 });
                 vscode.setState()
@@ -168,14 +168,14 @@
             case clickMessageType.refresh: {
                 const divProjectName = document.getElementById("projectName");
                 vscode.postMessage({
-                    command:"refresh",
+                    type:"refresh",
                     data: document.title
                 });
                 break;
             }
             default: {
                 vscode.postMessage({
-                    command:"alert",
+                    type:"alert",
                     text: "Unknown message received:" + message.type
                 });
                 break;
@@ -301,7 +301,7 @@
                     "deviceCode",
                     "pinOffset",
                 ]);
-                const initializeData = message.data;
+                const initializeData = message.body;
                 if(initializeData === undefined || initializeData === null){
                     //we did not receive any data, cannot continue, show error
                     return;
@@ -445,6 +445,6 @@
         });
         
     }
-
+    vscode.postMessage({ type: 'ready' });
     
 })();
