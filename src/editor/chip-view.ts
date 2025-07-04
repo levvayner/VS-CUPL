@@ -83,6 +83,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
             if (message.type === "selectPin") {
                 console.log(`[Chip View] selected pin ` + message.pin.id);
                 providerPinView.selectPin(message.pin.id);
+                this.selectPin(Object.assign({pin: message.pin.id, pinType: message.pin.type}));
                 return;
             }
             if (message.type === "addPin") {
@@ -109,7 +110,16 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
     public selectPin(pin: Pin) {
         if (this._view) {
             this._view.show?.(true);
-            this._view.webview.postMessage({ type: "selectPin", pin: pin });
+            const pinDeclarations = vscode.window.activeTextEditor?.document
+                .getText()
+                .split("\n")
+                .filter((d) => d.trim().toUpperCase().startsWith("PIN "));
+            let declaration =
+                pinDeclarations?.find(
+                    (pd) => Number(pd.split(" ")[1]) === pin.pin
+                );
+            const pinDef = Object.assign({use: declaration?.substring(declaration?.indexOf('=') + 1).replace(';','').trim()},pin );
+            this._view.webview.postMessage({ type: "selectPin", pin: pinDef });
         }
     }
 
@@ -139,23 +149,23 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
                 .getText()
                 .split("\n")
                 ?.indexOf(declaration);
-            let charIdxStart = declaration.lastIndexOf("=") + 1;
-            if (declaration[charIdxStart] === " ") {
-                charIdxStart++;
-            }
-            let charIdxEnd = declaration.indexOf(";") - 1;
+            //let charIdxStart = declaration.lastIndexOf("=") + 1;
+            // if (declaration[charIdxStart] === " ") {
+            //     charIdxStart++;
+            // }
+            let charIdxEnd = declaration.indexOf(";");
             vscode.window.activeTextEditor.selection =
                 new vscode.Selection(
                     {
                         line: lineNo,
-                        character: charIdxStart,
+                        character: 0,
                     } as vscode.Position,
                     {
                         line: lineNo,
                         character: charIdxEnd,
                     } as vscode.Position
                 );
-
+            vscode.window.activeTextEditor.revealRange(vscode.window.activeTextEditor.selection);
             return;
         }
         const cursorLocation =

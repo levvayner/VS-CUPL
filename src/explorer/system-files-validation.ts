@@ -178,7 +178,7 @@ exit`;
             await vscode.commands.executeCommand('setContext', 'VerifyPrerequisitesInstalled', true);
             //context.globalState.update("vs-cupl.extension-configured", true);
             const config = vscode.workspace.getConfiguration("vs-cupl");
-            config.update("CompletedWalkthrough",true).then(() =>{
+            config.update("CompletedWalkthrough",true,  vscode.ConfigurationTarget.Global).then(() =>{
                 atfOutputChannel.appendLine(`Completed walkthrough`);
             });
         }

@@ -114,6 +114,7 @@ class PlccChipViewComponent {
     pins = [];
     previewingPin;
     selectedPin;
+    use;
     ctx;
     colors = [];
    
@@ -149,6 +150,7 @@ class PlccChipViewComponent {
             this.ctx = this.ic.getContext('2d');
         }
         this.selectedPin = undefined;
+        this.use = undefined;
         this.previewingPin = undefined;
         this.drawDevice();
     }
@@ -179,13 +181,13 @@ class PlccChipViewComponent {
         const pin = this.getPinAtCoord(event.offsetX, event.offsetY);
         
         /* for debugging */
-        console.log(`Mouse (X,Y)): (${event.x}, ${event.y})`);
-        console.log(`Mouse Offset (X,Y): (${event.offsetX}, ${event.offsetY})`);
-        console.log(`Mouse Offset (LEFT,TOP): (${event.offsetLeft}, ${event.offsetTop})`);
-        console.log(`Client (X,Y): (${event.clientX}, ${event.clientY})`);
-        console.log(`Layer (X,Y): (${event.layerX}, ${event.layerY})`);
-        console.log(`Page (X,Y): (${event.pageX}, ${event.pageY})`);
-        console.log(`Screen (X,Y)): (${event.screenX}, ${event.screenY})`);        
+        // console.log(`Mouse (X,Y)): (${event.x}, ${event.y})`);
+        // console.log(`Mouse Offset (X,Y): (${event.offsetX}, ${event.offsetY})`);
+        // console.log(`Mouse Offset (LEFT,TOP): (${event.offsetLeft}, ${event.offsetTop})`);
+        // console.log(`Client (X,Y): (${event.clientX}, ${event.clientY})`);
+        // console.log(`Layer (X,Y): (${event.layerX}, ${event.layerY})`);
+        // console.log(`Page (X,Y): (${event.pageX}, ${event.pageY})`);
+        // console.log(`Screen (X,Y)): (${event.screenX}, ${event.screenY})`);        
 
         if(!pin){
             this.previewingPin = undefined;
@@ -214,6 +216,7 @@ class PlccChipViewComponent {
     selectPin(event){
         if(event === undefined){
             this.selectedPin = undefined;
+            this.use = undefined;
             return;
         }
         const pin = this.getPinAtCoord(event.offsetX, event.offsetY);
@@ -340,11 +343,22 @@ class PlccChipViewComponent {
             this.ctx.strokeStyle ='#1f1';
             this.ctx.strokeRect(this.chipLeft,this.chipTop,this.chipWidth, this.chipHeight);
         }
-
+       
+        this.drawUse();
         console.log('drawDevice called');
-        
-        
+    }
 
+    drawUse(){
+        if(this.selectedPin !== undefined ){
+            const pin = this.pins.find(p => p.id === this.selectedPin);
+            const unassignedText = pin.type.find(t => t === "VCC" || t === "GND") === undefined ? 'Unassigned' : "N/A";
+
+            this.ctx.fillStyle = this.colors.find(c => c.type === 'foreground').color;
+            this.ctx.font = `${14}px Arial`;
+            this.ctx.fillText(`Pin ${this.selectedPin}`,(this.chipWidth -this.chipLeft) / 2,this.chipTop + 24,this.chipWidth / 2);
+            this.ctx.fillText(`Use: ${this.use ?? unassignedText} `,(this.chipWidth -this.chipLeft) / 2,this.chipTop + 48,this.chipWidth / 2);
+            this.ctx.fillText(`Type: ${pin.type}`,(this.chipWidth -this.chipLeft) / 2,this.chipTop + 72,this.chipWidth / 2);
+        }
     }
     drawHeader(){
         const fontSize = 14;
@@ -577,6 +591,7 @@ class PlccChipViewComponent {
     
     setDevice(configuration){
         this.selectedPin = undefined;
+        this.use = undefined;
         if(configuration){
             component.pinConfiguration = configuration;
         }
@@ -619,8 +634,11 @@ const component = new PlccChipViewComponent();
                 break;
 			case 'selectPin':
 				component.selectedPin = message.pin.pin;
+                component.use = message.pin.use;
                 component.drawDevice();
 				vscode.setState({selectedPin: component.selectedPin});
+                
+                
                 break;
             case 'previewPin':
                 component.previewingPin = message.pin?.pin;
