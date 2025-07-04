@@ -177,7 +177,10 @@ exit`;
         if(!failedAny){
             await vscode.commands.executeCommand('setContext', 'VerifyPrerequisitesInstalled', true);
             //context.globalState.update("vs-cupl.extension-configured", true);
-            vscode.workspace.getConfiguration("vs-cupl").set("CompletedWalkthrough",true);
+            const config = vscode.workspace.getConfiguration("vs-cupl");
+            config.update("CompletedWalkthrough",true).then(() =>{
+                atfOutputChannel.appendLine(`Completed walkthrough`);
+            });
         }
     };
     await context.subscriptions.push(

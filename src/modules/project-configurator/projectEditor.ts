@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../../dispose';
-import { getNonce } from '../../util';
 import { TextEncoder } from 'util';
 import { stateProjects } from '../../states/state.projects';
 import { updatePLD } from '../../explorer/project-file-functions';
 import { Project } from '../../project';
 import { pinConfigurations } from '../../devices/pin-configurations';
 import { deviceList } from '../../devices/devices';
+import { getNonce } from '../../states/stateManager';
 
 /**
  * Define the type of edits used in PLD Project files.

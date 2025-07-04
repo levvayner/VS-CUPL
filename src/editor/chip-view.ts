@@ -86,7 +86,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
                 return;
             }
             if (message.type === "addPin") {
-                this.addPin(message.pin);
+                this.addPin(message.pin.id, message.pin.type);
             }
         });
     }
@@ -113,7 +113,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    public addPin(pin: Pin){
+    public addPin(pinId: number, pinType: string[]){
         const isPldFile =
             vscode.window.activeTextEditor?.document.fileName.endsWith(
                 ".pld"
@@ -128,9 +128,9 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
         const declaration =
             pinDeclarations !== undefined &&
             pinDeclarations.find(
-                (pd) => pd.split(" ")[1] === pin.pin.toFixed(0)
+                (pd) => Number(pd.split(" ")[1]) === pinId
             );
-        console.log(`[Chip View] selected pin ` + pin.pin);
+        console.log(`[Chip View] selected pin ` + pinId);
         if (!vscode.window.activeTextEditor) {
             return;
         }
@@ -170,7 +170,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
             return;
         }
         let typeNames = "";
-        pin.pinType.forEach((t: any) => {
+        pinType.forEach((t: any) => {
             typeNames += t + " ";
         });
         typeNames = typeNames.trim().toUpperCase();
@@ -181,7 +181,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
         ) {
             return; // no need to add NC, VCC, GND pins
         }
-        const insertStr = `PIN ${pin.pin} = ; /* PIN TYPES: ${typeNames} */\n`;
+        const insertStr = `PIN ${pinId} = ; /* PIN TYPES: ${typeNames} */\n`;
         const locDropCursor = insertStr.indexOf(";");
         let posStart: vscode.Position = {
             character: 0,

@@ -88,7 +88,7 @@ export class PinViewProvider implements vscode.WebviewViewProvider {
                     //vscode.window.activeTextEditor?.insertSnippet(new vscode.SnippetString(`#${data.value}`));
                     break;
                 case "addPin":
-                    providerChipView.addPin(data.pin);
+                    providerChipView.addPin(data.pin.pin, data.pin.pinType);
             }
         });
     }

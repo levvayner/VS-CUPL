@@ -50,10 +50,9 @@ export class StateGlobal {
         return this._activeProject;
     }
     public setActiveProject(project: Project | undefined) {
-        if(this._activeProject?.pldFilePath.fsPath === project?.pldFilePath.fsPath){
-            return; //already same
+        if(this._activeProject?.pldFilePath.fsPath !== project?.pldFilePath.fsPath){
+            this._activeProject = project;
         }
-        this._activeProject = project;
         providerActiveProject.openProjectActiveProject(project);
     }
 

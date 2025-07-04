@@ -152,17 +152,22 @@ export async function createProject(
     }
 
     var newProject = await defineProjectFile(projectPath);
-    if (!newProject) {
-        atfOutputChannel.appendLine("Error generating new project file.");
-        return;
-    }
-
-    const prjData = JSON.stringify(newProject.device, null, 4);
     await vscode.workspace.fs.createDirectory(newProject.projectPath);
     await vscode.workspace.fs.writeFile(
         newProject.prjFilePath,
-        new TextEncoder().encode(prjData)
+        new TextEncoder().encode('{}')
     );
+    // if (!newProject) {
+    //     atfOutputChannel.appendLine("Error generating new project file.");
+    //     return;
+    // }
+
+    // const prjData = JSON.stringify(newProject.device, null, 4);
+    // await vscode.workspace.fs.createDirectory(newProject.projectPath);
+    // await vscode.workspace.fs.writeFile(
+    //     newProject.prjFilePath,
+    //     new TextEncoder().encode(prjData)
+    // );
 
     return newProject;
 }

@@ -80,7 +80,7 @@ export async function checkForAtmisp(){
     const command = new Command();
     return await command.runCommand(
         "vs-cupl Prerequisites",
-        path.join(extensionState.pathWinDrive ?? "" , path.dirname( extensionState.pathATMISP ?? "" )),
+        path.join(extensionState.pathWineBase ?? "", extensionState.pathWinDrive ?? "" , path.dirname( extensionState.pathATMISP ?? "" )),
         //`wmic product get name | find "MSYS2"`
         isWindows() ? "dir ATMISP* " : "ls ATMISP*"
     );
@@ -90,7 +90,7 @@ export async function checkForPof2Jed(){
     const command = new Command();
     return await command.runCommand(
         "vs-cupl Prerequisites",
-        path.join(extensionState.pathWinDrive ?? "" , path.dirname( extensionState.pathPOF2JED ?? "" )),
+        path.join(extensionState.pathWineBase ?? "", extensionState.pathWinDrive ?? "" , path.dirname( extensionState.pathPOF2JED ?? "" )),
         //`wmic product get name | find "MSYS2"`
         isWindows() ? "dir POF2JED* " : "ls POF2JED*"
     );

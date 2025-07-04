@@ -154,8 +154,8 @@ class PlccChipViewComponent {
     }
 
     getPinAtCoord(x,y){
-        const testX = x / devicePixelRatio *.98; //not sure why but have to offset after moving into vscode
-        const testY = y / devicePixelRatio *.96;
+        const testX = x / devicePixelRatio * .98; //not sure why but have to offset after moving into vscode
+        const testY = y / devicePixelRatio * .98;
         const pin = this.pins.find(p => p.x <= testX  && testX <= p.x + p.w && p.y <= testY  && testY <= p.y + p.h );
         if(this.debugUI){
             //since preview and selected pin are englarged now, must redraw device
@@ -179,13 +179,13 @@ class PlccChipViewComponent {
         const pin = this.getPinAtCoord(event.offsetX, event.offsetY);
         
         /* for debugging */
-        //console.log(`Mouse (X,Y)): (${event.x}, ${event.y})`);
-        //console.log(`Mouse Offset (X,Y): (${event.offsetX}, ${event.offsetY})`);
-        //console.log(`Mouse Offset (LEFT,TOP): (${event.offsetLeft}, ${event.offsetTop})`);
-        //console.log(`Client (X,Y): (${event.clientX}, ${event.clientY})`);
-        //console.log(`Layer (X,Y): (${event.layerX}, ${event.layerY})`);
-        //console.log(`Page (X,Y): (${event.pageX}, ${event.pageY})`);
-        //console.log(`Screen (X,Y)): (${event.screenX}, ${event.screenY})`);        
+        console.log(`Mouse (X,Y)): (${event.x}, ${event.y})`);
+        console.log(`Mouse Offset (X,Y): (${event.offsetX}, ${event.offsetY})`);
+        console.log(`Mouse Offset (LEFT,TOP): (${event.offsetLeft}, ${event.offsetTop})`);
+        console.log(`Client (X,Y): (${event.clientX}, ${event.clientY})`);
+        console.log(`Layer (X,Y): (${event.layerX}, ${event.layerY})`);
+        console.log(`Page (X,Y): (${event.pageX}, ${event.pageY})`);
+        console.log(`Screen (X,Y)): (${event.screenX}, ${event.screenY})`);        
 
         if(!pin){
             this.previewingPin = undefined;
