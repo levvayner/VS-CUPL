@@ -103,6 +103,10 @@ class PLDProjectDocument extends Disposable implements vscode.CustomDocument {
 		super.dispose();
 	}
 
+    async update(data: Uint8Array){
+        this._documentData = data;
+    }
+
 	/**
 	 * Called by VS Code when the user saves the document.
 	 */
@@ -115,10 +119,11 @@ class PLDProjectDocument extends Disposable implements vscode.CustomDocument {
 	 */
 	async saveAs(targetResource: vscode.Uri, cancellation: vscode.CancellationToken): Promise<void> {
 		const fileData = await this._delegate.getFileData();
+        const json = JSON.parse( new TextDecoder('utf-8').decode(fileData));
 		if (cancellation.isCancellationRequested) {
 			return;
 		}
-		await vscode.workspace.fs.writeFile(targetResource, fileData);
+		await vscode.workspace.fs.writeFile(targetResource, json);
 	}
 
     /**
@@ -160,8 +165,6 @@ class PLDProjectDocument extends Disposable implements vscode.CustomDocument {
  * PLD Project editors are used for `.prj` files.
  */
 export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLDProjectDocument> {
-
-	private static newPawDrawFileId = 1;
 
 	public static register(context: vscode.ExtensionContext): vscode.Disposable {
 		// vscode.commands.registerCommand('catCustoms.prj.new', () => {
@@ -239,19 +242,23 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 			}
 		}));
 
-        document.onDidDispose(() => {
-            vscode.window
+        document.onDidDispose(async () => {
+            const storedData = await vscode.workspace.fs.readFile(document.uri);
+            const editingData = document.documentData;
+            const isModified = !(storedData.length === editingData.length && storedData.every((sd, idx) => editingData[idx] === sd));
+            if(isModified === true){
+                vscode.window
                 .showInformationMessage(`You have unsaved changes in ${document.uri.fsPath}\nDo you want to save before closing?`, "Yes", "No")
                 .then(async(answer) => {
                     if (answer === "Yes") {
-                        const content = new TextDecoder('utf-8').decode(document.documentData);
-                        await vscode.workspace.fs.writeFile(document.uri, document.documentData);
-                        // const customCancellationToken = new vscode.CancellationTokenSource();
-                        // const token = customCancellationToken.token;
-                        // document.save(token);
+                       //await vscode.workspace.fs.writeFile(document.uri, document.documentData);
+                        const customCancellationToken = new vscode.CancellationTokenSource();
+                        const token = customCancellationToken.token;
+                        document.save(token);
                     }
                     disposeAll(listeners);
                 });            
+            }
         });
 
 		return document;
@@ -284,16 +291,25 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 					this.postMessage(webviewPanel, 'initialize', { pinConfigurations:pinConfigurations, deviceList: deviceList, project: project});
 				}
 			}else if(message.type === 'update'){
-
+                const projectConfig = JSON.stringify( message.data, null, 4);
+                const encodedConfig = new TextEncoder().encode(projectConfig);
+                
+                //const editable = vscode.workspace.fs.isWritableFileSystem(document.uri.scheme);
+                document.update(encodedConfig);
+                // this.postMessage(webviewPanel, 'update', {
+                //     value: document.documentData,
+                //     editable,
+                // });
             }            
             else if (message.type === 'save'){
                 const projectConfig = JSON.stringify( message.data, null, 4);
-                const encodedConfig = new TextEncoder().encode(projectConfig);
+                const buffer = Buffer.from(projectConfig, "utf-8");
+                //const encodedConfig = new TextEncoder().encode( projectConfig);
                 const workingProject = stateProjects.getOpenProject(document.uri);
                 if(workingProject !== undefined){
                     await vscode.workspace.fs.writeFile(
                         workingProject.prjFilePath,
-                        encodedConfig
+                        buffer
                     );
                     //reload project
                     workingProject.device = message.data;                            

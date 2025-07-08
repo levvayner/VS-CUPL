@@ -48,46 +48,6 @@
     const resetButton = document.getElementById("refresh");
     const saveButton = document.getElementById("save");
 
-    function populateForm(...args ){        
-        if(args.length === 0 || args[0] === undefined){
-            inputDeviceManufacturer.value = '';
-        }
-        if(args.length > 0 && args[0] !== undefined && args[0] !== null){            
-            populateDropdown(inputDeviceSocket, getFilteredSocket(inputDeviceManufacturer.value));
-        }
-        if(args.length <= 1 || args[1] === undefined){
-            inputDeviceSocket.value = '';
-        }
-        if(args.length > 1 && args[1] !== undefined && args[1] !== null){
-            inputDeviceSocket.value = args[1]; 
-            populateDropdown(inputDevicePinCount, getFilteredPins(inputDeviceManufacturer.value,inputDeviceSocket.value));
-        }
-        if(args.length <= 2 || args.length > 2 && args[2] === undefined){
-            inputDevicePinCount.value ='';
-        }
-        if(args.length > 2 && args[2] !== undefined && args[2] !== null){
-            inputDevicePinCount.value = args[2];
-            populateDropdown(inputDeviceModel, getFilteredModels(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value));            
-        }
-        if(args.length <= 3 ||  args[3] === undefined){
-            inputDeviceModel.value =  '';
-        }            
-        if(args.length > 3 && args[3] !== undefined && args[3] !== null){
-            inputDeviceModel.value =  args[3];
-            populateDropdown(inputDeviceConfiguration, getFilteredConfigurations(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceModel.value));             
-        }
-        if(args.length <= 4 || args[4] === undefined){
-            inputDeviceConfiguration.value = '';
-        }
-        if(args.length > 4 && args[4] !== undefined && args[4] !== null){    
-            inputDeviceConfiguration.value = args[4].length === 0 ? '(default)' : args[4];        
-            //if(args[4].length > 0){                
-                setDeviceDetails();
-            //}
-        }
-    }
-    
-
     // handle form element
     function webViewHandleClickEvent(eventSource) {
         const eventTargetId = eventSource.currentTarget.getAttribute("id");
@@ -191,6 +151,166 @@
         pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
     }
 
+    // Handle messages sent from the extension to the webview
+    window.addEventListener("message", (event) => {
+        const message = event.data; // The json data that the extension sent
+        const messageType = extensionMessageType[message.type];
+       
+        console.log(
+            "Received message for project configuration of type " + message.type
+        );
+        switch (messageType) {
+            case extensionMessageType.initialize: {
+                clearInputs(Object.keys(inputFields));
+                const initializeData = message.body;
+                if(initializeData === undefined || initializeData === null){
+                    //we did not receive any data, cannot continue, show error
+                    return;
+                }
+                project = initializeData.project;
+                pinConfigurations = initializeData.pinConfigurations;
+                deviceList = initializeData.deviceList;
+                showPendingChanges = false;
+                updateProjectView();                
+                vscode.setState(initializeData);
+                break;
+            }
+            case extensionMessageType.clear: {
+                clearInputs([
+                    "deviceSocket",
+                    "devicePinCount",
+                    "deviceModel",
+                    "deviceName",
+                    "deviceCode",
+                    "pinOffset",
+                ]);
+                break;
+            }
+            case 'error':
+                showError(message.text);
+                break;
+            default: {
+                alert("Unknown message received:" + message.type);
+            }
+        }
+    });
+
+    
+
+    function updateProjectView() {
+        const errorPanel = document.getElementById("errorPanel");
+        if (project === undefined || deviceList === undefined) {  
+            showError("Error loading data", {id: 'refresh', value: 'Refresh'});
+            return;
+        }
+        errorPanel.style.visibility = "hidden";    
+
+        populateDropdown(inputDeviceManufacturer, new Set(deviceList.map(de => de.manufacturer)));
+        populateForm(project?.deviceConfiguration?.manufacturer, project?.deviceConfiguration?.packageType, project?.deviceConfiguration?.pinCount , project?.deviceConfiguration?.deviceUniqueName,  project?.deviceConfiguration?.deviceOptions ?? []);         
+
+        wireEvent(inputDeviceModel,"change");
+        wireEvent(inputDeviceManufacturer,"change");
+        wireEvent(inputDeviceSocket,"change");
+        wireEvent(inputDevicePinCount,"change");
+        wireEvent(inputDeviceConfiguration,"change");
+
+        wireEvent(clearButton,"mouseup");
+        wireEvent(resetButton,"mouseup");
+        wireEvent(saveButton,"mouseup");
+
+        pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
+        console.log(`drew project-configurator component for ${project?.deviceConfiguration?.deviceUniqueName}`);
+        setDeviceDetails();
+        // Update the saved state
+        vscode.setState({ project: project, loaded: true });
+    }
+
+    function wireEvent(element, event){
+        if(element !== undefined && event !== undefined)
+        {
+            element.addEventListener(event, webViewHandleClickEvent);
+        }
+    }
+
+    function showError(message, action){
+        errorPanel.innerText = message;
+        errorPanel.style.visibility = "visible";
+        if(action !== undefined && action !== null){
+            const refreshButton = document.createElement('input');
+            refreshButton.type='button';
+            refreshButton.value = action.value;
+            refreshButton.id = action.id; 
+            refreshButton.addEventListener("click",webViewHandleClickEvent);
+            errorPanel.appendChild(refreshButton);
+        }
+    }
+
+    function populateForm(...args ){        
+        if(args.length === 0 || args[0] === undefined){
+            inputDeviceManufacturer.value = '';
+        }
+        if(args.length > 0 && args[0] !== undefined && args[0] !== null){            
+            populateDropdown(inputDeviceSocket, getFilteredSocket(inputDeviceManufacturer.value));
+        }
+        if(args.length <= 1 || args[1] === undefined){
+            inputDeviceSocket.value = '';
+        }
+        if(args.length > 1 && args[1] !== undefined && args[1] !== null){
+            inputDeviceSocket.value = args[1]; 
+            populateDropdown(inputDevicePinCount, getFilteredPins(inputDeviceManufacturer.value,inputDeviceSocket.value));
+        }
+        if(args.length <= 2 || args.length > 2 && args[2] === undefined){
+            inputDevicePinCount.value ='';
+        }
+        if(args.length > 2 && args[2] !== undefined && args[2] !== null){
+            inputDevicePinCount.value = args[2];
+            populateDropdown(inputDeviceModel, getFilteredModels(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value));            
+        }
+        if(args.length <= 3 ||  args[3] === undefined){
+            inputDeviceModel.value =  '';
+        }            
+        if(args.length > 3 && args[3] !== undefined && args[3] !== null){
+            inputDeviceModel.value =  args[3];
+            populateDropdown(inputDeviceConfiguration, getFilteredConfigurations(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceModel.value));             
+        }
+        if(args.length <= 4 || args[4] === undefined){
+            inputDeviceConfiguration.value = '';
+        }
+        if(args.length > 4 && args[4] !== undefined && args[4] !== null){    
+            inputDeviceConfiguration.value = args[4].length === 0 ? '(default)' : args[4];        
+            //if(args[4].length > 0){                
+                setDeviceDetails();
+            //}
+        }
+    }
+
+    function populateDropdown(element, values){
+        values.forEach(v => {
+            var option = document.createElement('option');
+            option.id = v;
+            option.value = v;
+            option.text = v;
+            element.appendChild(option);
+        });
+        
+    }
+
+    function clearInputs(inputFields) {
+        if (Array.isArray(inputFields)) {
+            inputFields.forEach((f) => clearInput(f));
+        } else {
+            clearInput(inputFields);
+        }
+    }
+
+    function clearInput(inputField) {
+        var inputFieldElement = document.getElementById(inputField);
+        if (inputFieldElement !== undefined && inputFieldElement !== null) {
+            inputFieldElement.innerHTML = "";
+            inputFieldElement.value = "";
+        }
+    }
+
     function updateBackendState(){
         var uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceModel.value, inputDeviceConfiguration.value);
         if(uniqueDevice !== undefined){
@@ -290,125 +410,6 @@
         inputPinOffset.value = pinConfig?.pinOffset ?? 0;
     }
 
-
-    // Handle messages sent from the extension to the webview
-    window.addEventListener("message", (event) => {
-        const message = event.data; // The json data that the extension sent
-        const messageType = extensionMessageType[message.type];
-       
-        console.log(
-            "Received message for project configuration of type " + message.type
-        );
-        switch (messageType) {
-            case extensionMessageType.initialize: {
-                clearInputs(Object.keys(inputFields));
-                const initializeData = message.body;
-                if(initializeData === undefined || initializeData === null){
-                    //we did not receive any data, cannot continue, show error
-                    return;
-                }
-                project = initializeData.project;
-                pinConfigurations = initializeData.pinConfigurations;
-                deviceList = initializeData.deviceList;
-                showPendingChanges = false;
-                updateProjectView();                
-                vscode.setState(initializeData);
-                break;
-            }
-            case extensionMessageType.clear: {
-                clearInputs([
-                    "deviceSocket",
-                    "devicePinCount",
-                    "deviceModel",
-                    "deviceName",
-                    "deviceCode",
-                    "pinOffset",
-                ]);
-                break;
-            }
-            case 'error':
-                showError(message.text);
-                break;
-            default: {
-                alert("Unknown message received:" + message.type);
-            }
-        }
-    });
-
-    function clearInputs(inputFields) {
-        if (Array.isArray(inputFields)) {
-            inputFields.forEach((f) => clearInput(f));
-        } else {
-            clearInput(inputFields);
-        }
-    }
-
-    function clearInput(inputField) {
-        var inputFieldElement = document.getElementById(inputField);
-        if (inputFieldElement !== undefined && inputFieldElement !== null) {
-            inputFieldElement.innerHTML = "";
-            inputFieldElement.value = "";
-        }
-    }
-
-    function updateProjectView() {
-        const errorPanel = document.getElementById("errorPanel");
-        if (project === undefined || deviceList === undefined) {  
-            showError("Error loading data", {id: 'refresh', value: 'Refresh'});
-            return;
-        }
-        errorPanel.style.visibility = "hidden";    
-
-        populateDropdown(inputDeviceManufacturer, new Set(deviceList.map(de => de.manufacturer)));
-        populateForm(project?.deviceConfiguration?.manufacturer, project?.deviceConfiguration?.packageType, project?.deviceConfiguration?.pinCount , project?.deviceConfiguration?.deviceUniqueName,  project?.deviceConfiguration?.deviceOptions ?? []);         
-
-        wireEvent(inputDeviceModel,"change");
-        wireEvent(inputDeviceManufacturer,"change");
-        wireEvent(inputDeviceSocket,"change");
-        wireEvent(inputDevicePinCount,"change");
-        wireEvent(inputDeviceConfiguration,"change");
-
-        wireEvent(clearButton,"mouseup");
-        wireEvent(resetButton,"mouseup");
-        wireEvent(saveButton,"mouseup");
-
-        pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
-        console.log(`drew project-configurator component for ${projDeviceName}`);
-        setDeviceDetails();
-        // Update the saved state
-        vscode.setState({ project: project, loaded: true });
-    }
-
-    function wireEvent(element, event){
-        if(element !== undefined && event !== undefined)
-        {
-            element.addEventListener(event, webViewHandleClickEvent);
-        }
-    }
-
-    function showError(message, action){
-        errorPanel.innerText = message;
-        errorPanel.style.visibility = "visible";
-        if(action !== undefined && action !== null){
-            const refreshButton = document.createElement('input');
-            refreshButton.type='button';
-            refreshButton.value = action.value;
-            refreshButton.id = action.id; 
-            refreshButton.addEventListener("click",webViewHandleClickEvent);
-            errorPanel.appendChild(refreshButton);
-        }
-    }
-
-    function populateDropdown(element, values){
-        values.forEach(v => {
-            var option = document.createElement('option');
-            option.id = v;
-            option.value = v;
-            option.text = v;
-            element.appendChild(option);
-        });
-        
-    }
     vscode.postMessage({ type: 'ready' });
     
 })();
