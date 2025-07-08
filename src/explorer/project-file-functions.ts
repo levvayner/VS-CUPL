@@ -18,12 +18,12 @@ import { stateProjects } from "../states/state.projects";
 import { pathExists } from "./fileFunctions";
 import { PLDProjectEditorProvider } from "../modules/project-configurator/projectEditor";
 
-export async function defineProjectFile(projectPath: vscode.Uri) {    
-    const newProject = await Project.newProject(projectPath);
-    vscode.commands.executeCommand('vscode.openWith', newProject.prjFilePath, PLDProjectEditorProvider.viewType);
+// export async function defineProjectFile(projectPath: vscode.Uri) {    
+//     const newProject = await Project.newProject(projectPath);
+//     vscode.commands.executeCommand('vscode.openWith', newProject.prjFilePath, PLDProjectEditorProvider.viewType);
     
-    return newProject;
-}
+//     return newProject;
+// }
 
 export async function createPLD(project: Project) {
     const createTime = new Date();
@@ -151,12 +151,13 @@ export async function createProject(
         return;
     }
 
-    var newProject = await defineProjectFile(projectPath);
+    var newProject = await Project.newProject(projectPath);
     await vscode.workspace.fs.createDirectory(newProject.projectPath);
     await vscode.workspace.fs.writeFile(
         newProject.prjFilePath,
-        new TextEncoder().encode('{}')
+        new TextEncoder().encode(`{"projectName": "${newProject.projectName}"}`)
     );
+   
     // if (!newProject) {
     //     atfOutputChannel.appendLine("Error generating new project file.");
     //     return;

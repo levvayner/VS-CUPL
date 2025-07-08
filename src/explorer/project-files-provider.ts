@@ -144,7 +144,7 @@ export class ProjectFilesProvider
     >;
 
     public async refresh(): Promise<void> {
-        await this.setWorkspace(this.workspaceRoot);
+        //await this.setWorkspace(this.workspaceRoot);
         await stateProjects.refreshOpenProjects();
         this._onDidChangeTreeData.fire();
     }

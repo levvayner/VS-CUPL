@@ -151,4 +151,10 @@ input[type='button']:active{
     padding: 20px 40px;
 }
 
-
+#pendingChanges{
+    display: none;
+    align-content: center;    
+    width: 100%;
+    height: 34px;
+    color: red;
+}

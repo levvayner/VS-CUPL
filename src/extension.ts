@@ -57,7 +57,8 @@ export async function activate(context: vscode.ExtensionContext) {
     await registerCheckPrerequisite(cmd.checkPrerequisiteCommand, context);
     await registerCodeProvider(context);
 }
-export function deactivate() {}
+export function deactivate() {
+}
 
 async function setupEnvironment(context: vscode.ExtensionContext){
     await registerWalkthroughTools(context);

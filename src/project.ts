@@ -252,7 +252,7 @@ export class Project {
         this._devicePins = getDevicePins(
             device?.pinConfiguration ?? "",
             device?.pinCount ?? 0,
-            (device?.packageType.toLowerCase() as DevicePackageType) ??
+            (device?.packageType?.toLowerCase() as DevicePackageType) ??
                 DevicePackageType.any
         );
     }

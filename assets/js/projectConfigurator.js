@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // This script will be run within the webview itself
 // It cannot access the main VS Code APIs directly.
 (function () {
@@ -14,7 +12,7 @@
         save: "save",
         refresh: "refresh"
     };
-    const extensionMessageType = { initialize: 1, clear: 2 };
+    const extensionMessageType = { error: 0, initialize: 1, clear: 2 };
     
     const inputFields = {
         projectName: 1,
@@ -33,7 +31,61 @@
     let project = oldState.project;
     let pinConfigurations = oldState.pinConfigurations;
     let deviceList = oldState.deviceList;
-    //updateProjectView();
+    let showPendingChanges = false;
+
+    const divProjectName = document.getElementById("projectName");
+    const inputDeviceName = document.getElementById("deviceName");
+    const inputDeviceSocket = document.getElementById("deviceSocket");
+    const inputDeviceManufacturer = document.getElementById("deviceManufacturer");
+    const inputDevicePinCount = document.getElementById("devicePinCount");
+    const inputDeviceCode = document.getElementById("deviceCode");
+    const inputDeviceModel = document.getElementById("deviceModel");
+    const inputDeviceConfiguration = document.getElementById("deviceConfiguration");
+    const inputPinOffset = document.getElementById("pinOffset") ?? 0;
+
+    const pendingChangesLabel = document.getElementById("pendingChanges");
+    const clearButton = document.getElementById("clear");
+    const resetButton = document.getElementById("refresh");
+    const saveButton = document.getElementById("save");
+
+    function populateForm(...args ){        
+        if(args.length === 0 || args[0] === undefined){
+            inputDeviceManufacturer.value = '';
+        }
+        if(args.length > 0 && args[0] !== undefined && args[0] !== null){            
+            populateDropdown(inputDeviceSocket, getFilteredSocket(inputDeviceManufacturer.value));
+        }
+        if(args.length <= 1 || args[1] === undefined){
+            inputDeviceSocket.value = '';
+        }
+        if(args.length > 1 && args[1] !== undefined && args[1] !== null){
+            inputDeviceSocket.value = args[1]; 
+            populateDropdown(inputDevicePinCount, getFilteredPins(inputDeviceManufacturer.value,inputDeviceSocket.value));
+        }
+        if(args.length <= 2 || args.length > 2 && args[2] === undefined){
+            inputDevicePinCount.value ='';
+        }
+        if(args.length > 2 && args[2] !== undefined && args[2] !== null){
+            inputDevicePinCount.value = args[2];
+            populateDropdown(inputDeviceModel, getFilteredModels(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value));            
+        }
+        if(args.length <= 3 ||  args[3] === undefined){
+            inputDeviceModel.value =  '';
+        }            
+        if(args.length > 3 && args[3] !== undefined && args[3] !== null){
+            inputDeviceModel.value =  args[3];
+            populateDropdown(inputDeviceConfiguration, getFilteredConfigurations(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceModel.value));             
+        }
+        if(args.length <= 4 || args[4] === undefined){
+            inputDeviceConfiguration.value = '';
+        }
+        if(args.length > 4 && args[4] !== undefined && args[4] !== null){    
+            inputDeviceConfiguration.value = args[4].length === 0 ? '(default)' : args[4];        
+            //if(args[4].length > 0){                
+                setDeviceDetails();
+            //}
+        }
+    }
     
 
     // handle form element
@@ -42,27 +94,12 @@
         switch (eventTargetId) {
             case clickMessageType.clear: {
                 clearInputs(Object.keys(inputFields));
-                populateDropdown(document.getElementById('deviceManufacturer'), new Set(deviceList.map(de => de.manufacturer)));
-                
-                const mfg = document.getElementById('deviceManufacturer').value;
-                populateDropdown(document.getElementById('deviceSocket'), getFilteredSocket(mfg));
-
-                const socket = document.getElementById('deviceSocket').value;
-                populateDropdown(document.getElementById('devicePinCount'), getFilteredPins(mfg,socket));
-
-                const pinCount = document.getElementById('devicePinCount').value;
-                populateDropdown(document.getElementById('deviceModel'), getFilteredModels(mfg, socket, pinCount));
-
-                const deviceModel = document.getElementById('deviceModel').value;
-
-                document.getElementById("deviceName").value = deviceModel;
-                populateDropdown(document.getElementById('deviceConfiguration'), getFilteredConfigurations(mfg, socket, pinCount, deviceModel));                
-                setDeviceDetails();
-                                
+                populateDropdown(inputDeviceManufacturer, new Set(deviceList.map(de => de.manufacturer)));
+                populateForm();
+                updateBackendState();
                 break;
             }
             case clickMessageType.deviceManufacturer: {
-                const mfg = eventSource.currentTarget.value;
                 clearInputs([
                     "deviceSocket",
                     "devicePinCount",
@@ -72,16 +109,11 @@
                     "pinOffset", 
                     "deviceConfiguration"
                 ]);
-                
-                populateDropdown(document.getElementById('deviceSocket'), getFilteredSocket(mfg));
-                populateDropdown(document.getElementById('devicePinCount'), getFilteredPins(mfg));
-                populateDropdown(document.getElementById('deviceModel'), getFilteredModels(mfg));
-
+                populateForm(inputDeviceManufacturer.value);
+                updateBackendState();
                 break;
             }
             case clickMessageType.deviceSocket: {
-                const mfg = document.getElementById('deviceManufacturer').value;
-                const socket = eventSource.currentTarget.value;
                 clearInputs([
                     "devicePinCount",
                     "deviceModel",
@@ -91,16 +123,8 @@
                     "deviceConfiguration"
                 ]);
 
-                populateDropdown(document.getElementById('devicePinCount'), getFilteredPins(mfg, socket));
-                const pinCount = Number(document.getElementById('devicePinCount').value);
-                populateDropdown(document.getElementById('deviceModel'), getFilteredModels(mfg, socket, pinCount));
-
-                const deviceModel = document.getElementById('deviceModel').value;
-
-                document.getElementById("deviceName").value = deviceModel;
-                populateDropdown(document.getElementById('deviceConfiguration'), getFilteredConfigurations(mfg, socket, pinCount, deviceModel));                
-                setDeviceDetails();
-
+                populateForm(null, inputDeviceSocket.value);   
+                updateBackendState();
                 break;             
 
             }
@@ -112,77 +136,71 @@
                     "pinOffset",
                     "deviceConfiguration"
                 ]);
-                const mfg = document.getElementById('deviceManufacturer').value;
-                const socket = document.getElementById('deviceSocket').value;
-                const pinCount = document.getElementById('devicePinCount').value;
-                populateDropdown(document.getElementById('deviceModel'), getFilteredModels(mfg, socket, pinCount));
-
-                const deviceModel = document.getElementById('deviceModel').value;
-
-                document.getElementById("deviceName").value = deviceModel;
-                populateDropdown(document.getElementById('deviceConfiguration'), getFilteredConfigurations(mfg, socket, pinCount, deviceModel));                
-                setDeviceDetails();
+                populateForm(null, null, inputDevicePinCount.value); 
+                updateBackendState();
                 break;
             }
             case clickMessageType.deviceModel: {
-                clearInputs(["deviceName", "deviceCode", "pinOffset", "deviceConfiguration"]);
-                const mfg = document.getElementById('deviceManufacturer').value;
-                const socket = document.getElementById('deviceSocket').value;
-                const pinCount = Number(document.getElementById('devicePinCount').value);
-                const deviceModel = document.getElementById('deviceModel').value;
-
-                document.getElementById("deviceName").value = deviceModel;
-                populateDropdown(document.getElementById('deviceConfiguration'), getFilteredConfigurations(mfg, socket, pinCount, deviceModel));
-                setDeviceDetails();
+                clearInputs(["deviceName", "deviceCode", "pinOffset", "deviceConfiguration"]);                
+                populateForm(null, null, null,inputDeviceModel.value);
+                updateBackendState();
                 break;
             }
 
             case clickMessageType.deviceConfiguration: {
                 clearInputs(["deviceCode", "pinOffset"]);
-                setDeviceDetails();
+                populateForm(null, null, null,null, inputDeviceConfiguration.value);
+                updateBackendState();
                 break;
             }
             // ..
 
             case clickMessageType.save: {
-                const divProjectName = document.getElementById("projectName");
-                const inputDeviceName = document.getElementById("deviceName");
-                const inputDeviceSocket = document.getElementById("deviceSocket");
-                const inputDeviceManufacturer = document.getElementById("deviceManufacturer");
-                const inputDevicePinCount = document.getElementById("devicePinCount");
-                const inputDeviceCode = document.getElementById("deviceCode");
-                const inputDeviceModel = document.getElementById("deviceModel");
-                const inputDeviceConfiguration = document.getElementById('deviceConfiguration');
-                const inputPinOffset = document.getElementById("pinOffset") ?? 0;
-
-                var uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceName.value, inputDeviceConfiguration.value);
+                var uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceModel.value, inputDeviceConfiguration.value);
                 
                 vscode.postMessage({
                     type: "save",
                     data: Object.assign({"projectName": divProjectName.innerHTML},uniqueDevice),
                 });
-                vscode.setState()
+                project.device = uniqueDevice;
+                //vscode.setState()
                 break;
             }
 
             case clickMessageType.refresh: {
-                const divProjectName = document.getElementById("projectName");
                 vscode.postMessage({
                     type:"refresh",
                     data: document.title
                 });
-                break;
+                return;
             }
             default: {
                 vscode.postMessage({
                     type:"alert",
                     text: "Unknown message received:" + message.type
                 });
-                break;
+                return;
             }
         }
+        //check if changes exist, if so, show pending changes label
+        const projDeviceName = project?.deviceConfiguration?.deviceUniqueName;
+        const projDeviceCode = project?.deviceConfiguration?.deviceCode;       
+        
+        
+        showPendingChanges = (projDeviceName !== inputDeviceName.value || projDeviceCode !== inputDeviceCode.value);
+        pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
     }
 
+    function updateBackendState(){
+        var uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceModel.value, inputDeviceConfiguration.value);
+        if(uniqueDevice !== undefined){
+            vscode.postMessage({
+                type: "update",
+                data: Object.assign({"projectName": divProjectName.innerHTML},uniqueDevice),
+            });
+        }
+
+    }
     /// <*Param*> mfg - manufacturer or undefined
     function getFilteredSocket(mfg){
         return new Set(deviceList.filter(d => mfg === undefined || d.manufacturer === mfg).map(de => de.packageType));
@@ -224,7 +242,7 @@
     }
 
     function getFilteredConfigurations(mfg, socket, pinCount, model){
-        const filteredOptions = new Set([...' ',
+        const filteredOptions = new Set([...['(default)'],
             ...deviceList
                 .filter(d =>  
                     d.manufacturer === mfg 
@@ -237,11 +255,9 @@
                     de.deviceOptions
                         .map( d => d.trim())
                     )
-                .flat()
-                .filter(Boolean)
-                // .map(r => r.split(','))
-                // .flat()
-                // .filter(Boolean)
+                .filter(Boolean)                
+                .map(r => Array.isArray(r) && r.length > 1 ? [r] : r)
+                .flat(1)
                 .sort()
         ]) //default no options
         ;
@@ -256,28 +272,22 @@
                 && d.pinCount === Number(pinCount )
                 && d.deviceName.indexOf(deviceModel) >= 0 
                 &&  (    
-                        (deviceConfiguration === undefined || deviceConfiguration === null || deviceConfiguration.trim() === '') || 
-                        (d.deviceOptions !== undefined && d.deviceOptions.indexOf(deviceConfiguration >= 0))
+                        (deviceConfiguration === undefined || deviceConfiguration === null || deviceConfiguration.trim() === '' || deviceConfiguration.trim() === '(default)' && (d.deviceOptions === undefined || d.deviceOptions.length === 0)) || 
+                        (d.deviceOptions !== undefined && d.deviceOptions.every(dc => deviceConfiguration.split(',').includes(dc)))
                     )
             );
         return Object.assign({"deviceUniqueName": deviceModel},device);
     }
 
-    function setDeviceDetails(){
-        const mfg = document.getElementById('deviceManufacturer').value;
-        const socket = document.getElementById('deviceSocket').value;
-        const pinCount = Number(document.getElementById('devicePinCount').value);
-        const deviceModel = document.getElementById('deviceModel').value;
-        const deviceConfiguration = document.getElementById('deviceConfiguration').value;
-
-        const uniqueDevice = getUniqueDevice(mfg, socket, pinCount, deviceModel, deviceConfiguration);
+    function setDeviceDetails(){      
+        const uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, Number(inputDevicePinCount.value), inputDeviceModel.value, inputDeviceConfiguration.value);
         //set device name field
-        document.getElementById("deviceName").value = deviceModel;
-        document.getElementById("deviceCode").value = uniqueDevice.deviceCode;
+        inputDeviceName.value = inputDeviceModel.value;
+        inputDeviceCode.value = uniqueDevice.deviceCode;        
         const pinConfig = pinConfigurations.find(pc => 
-            pc.name === uniqueDevice.pinConfiguration && pc.deviceType === uniqueDevice.packageType && pc.pinCount === uniqueDevice.pinCount
+            pc !== null && pc.name === uniqueDevice.pinConfiguration && pc.deviceType === uniqueDevice.packageType && pc.pinCount === uniqueDevice.pinCount
         );
-        document.getElementById("pinOffset").value = pinConfig?.pinOffset ?? 0;
+        inputPinOffset.value = pinConfig?.pinOffset ?? 0;
     }
 
 
@@ -291,16 +301,7 @@
         );
         switch (messageType) {
             case extensionMessageType.initialize: {
-                clearInputs([
-                    "projectName",
-                    "deviceManufacturer",
-                    "deviceSocket",
-                    "devicePinCount",
-                    "deviceModel",
-                    "deviceName",
-                    "deviceCode",
-                    "pinOffset",
-                ]);
+                clearInputs(Object.keys(inputFields));
                 const initializeData = message.body;
                 if(initializeData === undefined || initializeData === null){
                     //we did not receive any data, cannot continue, show error
@@ -309,7 +310,8 @@
                 project = initializeData.project;
                 pinConfigurations = initializeData.pinConfigurations;
                 deviceList = initializeData.deviceList;
-                updateProjectView();
+                showPendingChanges = false;
+                updateProjectView();                
                 vscode.setState(initializeData);
                 break;
             }
@@ -324,6 +326,9 @@
                 ]);
                 break;
             }
+            case 'error':
+                showError(message.text);
+                break;
             default: {
                 alert("Unknown message received:" + message.type);
             }
@@ -346,93 +351,52 @@
         }
     }
 
-    /**
-     * @param {Array<{ value: Project }>} project
-     */
     function updateProjectView() {
         const errorPanel = document.getElementById("errorPanel");
-        if (project === undefined || deviceList === undefined) {
-            //try to resolve
-            // const divProjectName = document.getElementById("projectName");
-            // vscode.postMessage({
-            //     command:"refresh",
-            //     data: document.title
-            // });
-
-            errorPanel.innerText = "Error loading data";
-            errorPanel.style.visibility = "visible";
-            const refreshButton = document.createElement('input');
-            refreshButton.type='button';
-            refreshButton.value = 'Refresh';
-            refreshButton.id = 'refresh';
-            refreshButton.addEventListener("click",webViewHandleClickEvent);
-            errorPanel.appendChild(refreshButton);
+        if (project === undefined || deviceList === undefined) {  
+            showError("Error loading data", {id: 'refresh', value: 'Refresh'});
             return;
         }
-        errorPanel.style.visibility = "hidden";
-
-        const projName = project?.projectName;
-        const projDeviceName = project?.deviceConfiguration?.deviceUniqueName;
-        const projDeviceSocket = project?.deviceConfiguration?.packageType;
-        const projDeviceManufacturer =
-            project?.deviceConfiguration?.manufacturer;
-        const projDevicePinCount = project?.deviceConfiguration?.pinCount;
-        const projDeviceCode = project?.deviceConfiguration?.deviceCode;
-        const projPinOffset = project?._devicePins?.pinOffset ?? 0;
-
-        const divProjectName = document.getElementById("projectName");
-        const inputDeviceName = document.getElementById("deviceName");
-        const inputDeviceSocket = document.getElementById("deviceSocket");
-        const inputDeviceManufacturer = document.getElementById("deviceManufacturer");
-        const inputDevicePinCount = document.getElementById("devicePinCount");
-        const inputDeviceCode = document.getElementById("deviceCode");
-        const inputDeviceModel = document.getElementById("deviceModel");
-        const inputDeviceConfiguration = document.getElementById('deviceConfiguration');
-        const inputPinOffset = document.getElementById("pinOffset") ?? 0;
-
-        const projDeviceOptions = project?.deviceConfiguration?.deviceOptions;
+        errorPanel.style.visibility = "hidden";    
 
         populateDropdown(inputDeviceManufacturer, new Set(deviceList.map(de => de.manufacturer)));
+        populateForm(project?.deviceConfiguration?.manufacturer, project?.deviceConfiguration?.packageType, project?.deviceConfiguration?.pinCount , project?.deviceConfiguration?.deviceUniqueName,  project?.deviceConfiguration?.deviceOptions ?? []);         
 
-        populateDropdown(inputDeviceSocket, getFilteredSocket(projDeviceManufacturer));
-        
-        populateDropdown(inputDevicePinCount, getFilteredPins(projDeviceManufacturer, ));
+        wireEvent(inputDeviceModel,"change");
+        wireEvent(inputDeviceManufacturer,"change");
+        wireEvent(inputDeviceSocket,"change");
+        wireEvent(inputDevicePinCount,"change");
+        wireEvent(inputDeviceConfiguration,"change");
 
-        populateDropdown(inputDeviceModel, getFilteredModels(projDeviceManufacturer, projDeviceSocket, projDevicePinCount));
-        
-        inputDeviceName.value = projDeviceName;
-        populateDropdown(inputDeviceConfiguration, getFilteredConfigurations(projDeviceManufacturer, projDeviceSocket, projDevicePinCount, projDeviceName));                
-        
-        divProjectName.innerHTML = projName;
-        inputDeviceName.value = projDeviceName;
-        inputDeviceModel.value = projDeviceName;
-        inputDeviceSocket.value = projDeviceSocket;
-        
-        inputDeviceCode.value = projDeviceCode;
-        inputPinOffset.value = projPinOffset;
-        inputDevicePinCount.value = projDevicePinCount;
-        inputDeviceConfiguration.value = projDeviceOptions;
+        wireEvent(clearButton,"mouseup");
+        wireEvent(resetButton,"mouseup");
+        wireEvent(saveButton,"mouseup");
 
-        //divProjectName.addEventListener("blur",webViewHandleClickEvent);
-        inputDeviceModel.addEventListener("change",webViewHandleClickEvent);
-        inputDeviceManufacturer.addEventListener("change",webViewHandleClickEvent);
-        inputDeviceSocket.addEventListener("change",webViewHandleClickEvent);
-        inputDevicePinCount.addEventListener("change",webViewHandleClickEvent);
-        inputDeviceConfiguration.addEventListener("change",webViewHandleClickEvent);
-
-        const clearButton = document.getElementById("clear");
-        clearButton.addEventListener("mouseup", webViewHandleClickEvent);
-
-        const resetButton = document.getElementById("refresh");
-        resetButton.addEventListener("mouseup", webViewHandleClickEvent);
-
-        const saveButton = document.getElementById("save");
-        saveButton.addEventListener("mouseup", webViewHandleClickEvent);
-
+        pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
         console.log(`drew project-configurator component for ${projDeviceName}`);
-
+        setDeviceDetails();
         // Update the saved state
         vscode.setState({ project: project, loaded: true });
+    }
+
+    function wireEvent(element, event){
+        if(element !== undefined && event !== undefined)
+        {
+            element.addEventListener(event, webViewHandleClickEvent);
+        }
+    }
+
+    function showError(message, action){
+        errorPanel.innerText = message;
+        errorPanel.style.visibility = "visible";
+        if(action !== undefined && action !== null){
+            const refreshButton = document.createElement('input');
+            refreshButton.type='button';
+            refreshButton.value = action.value;
+            refreshButton.id = action.id; 
+            refreshButton.addEventListener("click",webViewHandleClickEvent);
+            errorPanel.appendChild(refreshButton);
+        }
     }
 
     function populateDropdown(element, values){

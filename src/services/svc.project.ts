@@ -9,7 +9,8 @@ import {
     backupFile,
     cloneProject,
     createProject,
-    createPLD    
+    createPLD
+    
 } from "../explorer/project-file-functions";
 import {
     ProjectFilesProvider,
@@ -56,7 +57,8 @@ export async function registerCreateProjectCommand(createProjectCommandName: str
             atfOutputChannel.appendLine("Failed to create project!");
             return;
         }
-
+        stateProjects.updateProject(project);
+        
         //create default PLD
         await createPLD(project);
 
@@ -67,10 +69,13 @@ export async function registerCreateProjectCommand(createProjectCommandName: str
             name: project.projectName,
         });
         await projectFileProvider.setWorkspace(project.projectPath.fsPath);
+        //atfOutputChannel.appendLine(`Created project: ${project.projectName} - ${project.prjFilePath}`);
+        vscode.commands.executeCommand('vscode.openWith', project.prjFilePath, PLDProjectEditorProvider.viewType);
+        
         await projectFileProvider.refresh();
         //await vscode.commands.executeCommand("vscode.openFolder", project?.projectPath);
 
-        await providerChipView.openProjectChipView(project);
+        //await providerChipView.openProjectChipView(project);
     };
     await context.subscriptions.push(
         vscode.commands.registerCommand(
@@ -132,14 +137,21 @@ export async function registerConfigureProjectCommand(
     context: vscode.ExtensionContext
 ) {
     const cmdConfigureProjectHandler = async (
-        treeItem: VSProjectTreeItem | vscode.Uri
+        treeItem: VSProjectTreeItem | vscode.Uri | undefined
     ) => {
         //const project = await projectFromTreeItem(treeItem);
-        let project = (treeItem as VSProjectTreeItem).project;
+        let project = (treeItem as VSProjectTreeItem)?.project;
         if (!project) {
-             //if((treeItem as VSProjectTreeItem) === undefined){
-            project = stateProjects.getOpenProject(treeItem as vscode.Uri) || project;
-            //}
+            if(treeItem === undefined)
+            {
+                if(extensionState.activeProject === undefined)
+                {
+                    return;
+                }
+                project = extensionState.activeProject;               
+            } else{             
+                project = stateProjects.getOpenProject(treeItem as vscode.Uri) || project;
+            }
             if (!project) {
                 atfOutputChannel.appendLine(`Unable to read project information`);
                 return;

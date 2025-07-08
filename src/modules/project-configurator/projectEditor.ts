@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from '../../dispose';
-import { TextEncoder } from 'util';
+import { TextDecoder, TextEncoder } from 'util';
 import { stateProjects } from '../../states/state.projects';
 import { updatePLD } from '../../explorer/project-file-functions';
 import { Project } from '../../project';
@@ -239,8 +239,19 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 			}
 		}));
 
-		document.onDidDispose(() => {
-            disposeAll(listeners);
+        document.onDidDispose(() => {
+            vscode.window
+                .showInformationMessage(`You have unsaved changes in ${document.uri.fsPath}\nDo you want to save before closing?`, "Yes", "No")
+                .then(async(answer) => {
+                    if (answer === "Yes") {
+                        const content = new TextDecoder('utf-8').decode(document.documentData);
+                        await vscode.workspace.fs.writeFile(document.uri, document.documentData);
+                        // const customCancellationToken = new vscode.CancellationTokenSource();
+                        // const token = customCancellationToken.token;
+                        // document.save(token);
+                    }
+                    disposeAll(listeners);
+                });            
         });
 
 		return document;
@@ -266,25 +277,29 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 		webviewPanel.webview.onDidReceiveMessage(async(message) => {
 			if (message.type === 'ready') {
 				if (document.uri.scheme === 'untitled') {
-					this.postMessage(webviewPanel, 'initialize', {pinConfigurations:pinConfigurations, deviceList: deviceList});
+					this.postMessage(webviewPanel, 'error', {text: `File System is not writable at ${document.uri.fsPath}. Cannot create project here.`});
 				} else {
 					const editable = vscode.workspace.fs.isWritableFileSystem(document.uri.scheme);
-                    const project = stateProjects.getOpenProject(document.uri);
+                    const project = await Project.openProject(document.uri);
 					this.postMessage(webviewPanel, 'initialize', { pinConfigurations:pinConfigurations, deviceList: deviceList, project: project});
 				}
-			}else if (message.type === 'save'){
+			}else if(message.type === 'update'){
+
+            }            
+            else if (message.type === 'save'){
                 const projectConfig = JSON.stringify( message.data, null, 4);
                 const encodedConfig = new TextEncoder().encode(projectConfig);
                 const workingProject = stateProjects.getOpenProject(document.uri);
                 if(workingProject !== undefined){
-                await vscode.workspace.fs.writeFile(
-                    workingProject.prjFilePath,
-                    encodedConfig
-                );
-                //reload project
-                workingProject.device = message.data;                            
-                updatePLD(workingProject);
-            }
+                    await vscode.workspace.fs.writeFile(
+                        workingProject.prjFilePath,
+                        encodedConfig
+                    );
+                    //reload project
+                    workingProject.device = message.data;                            
+                    updatePLD(workingProject);
+                    this.postMessage(webviewPanel, 'initialize', { pinConfigurations:pinConfigurations, deviceList: deviceList, project: workingProject});                
+                }
             }
 		});
 	}
@@ -438,6 +453,9 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                     </div>
 
                     <div class="action-row">
+                        <div id="pendingChanges">
+                            * You have pending changes
+                        </div>
                         <div class="button">
                             <input type="button" id="clear" value="Clear" />
                         </div>
@@ -450,7 +468,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                     </div>
                 </div>
                 <div id="errorPanel"></div>
-
+                
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
@@ -470,18 +488,29 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 		panel.webview.postMessage({ type, body });
 	}
 
-	private onMessage(document: PLDProjectDocument, message: any) {
-		switch (message.command) {
+	private async onMessage(document: PLDProjectDocument, message: any) {
+		switch (message.type) {
             case 'alert':
                 vscode.window.showErrorMessage(message.text);
                 return;
-            // case 'refresh':
-            //     this._update();
-            //     const project = stateProjects.openProjects.find(p => p.projectName === message.data);
-            //     panel.webview.postMessage({ type: "initialize", data: {pinConfigurations:pinConfigurations, deviceList: deviceList, project: project}});
+            case 'refresh':
+                const project = await Project.openProject(document.uri);
+                const panel = Array.from(this.webviews.get(document.uri))[0];
+                if(panel === undefined || panel === null){
+                    throw new Error('Could not find webview to refresh');                    
+                }
+                this.postMessage(panel, 'initialize', { pinConfigurations:pinConfigurations, deviceList: deviceList, project: project});
                 return;
-            case 'save':
-                const projectConfig = JSON.stringify( message.data, null, 4);
+            case 'update':{
+                 const projectConfig = JSON.stringify( message.data, null, 4);
+                await this.updateProjectFile(document, projectConfig);
+                break;
+            }
+            case 'save':{
+                 const projectConfig = JSON.stringify( message.data, null, 4);
+                await  this.updateProjectFile(document, projectConfig);
+
+               
                 const encodedConfig = new TextEncoder().encode(projectConfig);
                 const workingProject = stateProjects.openProjects.find(p => p.projectName === message.data.projectName);
                 if(workingProject !== undefined){
@@ -492,7 +521,9 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                     //reload project
                     workingProject.device = message.data;                            
                     updatePLD(workingProject);
-                }       
+                }     
+                break;  
+            }
 			case 'response':
             {
                 const callback = this._callbacks.get(message.requestId);
@@ -501,6 +532,33 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
             }
 		}
 	}
+
+    // private getDocumentAsJson(document: vscode.TextDocument): any {
+	// 	const text = document.getText();
+	// 	if (text.trim().length === 0) {
+	// 		return {};
+	// 	}
+
+	// 	try {
+	// 		return JSON.parse(text);
+	// 	} catch {
+	// 		throw new Error('Could not get document as json. Content is not valid json');
+	// 	}
+	// }
+
+    private async updateProjectFile(document: PLDProjectDocument, json: any){
+        const edit = new vscode.WorkspaceEdit();        
+        const projectConfig = new TextDecoder('utf-8').decode(document.documentData);
+        // Just replace the entire document every time for this example extension.
+        // A more complete extension should compute minimal edits instead.
+        const lines =  Array.from(projectConfig).filter(c => c === '\n').length;
+        edit.replace(
+            document.uri,
+            new vscode.Range(0, 0,lines, 0),
+            JSON.stringify(json, null, 2));
+
+        return await vscode.workspace.applyEdit(edit);
+    }
 }
 
 /**
