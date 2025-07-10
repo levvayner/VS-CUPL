@@ -50,13 +50,18 @@
 
     // handle form element
     function webViewHandleClickEvent(eventSource) {
+        //verify vscode is bound
+        if(vscode === undefined){
+            vscode = acquireVsCodeApi();
+            registerExtensionListner();
+        }
         const eventTargetId = eventSource.currentTarget.getAttribute("id");
         switch (eventTargetId) {
             case clickMessageType.clear: {
                 clearInputs(Object.keys(inputFields));
                 populateDropdown(inputDeviceManufacturer, new Set(deviceList.map(de => de.manufacturer)));
                 populateForm();
-                updateBackendState();
+                //updateBackendState();
                 break;
             }
             case clickMessageType.deviceManufacturer: {
@@ -70,7 +75,7 @@
                     "deviceConfiguration"
                 ]);
                 populateForm(inputDeviceManufacturer.value);
-                updateBackendState();
+                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.deviceManufacturer), inputDeviceManufacturer.value);
                 break;
             }
             case clickMessageType.deviceSocket: {
@@ -84,7 +89,8 @@
                 ]);
 
                 populateForm(null, inputDeviceSocket.value);   
-                updateBackendState();
+                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.deviceSocket), inputDeviceSocket.value);
+                
                 break;             
 
             }
@@ -97,20 +103,20 @@
                     "deviceConfiguration"
                 ]);
                 populateForm(null, null, inputDevicePinCount.value); 
-                updateBackendState();
+                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.devicePinCount), inputDevicePinCount.value);
                 break;
             }
             case clickMessageType.deviceModel: {
                 clearInputs(["deviceName", "deviceCode", "pinOffset", "deviceConfiguration"]);                
                 populateForm(null, null, null,inputDeviceModel.value);
-                updateBackendState();
+                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.deviceModel), inputDeviceModel.value);
                 break;
             }
 
             case clickMessageType.deviceConfiguration: {
                 clearInputs(["deviceCode", "pinOffset"]);
                 populateForm(null, null, null,null, inputDeviceConfiguration.value);
-                updateBackendState();
+                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.deviceConfiguration), inputDeviceConfiguration.value);
                 break;
             }
             // ..
@@ -143,58 +149,65 @@
             }
         }
         //check if changes exist, if so, show pending changes label
-        const projDeviceName = project?.deviceConfiguration?.deviceUniqueName;
-        const projDeviceCode = project?.deviceConfiguration?.deviceCode;       
+        const projDeviceName = project?.device?.deviceUniqueName;
+        const projDeviceCode = project?.device?.deviceCode;       
         
         
         showPendingChanges = (projDeviceName !== inputDeviceName.value || projDeviceCode !== inputDeviceCode.value);
         pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
     }
+    function registerExtensionListner(){
+        // Handle messages sent from the extension to the webview
+        window.addEventListener("message", (event) => {
+            const message = event.data; // The json data that the extension sent
+            const messageType = extensionMessageType[message.type];
 
-    // Handle messages sent from the extension to the webview
-    window.addEventListener("message", (event) => {
-        const message = event.data; // The json data that the extension sent
-        const messageType = extensionMessageType[message.type];
-       
-        console.log(
-            "Received message for project configuration of type " + message.type
-        );
-        switch (messageType) {
-            case extensionMessageType.initialize: {
-                clearInputs(Object.keys(inputFields));
-                const initializeData = message.body;
-                if(initializeData === undefined || initializeData === null){
-                    //we did not receive any data, cannot continue, show error
-                    return;
+                
+            console.log(
+                "Received message for project configuration of type " + message.type
+            );
+            switch (messageType) {
+                case extensionMessageType.initialize: {
+                    clearInputs(Object.keys(inputFields));
+                    const initializeData = message.body;
+                    if(initializeData === undefined || initializeData === null){
+                        //we did not receive any data, cannot continue, show error
+                        return;
+                    }
+                    project = initializeData.project;
+                    pinConfigurations = initializeData.pinConfigurations;
+                    deviceList = initializeData.deviceList;
+                    showPendingChanges = false;
+                    divProjectName.innerHTML = project.projectName;
+                    updateProjectView();                
+                    vscode.setState(initializeData);
+                    break;
                 }
-                project = initializeData.project;
-                pinConfigurations = initializeData.pinConfigurations;
-                deviceList = initializeData.deviceList;
-                showPendingChanges = false;
-                updateProjectView();                
-                vscode.setState(initializeData);
-                break;
+                case extensionMessageType.getFileData:{
+                    var uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceModel.value, inputDeviceConfiguration.value);
+                    
+                return Object.assign({"projectName": divProjectName.innerHTML},uniqueDevice);
+                }
+                case extensionMessageType.clear: {
+                    clearInputs([
+                        "deviceSocket",
+                        "devicePinCount",
+                        "deviceModel",
+                        "deviceName",
+                        "deviceCode",
+                        "pinOffset",
+                    ]);
+                    break;
+                }
+                case 'error':
+                    showError(message.text);
+                    break;
+                default: {
+                    alert("Unknown message received:" + message.type);
+                }
             }
-            case extensionMessageType.clear: {
-                clearInputs([
-                    "deviceSocket",
-                    "devicePinCount",
-                    "deviceModel",
-                    "deviceName",
-                    "deviceCode",
-                    "pinOffset",
-                ]);
-                break;
-            }
-            case 'error':
-                showError(message.text);
-                break;
-            default: {
-                alert("Unknown message received:" + message.type);
-            }
-        }
-    });
-
+        });
+    }
     
 
     function updateProjectView() {
@@ -311,14 +324,18 @@
         }
     }
 
-    function updateBackendState(){
-        var uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceModel.value, inputDeviceConfiguration.value);
-        if(uniqueDevice !== undefined){
-            vscode.postMessage({
-                type: "update",
-                data: Object.assign({"projectName": divProjectName.innerHTML},uniqueDevice),
-            });
-        }
+    function updateBackendState(field, value){
+        vscode.postMessage({
+            type: "update",
+            data: {id: field, value},
+        });
+        // var uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, inputDevicePinCount.value, inputDeviceModel.value, inputDeviceConfiguration.value);
+        // if(uniqueDevice !== undefined){
+        //     vscode.postMessage({
+        //         type: "update",
+        //         data: Object.assign({"projectName": divProjectName.innerHTML},uniqueDevice),
+        //     });
+        // }
 
     }
     /// <*Param*> mfg - manufacturer or undefined
@@ -409,7 +426,7 @@
         );
         inputPinOffset.value = pinConfig?.pinOffset ?? 0;
     }
-
+    registerExtensionListner();
     vscode.postMessage({ type: 'ready' });
     
 })();

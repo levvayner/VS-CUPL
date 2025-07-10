@@ -371,5 +371,5 @@ function getOCDCommand(
         "um232h.cfg"
     ) .replace(/\\/gi, "/")}"  -c "adapter speed 400" -c "transport select jtag" -c "jtag newtap ${
         project.deviceName
-    } tap -irlen 3 -expected-id 0x0${openOcdCode}" -c init -c "${svfParameter}"  -c "sleep 200" -c shutdown \n`;
+    } tap -irlen 3 -expected-id 0x0${openOcdCode}" -c init -c "${svfParameter}"  -c "sleep 200" -c shutdown `;
 }

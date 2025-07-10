@@ -134,7 +134,7 @@ export async function runISP(project: Project) {
             );
             if (commandCopyToLinuxResult.responseCode !== 0) {
                 atfOutputChannel.appendLine(
-                    `Failed to execute ATMISP: ${commandCopyToLinuxResult.responseError}`
+                    `[ATMISP] No SVF file found in ${path.join(extensionState.pathWinTemp,project.projectName)}: ${commandCopyToLinuxResult.responseError}`
                 );
                 return;
             }

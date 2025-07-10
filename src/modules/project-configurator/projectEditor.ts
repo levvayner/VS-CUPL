@@ -5,7 +5,7 @@ import { stateProjects } from '../../states/state.projects';
 import { updatePLD } from '../../explorer/project-file-functions';
 import { Project } from '../../project';
 import { pinConfigurations } from '../../devices/pin-configurations';
-import { deviceList } from '../../devices/devices';
+import { DeviceConfiguration, deviceList } from '../../devices/devices';
 import { getNonce } from '../../states/stateManager';
 
 /**
@@ -45,6 +45,8 @@ class PLDProjectDocument extends Disposable implements vscode.CustomDocument {
 
 	private readonly _uri: vscode.Uri;
 
+    private _workingCopy: DeviceConfiguration;
+
 	private _documentData: Uint8Array;
 	private _edits: Project[] = [];
 	// private _savedEdits: PawDrawEdit[] = [];
@@ -60,11 +62,13 @@ class PLDProjectDocument extends Disposable implements vscode.CustomDocument {
 		this._uri = uri;
 		this._documentData = initialContent;
 		this._delegate = delegate;
+        this._workingCopy = JSON.parse(new TextDecoder('utf-8').decode(initialContent));
 	}
 
 	public get uri() { return this._uri; }
 
 	public get documentData(): Uint8Array { return this._documentData; }
+    public get workingCopy(): DeviceConfiguration { return this._workingCopy; }
 
 	private readonly _onDidDispose = this._register(new vscode.EventEmitter<void>());
 	/**
@@ -103,8 +107,11 @@ class PLDProjectDocument extends Disposable implements vscode.CustomDocument {
 		super.dispose();
 	}
 
-    async update(data: Uint8Array){
-        this._documentData = data;
+    // async update(data: Uint8Array){
+    //     this._documentData = data;
+    // }
+    async update(field: string, value: string){
+        this._workingCopy[field] = value;
     }
 
 	/**
@@ -119,11 +126,10 @@ class PLDProjectDocument extends Disposable implements vscode.CustomDocument {
 	 */
 	async saveAs(targetResource: vscode.Uri, cancellation: vscode.CancellationToken): Promise<void> {
 		const fileData = await this._delegate.getFileData();
-        const json = JSON.parse( new TextDecoder('utf-8').decode(fileData));
 		if (cancellation.isCancellationRequested) {
 			return;
 		}
-		await vscode.workspace.fs.writeFile(targetResource, json);
+		await vscode.workspace.fs.writeFile(targetResource, fileData);
 	}
 
     /**
@@ -211,6 +217,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 	): Promise<PLDProjectDocument> {
 		const document: PLDProjectDocument = await PLDProjectDocument.create(uri, openContext.backupId, {
 			getFileData: async () => {
+                return  new TextEncoder().encode(JSON.stringify(document.workingCopy, null, 4));
 				const webviewsForDocument = Array.from(this.webviews.get(document.uri));
 				if (!webviewsForDocument.length) {
 					throw new Error('Could not find webview to save for');
@@ -243,22 +250,24 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
 		}));
 
         document.onDidDispose(async () => {
-            const storedData = await vscode.workspace.fs.readFile(document.uri);
-            const editingData = document.documentData;
-            const isModified = !(storedData.length === editingData.length && storedData.every((sd, idx) => editingData[idx] === sd));
-            if(isModified === true){
-                vscode.window
-                .showInformationMessage(`You have unsaved changes in ${document.uri.fsPath}\nDo you want to save before closing?`, "Yes", "No")
-                .then(async(answer) => {
-                    if (answer === "Yes") {
-                       //await vscode.workspace.fs.writeFile(document.uri, document.documentData);
-                        const customCancellationToken = new vscode.CancellationTokenSource();
-                        const token = customCancellationToken.token;
-                        document.save(token);
-                    }
-                    disposeAll(listeners);
-                });            
-            }
+            // const storedData = await vscode.workspace.fs.readFile(document.uri);
+            // const editingData = document.documentData;
+            // const isModified = !(storedData.length === editingData.length && storedData.every((sd, idx) => editingData[idx] === sd));
+            // if(isModified === true){
+            //     vscode.window
+            //     .showInformationMessage(`You have unsaved changes in ${document.uri.fsPath}\nDo you want to save before closing?`, "Yes", "No")
+            //     .then(async(answer) => {
+            //         if (answer === "Yes") {
+            //            //await vscode.workspace.fs.writeFile(document.uri, document.documentData);
+            //             const customCancellationToken = new vscode.CancellationTokenSource();
+            //             const token = customCancellationToken.token;
+            //             document.save(token);
+            //         }
+            //         disposeAll(listeners);
+            //         return;
+            //     });            
+            // }
+             disposeAll(listeners);
         });
 
 		return document;
@@ -290,32 +299,19 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                     const project = await Project.openProject(document.uri);
 					this.postMessage(webviewPanel, 'initialize', { pinConfigurations:pinConfigurations, deviceList: deviceList, project: project});
 				}
-			}else if(message.type === 'update'){
-                const projectConfig = JSON.stringify( message.data, null, 4);
-                const encodedConfig = new TextEncoder().encode(projectConfig);
-                
-                //const editable = vscode.workspace.fs.isWritableFileSystem(document.uri.scheme);
-                document.update(encodedConfig);
+			}else if(message.type === 'update'){                
+                const editable = vscode.workspace.fs.isWritableFileSystem(document.uri.scheme);
+                document.update(message.data.id, message.data.value);
+                //document.update(encodedConfig);
                 // this.postMessage(webviewPanel, 'update', {
                 //     value: document.documentData,
                 //     editable,
                 // });
             }            
             else if (message.type === 'save'){
-                const projectConfig = JSON.stringify( message.data, null, 4);
-                const buffer = Buffer.from(projectConfig, "utf-8");
-                //const encodedConfig = new TextEncoder().encode( projectConfig);
-                const workingProject = stateProjects.getOpenProject(document.uri);
-                if(workingProject !== undefined){
-                    await vscode.workspace.fs.writeFile(
-                        workingProject.prjFilePath,
-                        buffer
-                    );
-                    //reload project
-                    workingProject.device = message.data;                            
-                    updatePLD(workingProject);
-                    this.postMessage(webviewPanel, 'initialize', { pinConfigurations:pinConfigurations, deviceList: deviceList, project: workingProject});                
-                }
+                const customCancellationToken = new vscode.CancellationTokenSource();
+                const token = customCancellationToken.token;
+                document.save(token);
             }
 		});
 	}
@@ -400,7 +396,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                             <b>Manufacturer</b>
                         </div>
                         <div class="data-entry">
-                            <select id="deviceManufacturer" onChange="webViewHandleClickEvent" >
+                            <select id="deviceManufacturer">
                             </select>
                         </div>
                     </div>
@@ -409,7 +405,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                             <b>Socket</b>
                         </div>
                         <div class="data-entry">
-                            <select id="deviceSocket" onChange="webViewHandleClickEvent" >
+                            <select id="deviceSocket">
                             </select>
                         </div>
                     </div>       
@@ -418,7 +414,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                             <b>Pins</b>
                         </div>
                         <div class="data-entry">
-                            <select id="devicePinCount" onChange="webViewHandleClickEvent" >
+                            <select id="devicePinCount">
                             </select>
                         </div>
                     </div>
@@ -427,7 +423,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                             <b>Model</b>
                         </div>
                         <div class="data-entry">
-                            <select id="deviceModel" onChange="webViewHandleClickEvent" >
+                            <select id="deviceModel">
                             </select>
                         </div>
                     </div>
@@ -436,7 +432,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                             <b>Configuration</b>
                         </div>
                         <div class="data-entry">
-                            <select id="deviceConfiguration" onChange="webViewHandleClickEvent" >
+                            <select id="deviceConfiguration">
                             </select>
                         </div>
                     </div>
@@ -448,7 +444,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                             <b>Device Name</b>
                         </div>
                         <div class="data-entry">
-                            <input readonly id="deviceName" />
+                            <input readonly id="deviceName"/>
                         </div>
                     </div>
                     <div class="data-row">
@@ -456,7 +452,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                             <b>Device Code</b>
                         </div>
                         <div class="data-entry">
-                            <input readonly id="deviceCode" />
+                            <input readonly id="deviceCode"/>
                         </div>
                     </div>
                     <div class="data-row">
@@ -464,7 +460,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                             <b>Pin Offset</b>
                         </div>
                         <div class="data-entry">
-                            <input readonly id="pinOffset" />
+                            <input readonly id="pinOffset"/>
                         </div>
                     </div>
 
@@ -518,12 +514,15 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
                 this.postMessage(panel, 'initialize', { pinConfigurations:pinConfigurations, deviceList: deviceList, project: project});
                 return;
             case 'update':{
-                 const projectConfig = JSON.stringify( message.data, null, 4);
-                await this.updateProjectFile(document, projectConfig);
+                //const projectConfig = JSON.stringify( message.data, null, 4);
+                // document.update(message.data);
+                document.update(message.data.id, message.data.value);
+                //await this.updateProjectFile(document, projectConfig);
                 break;
             }
             case 'save':{
-                 const projectConfig = JSON.stringify( message.data, null, 4);
+                const projectConfig = JSON.stringify( message.data, null, 4);
+                // document.update(message.data);
                 await  this.updateProjectFile(document, projectConfig);
 
                
@@ -567,11 +566,11 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
         const projectConfig = new TextDecoder('utf-8').decode(document.documentData);
         // Just replace the entire document every time for this example extension.
         // A more complete extension should compute minimal edits instead.
-        const lines =  Array.from(projectConfig).filter(c => c === '\n').length;
-        edit.replace(
+        const lines =  Array.from(projectConfig).filter(c => c === '\n').length + 1;
+       edit.replace(
             document.uri,
-            new vscode.Range(0, 0,lines, 0),
-            JSON.stringify(json, null, 2));
+            new vscode.Range(0, 0,lines, projectConfig.length - projectConfig.lastIndexOf('\n')),
+            json);
 
         return await vscode.workspace.applyEdit(edit);
     }

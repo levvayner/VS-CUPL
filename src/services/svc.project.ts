@@ -63,16 +63,21 @@ export async function registerCreateProjectCommand(createProjectCommandName: str
         await createPLD(project);
 
         state.write("last-known-VS-project-path", paths[0]);
+        state.write('pending-project-open',project.projectPath.fsPath);
 
         await vscode.workspace.updateWorkspaceFolders(0, 0, {
             uri: project?.projectPath,
             name: project.projectName,
         });
-        await projectFileProvider.setWorkspace(project.projectPath.fsPath);
-        //atfOutputChannel.appendLine(`Created project: ${project.projectName} - ${project.prjFilePath}`);
-        vscode.commands.executeCommand('vscode.openWith', project.prjFilePath, PLDProjectEditorProvider.viewType);
+        // setTimeout(async () => {
+        //     if (!project) { return; }
+        //     await projectFileProvider.setWorkspace(project.projectPath.fsPath);
+        //     //atfOutputChannel.appendLine(`Created project: ${project.projectName} - ${project.prjFilePath}`);
+        //     vscode.commands.executeCommand('vscode.openWith', project.prjFilePath, PLDProjectEditorProvider.viewType);
+            
+        //     await projectFileProvider.refresh();
+        // }, 500);
         
-        await projectFileProvider.refresh();
         //await vscode.commands.executeCommand("vscode.openFolder", project?.projectPath);
 
         //await providerChipView.openProjectChipView(project);

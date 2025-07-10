@@ -5,6 +5,9 @@ import { providerActiveProject } from "../editor/active-project-view";
 import { homedir } from "os";
 import path = require("path/posix");
 import { isWindows } from "../os/platform";
+import { stateManager } from "./stateManager";
+import { PLDProjectEditorProvider } from "../modules/project-configurator/projectEditor";
+import { ProjectFilesProvider } from "../explorer/project-files-provider";
 
 
 export class StateGlobal {
@@ -34,16 +37,25 @@ export class StateGlobal {
     private _cuplDefinitions: string = "Atmel.dl";
 
     public constructor(){
-//        this.loadPaths();
     }
 
-    public activate(context: vscode.ExtensionContext){
+    public async activate(context: vscode.ExtensionContext){
         this._isConfigured = (vscode.workspace.getConfiguration("vs-cupl").get("CompletedWalkthrough") as boolean) ?? false;// context.globalState.get("vs-cupl.extension-configured") as boolean ?? false;
         if(!this._isConfigured){
             //start welcome guide to install
             vscode.commands.executeCommand('workbench.action.openWalkthrough', 'VaynerSystems.vs-cupl#cupl-dev-install', false);
         }
         this.loadPaths();
+        //check if state has pending 'proejct open'
+        const state = stateManager(context);
+        const pendingProjectOpen = state.read('pending-project-open');
+        if(pendingProjectOpen !== undefined && pendingProjectOpen.length > 0){
+            const project = await Project.openProject(vscode.Uri.parse(pendingProjectOpen));
+            const projectFileProvider = await ProjectFilesProvider.instance();
+            await projectFileProvider.setWorkspace(project.projectPath.fsPath);
+            vscode.commands.executeCommand('vscode.openWith', project.prjFilePath, PLDProjectEditorProvider.viewType);
+            state.write('pending-project-open', '');
+        }
     }
 
     public get activeProject() {

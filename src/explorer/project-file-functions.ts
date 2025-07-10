@@ -4,6 +4,7 @@ import {
     AtmIspDeviceAction,
     AtmIspDeviceActionType,
     AtmIspDeploymentCableType,
+    DeviceConfiguration,
 } from "../devices/devices";
 import { atfOutputChannel } from "../os/command";
 import { isWindows } from "../os/platform";
@@ -155,7 +156,7 @@ export async function createProject(
     await vscode.workspace.fs.createDirectory(newProject.projectPath);
     await vscode.workspace.fs.writeFile(
         newProject.prjFilePath,
-        new TextEncoder().encode(`{"projectName": "${newProject.projectName}"}`)
+        new TextEncoder().encode(JSON.stringify(Object.assign({"projectName": newProject.projectName}, ({} as DeviceConfiguration)),null,4))
     );
    
     // if (!newProject) {

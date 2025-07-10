@@ -55,6 +55,7 @@ export enum DeviceDeploymentType {
 }
 
 export class DeviceConfiguration {
+    [key: string]: any;
     manufacturer: DeviceManufacturer = DeviceManufacturer.atmel;
     packageType: DevicePackageType = DevicePackageType.dip;
     pinCount: number = 20;
@@ -62,7 +63,7 @@ export class DeviceConfiguration {
     deviceName: string = ""; // ATF1504AS, ATF1504ASL, ATF1504ASV, ATF1504ASVL | ISP:
     programmer: DeviceDeploymentType = DeviceDeploymentType.any;
     deviceUniqueName: string = "";
-    deviceOptions: string | undefined = "";
+    deviceOptions: string[] | undefined = [];
     pinConfiguration: string | undefined;
     usesPldNameFieldForJedFile: boolean = false;
     openOCDDeviceCode: string | undefined;
