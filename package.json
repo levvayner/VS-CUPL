@@ -1,697 +1,1091 @@
 {
-  "name": "VS-CUPL",
-  "displayName": "VS Cupl",
-  "publisher": "VaynerSystems",
-  "description": "Tools for ATMEL and Lattice CPLD programming projects.\n Helps create and manage projects and connect to tools.",
-  "version": "0.3.4",
-  "pricing": "Free",
-  "repository": {
-    "url": "https://github.com/levvayner/ATF15xx-cupl",
-    "type": "git"
-  },
-  "preview": true,
-  "engines": {
-    "vscode": "^1.77.0"
-  },
-  "icon": "assets/images/circuit-board3.png",
-  "license": "SEE LICENSE IN LICENSE.txt",
-  "categories": [
-    "Programming Languages",
-    "Debuggers",
-    "Snippets"
-  ],
-  "keywords": [
-    "cupl",
-    "atmisp",
-    "vs-cupl"
-  ],
-  "activationEvents": [
-    "workspaceContains:**.pld"
-  ],
-  "main": "./dist/extension.js",
-  "contributes": {
-    "snippets": [
-      {
-        "language": "Cupl",
-        "path": "./snippets/pld-snippets.json"
-      }
-    ],
-    "configurationDefaults": {
-      "[Cupl]": {
-        "editor.semanticHighlighting.enabled": true
-      }
+    "name": "vs-cupl",
+    "displayName": "VS Cupl",
+    "publisher": "VaynerSystems",
+    "description": "Tools for ATMEL and Lattice CPLD programming.\n Create and manage multiple projects, connect to build and deployment tools.",
+    "version": "0.4.0",
+    "pricing": "Free",
+    "repository": {
+        "url": "https://github.com/levvayner/ATF15xx-cupl",
+        "type": "git"
     },
-    "keybindings": [
-      {
-        "command": "vs-cupl.compileProject",
-        "key": "ctrl+shift+b",
-        "mac": "shift+cmd+b",
-        "when": "resourceExtname =~ /.*\\.pld$/ || resourceExtname =~ /.*\\.prj$/"
-      }
-    ],   
-    "configuration": {
-      "title": "VS Cupl",
-      "properties": {
-        "vs-cupl.WinePath": {
-          "type": "string",
-          "default": "/usr/bin/wine",
-          "description": "Path to wine binary"
+    "preview": false,
+    "engines": {
+        "vscode": "^1.77.0"
+    },
+    "icon": "assets/images/circuit-board3.png",
+    "license": "SEE LICENSE IN LICENSE.txt",
+    "categories": [
+        "Programming Languages",
+        "Debuggers",
+        "Snippets"
+    ],
+    "keywords": [
+        "cupl",
+        "atmisp",
+        "vs-cupl",
+        "minipro",
+        "jdec",
+        "pld",
+        "cpld",
+        "jed",
+        "svf"
+    ],
+    "activationEvents": [
+        "workspaceContains:**.pld"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "walkthroughs": [
+            {
+                "id": "cupl-dev-install",
+                "title": "PLD Development Enviroment",
+                "description": "A guide to configure your environment for CUPL development.",
+                "steps": [
+                    {
+                        "id": "linux-wine",
+                        "title": "Linux Platform: Wine",
+                        "description": "Is WINE installed?\n [Check](command:vs-cupl.checkWineCommand)",
+                        "when": "isLinux",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/Wine.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyWineInstalled"
+                        ]
+                    },
+                    {
+                        "id": "windows-wsl",
+                        "title": "Windows Platform: WSL",
+                        "description": "Is WSL enabled?\n [Check](command:vs-cupl.checkWslCommand)",
+                        "when": "isWindows",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/WSL.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyWslInstalled"
+                        ]
+                    },
+                    {
+                        "id": "windows-wsl-usbipd",
+                        "title": "Windows Platform: WSL USBIPD-WIN",
+                        "description": "Is WSL USBIPD installed?\n [Check](command:vs-cupl.checkUsbipdCommand)",
+                        "when": "isWindows",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/WSLUsbIpd.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyWSLUsbIpdInstalled"
+                        ]
+                    },
+                    
+                    {
+                        "id": "checkCupl",
+                        "title": "Wincupl",
+                        "description": "This step will check for Wincupl.\n[Check](command:vs-cupl.checkCuplCommand)",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/Wincupl.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyCuplInstalled"
+                        ]
+                    },
+                    {
+                        "id": "checkAtmpisp",
+                        "title": "ATMISP",
+                        "description": "This step will check for ATMISP.\n[Check](command:vs-cupl.checkAtmispCommand)",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/Atmisp.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyAtmispInstalled"
+                        ]
+                    }
+                    ,
+                    {
+                        "id": "checkPof2Jed",
+                        "title": "POF2JED",
+                        "description": "This step will check for POF2JED.\n[Check](command:vs-cupl.checkPof2JedCommand)",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/Pof2Jed.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyPof2JedInstalled"
+                        ]
+                    }
+                    
+                    ,
+
+                    {
+                        "id": "checkMinipro",
+                        "title": "Minipro",
+                        "description": "This step will check for Minipro. If not installed, we'll attempt to install it.\n[Check](command:vs-cupl.checkMiniproCommand)",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/Minipro.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyMiniproInstalled"
+                        ]
+                    },
+                    {
+                        "id": "checkOpenOcd",
+                        "title": "Open OCD",
+                        "description": "This step will check for OpenOCD. If not installed, we'll attempt to install it.\n[Check](command:vs-cupl.checkOpenOcdCommand)",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/OpenOcd.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyOpenOcdInstalled"
+                        ]
+                    },   
+                    {
+                        "id": "verifyAll",
+                        "title": "Verify Environment is Ready",
+                        "description": "Verify all prerequisites are fulfilled.\n[Check](command:vs-cupl.checkPrerequisite)",
+                        "media": {
+                            "markdown": "assets/docs/walkthroughs/setup/VerifyAll.md"
+                        },
+                        "completionEvents": [
+                            "onContext:VerifyPrerequisitesInstalled"
+                        ]                        
+                    }
+                ]
+            }
+        ],
+        "snippets": [
+            {
+                "language": "Cupl",
+                "path": "./snippets/pld-snippets.json"
+            }
+        ],
+        "configurationDefaults": {
+            "[Cupl]": {
+                "editor.semanticHighlighting.enabled": true
+            }
         },
-        "vs-cupl.OpenOCDBinPath": {
-          "type": "string",
-          "default": "/usr/bin/openocd",
-          "description": "Path to OpenOCD binary"
+        "customEditors": [
+            {
+                "viewType": "vs-cupl.projectEditor",
+                "displayName": "PLD Project",
+                "selector": [
+                    {
+                        "filenamePattern": "*.prj"
+                    }
+                ]
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "vs-cupl.compileProject",
+                "key": "ctrl+shift+b",
+                "mac": "shift+cmd+b",
+                "when": "resourceExtname =~ /.*\\.pld$/ || resourceExtname =~ /.*\\.prj$/"
+            },
+            {
+                "command": "vs-cupl.configureProject",
+                "key": "f4",
+                "mac": "f4"
+                
+            },            
+            {
+                "command": "vs-cupl.deployJed",
+                "key": "f6",
+                "mac": "f6"
+            },
+            {
+                "command": "vs-cupl.deploySvf",
+                "key": "f7",
+                "mac": "f7"                
+            }
+            
+            
+        ],
+        "configuration": [
+            {
+                "title": "General",
+                "properties": {
+                    "vs-cupl.DebugLevel": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Print Debug Messages"
+                    },
+                    "vs-cupl.RunInIntegratedTerminal": {
+                        "type": "boolean",
+                        "default": false,
+                        "enum": [
+                            false,
+                            true
+                        ],
+                        "enumDescriptions": [
+                            "Run in VS Code output window",
+                            "Run in VS Code terminal\n** !!WARNING!! WILL BREAK PROCESSES **"
+                        ],
+                        "enumItemLabels": [
+                            "Output",
+                            "Terminal"
+                        ],
+                        "description": "Run commands in VS Code integrated terminal?"
+                    },
+                    "vs-cupl.CompletedWalkthrough": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Completed On-boarding Walkthrough"
+                    }
+                }
+            },           
+            {
+                "title": "Paths",
+                "properties": {
+                    "vs-cupl.PathOpenOcd": {
+                        "type": "string",
+                        "default": "/usr/bin/openocd",
+                        "description": "Path to OpenOCD binary"
+                    },
+                    "vs-cupl.PathOpenOcdDl": {
+                        "type": "string",
+                        "default": "/usr/share/local/openocd",
+                        "description": "Open OCD Data path"
+                    },
+                    "vs-cupl.PathMinipro": {
+                        "type": "string",
+                        "default": "/usr/bin/minipro",
+                        "description": "Path to minipro binary"
+                    },
+                    "vs-cupl.PathMiniproShare": {
+                        "type": "string",
+                        "default": "/usr/share/minipro",
+                        "description": "Minipro share path"
+                    },
+                    "vs-cupl.PathWinDrive": {
+                        "type": "string",
+                        "default": "drive_c",
+                        "description": "Path to Windows C:\\ drive (on Linux machine running wine)"
+                    },
+                    "vs-cupl.PathWinTemp": {
+                        "type": "string",
+                        "default": "temp",
+                        "description": "Path to temp folder relative to C:\\ drive"
+                    },
+                    "vs-cupl.PathCupl": {
+                        "type": "string",
+                        "default": "Wincupl/Shared/cupl.exe",
+                        "description": "Absolute path to cupl executable"
+                    },
+                    "vs-cupl.PathCuplDL": {
+                        "type": "string",
+                        "default": "Wincupl/Shared/",
+                        "description": "Folder where cupl library is located"
+                    },
+                    "vs-cupl.PathCuplFitters": {
+                        "type": "string",
+                        "default": "Wincupl/WunCupl/Fitters/",
+                        "description": "Folder where cupl fitters (e.g. find1504.exe) are located"
+                    },
+                    "vs-cupl.PathATMISP": {
+                        "type": "string",
+                        "default": "ATMISP7/ATMISP.exe",
+                        "description": "Path of ASMISP.exe relative to C:\\"
+                    },
+                    "vs-cupl.PathPof2Jed": {
+                        "type": "string",
+                        "default": "POF2JED/bin/POF2JED.exe",
+                        "description": "Path of ASMISP.exe relative to C:\\"
+                    }
+                }
+            },
+            {
+                "title": "Wine (Linux)",
+                "properties": {
+                    "vs-cupl.IsLinux": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Is this a linux machine?"
+                    },
+                    "vs-cupl.PathWine": {
+                        "type": "string",
+                        "default": "/usr/bin/wine",
+                        "description": "Path to wine binary"
+                    },
+                    "vs-cupl.WinePrefix": {
+                        "type": "string",
+                        "default": ".wine",
+                        "description": "WINEPREFIX environment variable"
+                    },
+                    "vs-cupl.WineArch": {
+                        "type": "string",
+                        "default": "win32",
+                        "enum": [
+                            "win32",
+                            "win64"
+                        ],
+                        "enumDescriptions": [
+                            "32 bit",
+                            "64 bit"
+                        ],
+                        "description": "WINEARCH environment variable"
+                    }
+                }
+            },
+            {
+                "title": "Minipro",
+                "properties": {
+                    "vs-cupl.MiniproPerformHardwareCheck": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Perform hardware check before programming?",
+                        "order": 3
+                    },
+                    "vs-cupl.MiniproPerformUnprotect": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Unprotect before programming?"                        ,
+                        "order": 4
+                    },
+                    "vs-cupl.MiniproPerformProtect": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Protect after programming?",
+                        "order": 5
+                    },
+                    "vs-cupl.MiniproSkipVerify": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Skip verifying program",
+                        "order": 6
+                    },
+                    "vs-cupl.MiniproSkipErase": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Skip erasing before programming",
+                        "order": 7
+                    },
+                    "vs-cupl.MiniproErrorOnIdMismatch": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Error if device ID does not match?",
+                        "order": 1
+                    },
+                    "vs-cupl.MiniproFileSizeMismatch": {
+                        "type": "string",
+                        "default": "Error",
+                        "enum": [
+                            "Error",
+                            "Warning",
+                            "Ignore"
+                        ],
+                        "description": "How should file size missmatch be handled?",
+                        "order": 2
+                    },
+                    "vs-cupl.MiniproOptionVpp": {
+                        "type": "number",
+                        "default": 0,
+                        "enum": [
+                            0,
+                            9,
+                            9.5,
+                            10,
+                            11,
+                            11.5,
+                            12,
+                            12.5,
+                            13,
+                            13.5,
+                            14,
+                            14.5,
+                            15.5,
+                            16,
+                            16.5,
+                            17,
+                            18,
+                            19,
+                            21
+                        ],
+                        "enumDescriptions": [
+                            "AUTO",
+                            "9V - TL866II+ only",
+                            "9.5V - TL866II+ only",
+                            "10V - TL866+ and TL866A/CS",
+                            "11V - TL866II+ only",
+                            "11.5V - TL866II+ only",
+                            "12V - TL866II+ only",
+                            "12.5V - TL866+ and TL866A/CS",
+                            "13V - TL866II+ only",
+                            "13.5V - TL866+ and TL866A/CS",
+                            "14V - TL866+ and TL866A/CS",
+                            "14.5V - TL866II+ only",
+                            "15.5V - TL866+ and TL866A/CS",
+                            "16V - TL866+ and TL866A/CS",
+                            "16.5V - TL866II+ only",
+                            "17V - TL866+ and TL866A/CS",
+                            "18V - TL866A/CS only",
+                            "19V - TL866II+ only",
+                            "21V - TL866A/CS only"
+                        ],
+                        "description": "Set Progamming Voltage"                        ,
+                        "order": 8
+                    },
+                    "vs-cupl.MiniproOptionVdd": {
+                        "type": "number",
+                        "default": 0,
+                        "enum": [
+                            0,
+                            3.3,
+                            4,
+                            4.5,
+                            5,
+                            5.5,
+                            6.5
+                        ],
+                        "enumDescriptions": [
+                            "AUTO",
+                            "3.3v",
+                            "4v",
+                            "4.5v",
+                            "5v",
+                            "5.5v",
+                            "6.5v"
+                        ],
+                        "description": "Set VDD Write Voltage"                        ,
+                        "order": 9
+                    },
+                    "vs-cupl.MiniproOptionVcc": {
+                        "type": "number",
+                        "default": "1",
+                        "description": "Set VCC Verify Voltage (0 - AUTO)"
+                        ,
+                        "order": 10
+                    },
+                    "vs-cupl.MiniproOptionPulse": {
+                        "type": "number",
+                        "default": 0,
+                        "description": "Set Programming Pulse Delay (0 - 65535 usec)",
+                        "minimum": 0,
+                        "maximum": 65535                        ,
+                        "order": 11
+                    },
+                    "vs-cupl.MiniproCustomArgs": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Set additional minipro parameters",
+                        "order": 12
+                    }
+                }
+            },
+            {
+                "title": "CUPL Language",
+                "properties": {
+                    "vs-cupl.CuplDefinitions": {
+                        "type": "string",
+                        "default": "Atmel",
+                        "enum": [
+                            "Atmel",
+                            "cupl"
+                        ],
+                        "enumDescriptions": [
+                            "Uses Atmel chip library",
+                            "Uses cupl chip library"
+                        ],
+                        "description": "Select linking library to use for CUPL?"
+                    },
+                    "vs-cupl.CuplOptimization": {
+                        "type": "number",
+                        "default": 1,
+                        "enum": [
+                            0,
+                            1,
+                            2,
+                            3,
+                            4
+                        ],
+                        "enumDescriptions": [
+                            "0 - None",
+                            "1 - Quick",
+                            "2 - Quine-McCluskey",
+                            "3 - Presto",
+                            "4 - Espresso"
+                        ],
+                        "description": "Optimization Level: 0 - None, 1 - Quick, 2 - Quine-McCluskey, 3- Presto, 4- Espresso"
+                    }
+                }
+            }
+        ],
+        "iconThemes": [
+            {
+                "id": "vscupl-files",
+                "label": "VSCupl Icons",
+                "path": "./assets/icons/vs-product-icon-theme.json"
+            }
+        ],
+        "icons": {
+            "pld-file": {
+                "description": "PLD File",
+                "default": {
+                    "fontPath": "./distroicons.woff",
+                    "fontCharacter": "\\E001"
+                }
+            },
+            "distro-fedora": {
+                "description": "Ubuntu icon",
+                "default": {
+                    "fontPath": "./distroicons.woff",
+                    "fontCharacter": "\\E002"
+                }
+            }
         },
-        "vs-cupl.OpenOCDDLPath":{
-            "type":"string",
-            "default": "/usr/share/openocd"
-        },
-        "vs-cupl.MiniproPath": {
-          "type": "string",
-          "default": "/usr/bin",
-          "description": "Path to minipro binary"
-        },
-        "vs-cupl.WinCPath": {
-          "type": "string",
-          "default": "~/.wine/drive_c",
-          "description": "Path to Windows C:\\ drive (on Linux machine running wine)"
-        },
-        "vs-cupl.WinTempPath": {
-          "type": "string",
-          "default": "temp",
-          "description": "Path to temp folder relative to C:\\ drive"
-        },
-        "vs-cupl.CuplBinPath": {
-          "type": "string",
-          "default": "Wincupl/Shared/cupl.exe",
-          "description": "Absolute path to cupl executable"
-        },
-        "vs-cupl.CuplDLPath":{
-            "type": "string",
-            "default": "Wincupl/Shared/",
-            "description": "Folder where cupl library is located"
-        },
-        "vs-cupl.CuplOptimization":{
-            "type": "number",
-            "default": 1,
-            "enum": [0, 1, 2, 3, 4],
-            "enumDescriptions": [
-                "0 - None",
-                "1 - Quick",
-                "2 - Quine-McCluskey",
-                "3- Presto",
-                "4- Espresso"
+        "languages": [
+            {
+                "id": "Cupl",
+                "aliases": [
+                    "PLD",
+                    "Pld"
+                ],
+                "extensions": [
+                    ".PLD",
+                    ".pld"
+                ],
+                "configuration": "./languages/language-configuration-cupl.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "Cupl",
+                "scopeName": "source.cupl",
+                "path": "./syntaxes/cupl.tmLanguage.json"
+            }
+        ],
+        "viewsWelcome": [
+            {
+                "view": "vs-cupl-project-files",
+                "contents": "No files found.\n[Create Project](command:vs-cupl.createProject)\n[Open Project](command:vs-cupl.openProject)\n\n",
+                "when": "workbenchState == empty"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "vs-cupl-project-files-container",
+                    "title": "vs-cupl",
+                    "icon": "assets/images/circuit-board3.png"
+                }
             ],
-            "description": "Optimization Level: 0 - None, 1 - Quick, 2 - Quine-McCluskey, 3- Presto, 4- Espresso"
+            "panel": [
+                {
+                    "id": "chip-layout-panel",
+                    "title": "Chip View",
+                    "icon": "assets/images/run.png"
+                }
+            ]
         },
-        "vs-cupl.CuplFittersPath":{
-            "type": "string",
-          "default": "Wincupl/WunCupl/Fitters/",
-          "description": "Folder where cupl fitters (e.g. find1504.exe) are located"
-        },
-        "vs-cupl.AtmIspBinPath": {
-          "type": "string",
-          "default": "ATMEL_PLS_Tools/ATMISP/ATMISP.exe",
-          "description": "Path of ASMISP.exe relative to C:\\"
-        },
-        "vs-cupl.DebugLevel": {
-          "type": "boolean",
-          "default": false,
-          "description": "Print Debug Messages"
-        },       
-        "vs-cupl.RunInIntegratedTerminal": {
-          "type:": "boolean",
-          "default": false,
-          "description": "Run commands in VS Code integrated terminal?"
-        },
-        "vs-cupl.CuplDefinitions": {
-          "type:": "string",
-          "default": "Atmel",
-          "enum": ["Atmel","cupl"],
-          "enumDescriptions": [
-            "Uses Atmel chip library",
-            "Uses cupl chip library"
-          ],
-          
-          "description": "Select linking library to use for CUPL?"
-        }
-      }
-    },
-    "iconThemes": [
-      {
-        "id": "vscupl-files",
-        "label": "VSCupl Icons",
-        "path": "./assets/icons/vs-product-icon-theme.json"
-      }
-    ],
-    "icons": {
-      "pld-file": {
-        "description": "PLD File",
-        "default": {
-          "fontPath": "./distroicons.woff",
-          "fontCharacter": "\\E001"
-        }
-      },
-      "distro-fedora": {
-        "description": "Ubuntu icon",
-        "default": {
-          "fontPath": "./distroicons.woff",
-          "fontCharacter": "\\E002"
-        }
-      }
-    },
-    "languages": [
-      {
-        "id": "Cupl",
-        "aliases": [
-          "PLD",
-          "Pld"
-        ],
-        "extensions": [
-          ".PLD",
-          ".pld"
-        ],
-        "configuration": "./languages/language-configuration-cupl.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "Cupl",
-        "scopeName": "source.cupl",
-        "path": "./syntaxes/cupl.tmLanguage.json"
-      }
-    ],
-    "viewsWelcome": [
-      {
-        "view": "vs-cupl-project-files",
-        "contents": "No files found.\n[Create Project](command:vs-cupl.createProject)\n[Open Project](command:vs-cupl.openProject)\n\n",
-        "when": "workbenchState == empty"
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "vs-cupl-project-files-container",
-          "title": "vs-cupl",
-          "icon": "assets/images/circuit-board3.png"
-        }
-      ],
-      "panel": [
-				{
-					"id" : "chip-layout-panel",
-					"title": "Chip View",
-					"icon": "assets/images/run.png"
-				}
-			]
-    },
-    "views": {
-      "vs-cupl-project-files-container": [
-        {
-          "id": "vs-cupl-project-files",
-          "name": "Projects",
-          "contextualTitle": "Projects"
-        },
-        {
-          "id": "vs-cupl-project-tasks",
-          "name": "Project Tasks",
-          "contextualTitle": "Project Tasks"
-        },
-        {
-            "type": "webview",
-            "id": "vs-cupl.active-project-view",
-            "name": "Active Project",
-            "contextualTitle": "Active Project"
-        }
-      ],
-      "chip-layout-panel": [
-				{
+        "views": {
+            "vs-cupl-project-files-container": [
+                {
+                    "id": "vs-cupl-project-files",
+                    "name": "Projects",
+                    "contextualTitle": "Projects"
+                },
+                {
+                    "id": "vs-cupl-project-tasks",
+                    "name": "Project Tasks",
+                    "contextualTitle": "Project Tasks"
+                },
+                {
+                    "type": "webview",
+                    "id": "vs-cupl.active-project-view",
+                    "name": "Active Project",
+                    "contextualTitle": "Active Project"
+                }
+            ],
+            "chip-layout-panel": [
+                {
                     "type": "webview",
                     "id": "vs-cupl.chip-view",
                     "name": "Chip View"
                 },
                 {
                     "type": "webview",
-					"id": "vs-cupl.pin-view",
-					"name": "Pin View"
-				}
-			]
+                    "id": "vs-cupl.pin-view",
+                    "name": "Pin View"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "vs-cupl-project-files.refreshEntry",
+                    "when": "view == vs-cupl-project-files",
+                    "group": "navigation"
+                },
+                {
+                    "command": "vs-cupl.createProject",
+                    "when": "view == vs-cupl-project-files",
+                    "group": "navigation"
+                },
+                {
+                    "command": "vs-cupl.openProject",
+                    "when": "view == vs-cupl-project-files",
+                    "group": "navigation"
+                },
+                {
+                    "command": "vs-cupl.importProject",
+                    "when": "view == vs-cupl-project-files",
+                    "group": "navigation"
+                },
+                {
+                    "command": "vs-cupl.openSettings",
+                    "when": "view == vs-cupl-project-files"
+                },
+                {
+                    "command": "vs-cupl.checkPrerequisite",
+                    "when": "view == vs-cupl-project-tasks || focusedView == 'workbench.explorer.fileView'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "vs-cupl.createProject",
+                    "when": "view == vs-cupl-project-tasks",
+                    "group": "g1"
+                },
+                {
+                    "command": "vs-cupl.openProject",
+                    "when": "view == vs-cupl-project-tasks",
+                    "group": "g1"
+                },
+                {
+                    "command": "vs-cupl.importProject",
+                    "when": "view == vs-cupl-project-tasks",
+                    "group": "g1"
+                },
+                {
+                    "command": "vs-cupl.createProject",
+                    "when": "focusedView == 'workbench.explorer.fileView'",
+                    "group": "c1@1"
+                },
+                {
+                    "command": "vs-cupl.openProject",
+                    "when": "focusedView == 'workbench.explorer.fileView'",
+                    "group": "c1@2"
+                },
+                {
+                    "command": "vs-cupl.importProject",
+                    "when": "focusedView == 'workbench.explorer.fileView'",
+                    "group": "c1@3"
+                },
+                {
+                    "command": "vs-cupl.openSettings",
+                    "when": "focusedView == 'workbench.explorer.fileView'",
+                    "group": "extension@1"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "vs-cupl.editEntry",
+                    "when": "view == vs-cupl-project-files && viewItem =~ /.*\\.pld$/"
+                },
+                {
+                    "command": "vs-cupl.compileProject",
+                    "when": "view == vs-cupl-project-files && viewItem =~ /.*\\.pld$/",
+                    "group": "inline"
+                },
+                {
+                    "command": "vs-cupl.deploySvf",
+                    "when": "view == vs-cupl-project-files &&  viewItem =~ /.*\\.svf$/",
+                    "group": "inline"
+                },
+                {
+                    "command": "vs-cupl.deployJed",
+                    "when": "view == vs-cupl-project-files && viewItem =~ /.*\\.jed$/",
+                    "group": "inline"
+                },
+                {
+                    "command": "vs-cupl.runISP",
+                    "when": "view == vs-cupl-project-files && viewItem =~ /.*\\.chn$/",
+                    "group": "inline"
+                },
+                {
+                    "command": "vs-cupl.cloneProject",
+                    "when": "view == vs-cupl-project-files && viewItem == folder",
+                    "group": "navigation"
+                },
+                {
+                    "command": "vs-cupl.closeProject",
+                    "when": "view == vs-cupl-project-files && viewItem == folder",
+                    "group": "inline@4"
+                },
+                {
+                    "command": "vs-cupl.configureProject",
+                    "when": "view == vs-cupl-project-files && viewItem == folder",
+                    "group": "inline"
+                },
+                {
+                    "command": "vs-cupl.cloneProject",
+                    "when": "view == vs-cupl-project-files && viewItem == folder",
+                    "group": "inline"
+                },
+                {
+                    "command": "vs-cupl-project-files.deleteEntry",
+                    "when": "view == vs-cupl-project-files && viewItem != folder"
+                },
+                {
+                    "command": "vs-cupl.compileProject",
+                    "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanBuildPld ",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "vs-cupl.deployJed",
+                    "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanDeployToMinipro",
+                    "group": "inline@2"
+                },
+                {
+                    "command": "vs-cupl.runMiniProDump",
+                    "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanDeployToMinipro",
+                    "group": "inline@3"
+                },
+                {
+                    "command": "vs-cupl.eraseChipMiniPro",
+                    "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanDeployToMinipro",
+                    "group": "inline@4"
+                },
+                {
+                    "command": "vs-cupl.runISP",
+                    "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanExportToAtmIsp",
+                    "group": "inline@4"
+                },
+                {
+                    "command": "vs-cupl.deploySvf",
+                    "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanDeployToOpenOcd",
+                    "group": "inline@5"
+                },
+                {
+                    "command": "vs-cupl.eraseChipSvf",
+                    "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanDeployToOpenOcd",
+                    "group": "inline@6"
+                },
+                {
+                    "command": "vs-cupl.eraseTempFiles",
+                    "when": "view == vs-cupl-project-tasks && !isWindows",
+                    "group": "inline@7"
+                },
+                {
+                    "command": "vs-cupl.configureProject",
+                    "when": "view == vs-cupl-project-tasks",
+                    "group": "inline@8"
+                },
+                {
+                    "command": "vs-cupl.closeProject",
+                    "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanBuildPld",
+                    "group": "inline@9"
+                },
+                {
+                    "command": "vs-cupl.cloneProject",
+                    "when": "view == vs-cupl-project-tasks && viewItem =~ /.*\\.prj$/",
+                    "group": "inline@10"
+                },
+                {
+                    "command": "vs-cupl.openInExplorer",
+                    "when": "(view == vs-cupl-project-files || view == vs-cupl-project-tasks)"
+                },
+                {
+                    "command": "vs-cupl.configureProject",
+                    "when": "activeViewlet == 'workbench.view.explorer' && viewItem == folder",
+                    "group": "inline"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "vs-cupl.compileProject",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .pld",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "vs-cupl.eraseChipSvf",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .svf",
+                    "group": "inline@2"
+                },
+                {
+                    "command": "vs-cupl.deploySvf",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .svf",
+                    "group": "inline@3"
+                },
+                {
+                    "command": "vs-cupl.deployJed",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .jed && resourceFilename in vscupl.projectCanDeployToMinipro",
+                    "group": "inline@4"
+                },
+                {
+                    "command": "vs-cupl.runISP",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .jed && resourceFilename in vscupl.projectCanExportToAtmIsp",
+                    "group": "inline@5"
+                },
+                {
+                    "command": "vs-cupl.runISP",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .chn",
+                    "group": "inline@6"
+                },
+                {
+                    "command": "vs-cupl.configureProject",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .prj",
+                    "group": "inline@7"
+                },
+                {
+                    "command": "vs-cupl.cloneProject",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.ProjectNames",
+                    "group": "inline@8"
+                },
+                {
+                    "command": "vs-cupl.compileProject",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanBuildPld",
+                    "group": "inline@9"
+                },
+                {
+                    "command": "vs-cupl.deployJed",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanDeployToMinipro",
+                    "group": "inline@10"
+                },
+                {
+                    "command": "vs-cupl.runISP",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanExportToAtmIsp",
+                    "group": "inline@11"
+                },
+                {
+                    "command": "vs-cupl.eraseChipSvf",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanDeployToOpenOcd",
+                    "group": "inline@12"
+                },
+                {
+                    "command": "vs-cupl.deploySvf",
+                    "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanDeployToOpenOcd",
+                    "group": "inline@13"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "vs-cupl.deploySvf",
+                    "when": " resourceExtname == .svf"
+                },
+                {
+                    "command": "vs-cupl.eraseChipSvf",
+                    "when": "resourceExtname == .svf || resourceFilename in vscupl.projectCanDeployToOpenOcd"
+                },
+                {
+                    "command": "vs-cupl.compileProject",
+                    "when": " resourceExtname == .PLD"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "vs-cupl.eraseChipSvf",
+                "title": "Erase Chip (OpenOCD)",
+                "icon": {
+                    "light": "assets/images/light/trash.svg",
+                    "dark": "assets/images/dark/trash.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.deploySvf",
+                "title": "Deploy SVF File",
+                "icon": {
+                    "light": "assets/images/light/arrow-circle-up.svg",
+                    "dark": "assets/images/dark/arrow-circle-up.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.openSettings",
+                "title": "VS Cupl Settings",
+                "icon": {
+                    "light": "assets/images/light/gear.svg",
+                    "dark": "assets/images/dark/gear.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.importProject",
+                "title": "Import Project",
+                "icon": {
+                    "light": "assets/images/light/plus-circle.svg",
+                    "dark": "assets/images/dark/plus-circle.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.createProject",
+                "title": "Create Project",
+                "icon": {
+                    "light": "assets/images/light/plus.svg",
+                    "dark": "assets/images/dark/plus.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.cloneProject",
+                "title": "Clone Project",
+                "icon": {
+                    "light": "assets/images/light/plus-square.svg",
+                    "dark": "assets/images/dark/plus-square.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.configureProject",
+                "title": "Configure Project",
+                "icon": {
+                    "light": "assets/images/light/box.svg",
+                    "dark": "assets/images/dark/box.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.openProject",
+                "title": "Open Project",
+                "icon": {
+                    "light": "assets/images/light/folder.svg",
+                    "dark": "assets/images/dark/folder.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.compileProject",
+                "title": "Compile Project",
+                "icon": {
+                    "light": "assets/images/light/layers-3.svg",
+                    "dark": "assets/images/dark/layers-3.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.runISP",
+                "title": "Run ISP",
+                "icon": {
+                    "light": "assets/images/light/zap.svg",
+                    "dark": "assets/images/dark/zap.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.deployJed",
+                "title": "Deploy JED",
+                "icon": {
+                    "light": "assets/images/light/arrow-circle-up.svg",
+                    "dark": "assets/images/dark/arrow-circle-up.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.runMiniProDump",
+                "title": "Dump chip (minipro)",
+                "icon": {
+                    "light": "assets/images/light/arrow-circle-down.svg",
+                    "dark": "assets/images/dark/arrow-circle-down.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.eraseChipMiniPro",
+                "title": "Erase Chip (minipro)",
+                "icon": {
+                    "light": "assets/images/light/trash.svg",
+                    "dark": "assets/images/dark/trash.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.eraseTempFiles",
+                "title": "Erase Temp Files",
+                "icon": {
+                    "light": "assets/images/light/delete.svg",
+                    "dark": "assets/images/dark/delete.svg"
+                }
+            },
+            {
+                "command": "vs-cupl-project-files.on_item_clicked",
+                "title": "VS project item"
+            },
+            {
+                "command": "vs-cupl-project-files.refreshEntry",
+                "title": "Refresh",
+                "icon": {
+                    "light": "assets/images/light/refresh.svg",
+                    "dark": "assets/images/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.closeProject",
+                "title": "Close Project",
+                "icon": {
+                    "light": "assets/images/light/exit.svg",
+                    "dark": "assets/images/dark/exit.svg"
+                }
+            },
+            {
+                "command": "vs-cupl-project-files.addEntry",
+                "title": "Add PLD",
+                "icon": {
+                    "light": "assets/images/light/plus.svg",
+                    "dark": "assets/images/dark/plus.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.editEntry",
+                "title": "Edit",
+                "icon": {
+                    "light": "assets/images/light/edit.svg",
+                    "dark": "assets/images/dark/edit.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.openInExplorer",
+                "title": "Open in Explorer",
+                "icon": {
+                    "light": "assets/images/light/edit.svg",
+                    "dark": "assets/images/dark/edit.svg"
+                }
+            },
+            {
+                "command": "vs-cupl-project-files.deleteEntry",
+                "title": "Delete",
+                "icon": {
+                    "light": "assets/images/light/trash.svg",
+                    "dark": "assets/images/dark/trash.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.checkPrerequisite",
+                "title": "Check Prerequisites",
+                "icon": {
+                    "light": "assets/images/light/waveform-ecg.svg",
+                    "dark": "assets/images/dark/waveform-ecg.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.showActiveProject",
+                "title": "Show Active Project Panel"
+            },
+            {
+                "command": "catCoding.start",
+                "title": "Start Cat Coding"
+            }
+
+        ]
     },
-    "menus": {
-      "view/title": [
-        {
-          "command": "vs-cupl-project-files.refreshEntry",
-          "when": "view == vs-cupl-project-files",
-          "group": "navigation"
-        },
-        {
-          "command": "vs-cupl.createProject",
-          "when": "view == vs-cupl-project-files",
-          "group": "navigation"
-        },
-        {
-          "command": "vs-cupl.openProject",
-          "when": "view == vs-cupl-project-files",
-          "group": "navigation"
-        },
-        {
-          "command": "vs-cupl.importProject",
-          "when": "view == vs-cupl-project-files",
-          "group": "navigation"
-        },
-        {
-          "command": "vs-cupl.openSettings",
-          "when": "view == vs-cupl-project-files"
-        },
-        {
-          "command": "vs-cupl.checkPrerequisite",
-          "when": "view == vs-cupl-project-tasks || focusedView == 'workbench.explorer.fileView'",
-          "group": "navigation"
-        },
-        {
-          "command": "vs-cupl.createProject",
-          "when": "view == vs-cupl-project-tasks",
-          "group": "g1"
-        },
-        {
-          "command": "vs-cupl.openProject",
-          "when": "view == vs-cupl-project-tasks",
-          "group": "g1"
-        },
-        {
-          "command": "vs-cupl.importProject",
-          "when": "view == vs-cupl-project-tasks",
-          "group": "g1"
-        },
-        {
-          "command": "vs-cupl.createProject",
-          "when": "focusedView == 'workbench.explorer.fileView'",
-          "group": "c1@1"
-        },
-        {
-          "command": "vs-cupl.openProject",
-          "when": "focusedView == 'workbench.explorer.fileView'",
-          "group": "c1@2"
-        },
-        {
-          "command": "vs-cupl.importProject",
-          "when": "focusedView == 'workbench.explorer.fileView'",
-          "group": "c1@3"
-        },
-        {
-          "command": "vs-cupl.openSettings",
-          "when": "focusedView == 'workbench.explorer.fileView'",
-          "group": "extension@1"
-        }
-        
-      ],
-      "view/item/context": [
-        {
-          "command": "vs-cupl.editEntry",
-          "when": "view == vs-cupl-project-files && viewItem =~ /.*\\.pld$/"
-        },
-        {
-          "command": "vs-cupl.compileProject",
-          "when": "view == vs-cupl-project-files && viewItem =~ /.*\\.pld$/",
-          "group": "inline"
-        },
-        {
-          "command": "vs-cupl.deploySvf",
-          "when": "view == vs-cupl-project-files &&  viewItem =~ /.*\\.svf$/",
-          "group": "inline"
-        },
-        {
-          "command": "vs-cupl.deployJed",
-          "when": "view == vs-cupl-project-files && viewItem =~ /.*\\.jed$/",
-          "group": "inline"
-        },
-        {
-          "command": "vs-cupl.runISP",
-          "when": "view == vs-cupl-project-files && viewItem =~ /.*\\.chn$/",
-          "group": "inline"
-        },
-        {
-          "command": "vs-cupl.cloneProject",
-          "when": "view == vs-cupl-project-files && viewItem == folder",
-          "group": "navigation"
-        },
-        {
-          "command": "vs-cupl.closeProject",
-          "when": "view == vs-cupl-project-files && viewItem == folder",
-          "group": "inline@4"
-        },
-        {
-          "command": "vs-cupl.configureProject",
-          "when": "view == vs-cupl-project-files && viewItem == folder",
-          "group": "inline"
-        },
-        {
-          "command": "vs-cupl-project-files.deleteEntry",
-          "when": "view == vs-cupl-project-files && viewItem != folder"
-        },
-        {
-          "command": "vs-cupl.compileProject",
-          "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanBuildPld ",
-          "group": "inline@1"
-        },
-        {
-          "command": "vs-cupl.deployJed",
-          "when": "view == vs-cupl-project-tasks  && viewItem in vscupl.projectCanDeployToMinipro",
-          "group": "inline@2"
-        },
-        {
-          "command": "vs-cupl.runMiniProDump",
-          "when": "view == vs-cupl-project-tasks  && viewItem in vscupl.projectCanDeployToMinipro",
-          "group": "inline@3"
-        },
-        {
-          "command": "vs-cupl.eraseChipMiniPro",
-          "when": "view == vs-cupl-project-tasks  && viewItem in vscupl.projectCanDeployToMinipro",
-          "group": "inline@4"
-        },
-        
-        {
-          "command": "vs-cupl.runISP",
-          "when": "view == vs-cupl-project-tasks  && viewItem in vscupl.projectCanExportToAtmIsp",
-          "group": "inline@4"
-        },
-        {
-          "command": "vs-cupl.deploySvf",
-          "when": "view == vs-cupl-project-tasks  && viewItem in vscupl.projectCanDeployToOpenOcd",
-          "group": "inline@5"
-        },
-        {
-          "command": "vs-cupl.eraseChipSvf",
-          "when": "view == vs-cupl-project-tasks  && viewItem in vscupl.projectCanDeployToOpenOcd",
-          "group": "inline@6"
-        },
-        {
-          "command": "vs-cupl.configureProject",
-          "when": "view == vs-cupl-project-tasks",
-          "group": "inline@7"
-        },
-        {
-          "command": "vs-cupl.closeProject",
-          "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanBuildPld",
-          "group": "inline@8"
-        },
-        {
-          "command": "vs-cupl.cloneProject",
-          "when": "view == vs-cupl-project-tasks && viewItem =~ /.*\\.prj$/",
-          "group": "inline@9"
-        },
-        {
-          "command": "vs-cupl.openInExplorer",
-          "when": "(view == vs-cupl-project-files || view == vs-cupl-project-tasks)"
-        },
-        {
-          "command": "vs-cupl.configureProject",
-          "when": "activeViewlet == 'workbench.view.explorer' && viewItem == folder",
-          "group": "inline"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "vs-cupl.compileProject",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .pld",
-          "group": "inline@1"
-        },        
-        {
-          "command": "vs-cupl.eraseChipSvf",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .svf",
-          "group": "inline@2"
-        },
-        {
-          "command": "vs-cupl.deploySvf",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .svf",
-          "group": "inline@3"
-        },
-        {
-          "command": "vs-cupl.deployJed",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .jed && resourceFilename in vscupl.projectCanDeployToMinipro",
-          "group": "inline@4"
-        },
-        {
-          "command": "vs-cupl.runISP",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .jed && resourceFilename in vscupl.projectCanExportToAtmIsp",
-          "group": "inline@5"
-        },
-        {
-          "command": "vs-cupl.runISP",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .chn",
-          "group": "inline@6"
-        },
-        {
-          "command": "vs-cupl.configureProject",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceExtname == .prj",
-          "group": "inline@7"
-        },
-        {
-          "command": "vs-cupl.cloneProject",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.ProjectNames",
-          "group": "inline@8"
-        },
-        {
-          "command": "vs-cupl.compileProject",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanBuildPld",
-          "group": "inline@9"
-        },
-        {
-          "command": "vs-cupl.deployJed",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanDeployToMinipro",
-          "group": "inline@10"
-        },
-        {
-          "command": "vs-cupl.runISP",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanExportToAtmIsp",
-          "group": "inline@11"
-        },
-        {
-          "command": "vs-cupl.eraseChipSvf",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanDeployToOpenOcd",
-          "group": "inline@12"
-        },
-        {
-          "command": "vs-cupl.deploySvf",
-          "when": "activeViewlet == 'workbench.view.explorer' && resourceFilename in vscupl.projectCanDeployToOpenOcd",
-          "group": "inline@13"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "vs-cupl.deploySvf",
-          "when": " resourceExtname == .svf"
-        },
-        {
-          "command": "vs-cupl.eraseChipSvf",
-          "when": "resourceExtname == .svf || resourceFilename in vscupl.projectCanDeployToOpenOcd"
-        },
-        {
-          "command": "vs-cupl.compileProject",
-          "when": " resourceExtname == .PLD"
-        }
-      ]
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "webpack",
+        "watch": "webpack --watch",
+        "package": "webpack --mode production --devtool hidden-source-map",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
     },
-    "commands": [      
-      {
-        "command": "vs-cupl.eraseChipSvf",
-        "title": "Erase Chip (OpenOCD)",
-        "icon": {
-          "light": "assets/images/light/trash.svg",
-          "dark": "assets/images/dark/trash.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.deploySvf",
-        "title": "Deploy SVF File",
-        "icon": {
-          "light": "assets/images/light/arrow-circle-up.svg",
-          "dark": "assets/images/dark/arrow-circle-up.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.openSettings",
-        "title": "VS Cupl Settings",
-        "icon": {
-          "light": "assets/images/light/gear.svg",
-          "dark": "assets/images/dark/gear.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.importProject",
-        "title": "Import Project",
-        "icon": {
-          "light": "assets/images/light/plus-circle.svg",
-          "dark": "assets/images/dark/plus-circle.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.createProject",
-        "title": "Create Project",
-        "icon": {
-          "light": "assets/images/light/plus.svg",
-          "dark": "assets/images/dark/plus.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.cloneProject",
-        "title": "Clone Project",
-        "icon": {
-          "light": "assets/images/light/plus-square.svg",
-          "dark": "assets/images/dark/plus-square.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.configureProject",
-        "title": "Configure Project",
-        "icon": {
-          "light": "assets/images/light/box.svg",
-          "dark": "assets/images/dark/box.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.openProject",
-        "title": "Open Project",
-        "icon": {
-          "light": "assets/images/light/folder.svg",
-          "dark": "assets/images/dark/folder.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.compileProject",
-        "title": "Compile Project",
-        "icon": {
-          "light": "assets/images/light/layers-3.svg",
-          "dark": "assets/images/dark/layers-3.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.runISP",
-        "title": "Run ISP",
-        "icon": {
-          "light": "assets/images/light/zap.svg",
-          "dark": "assets/images/dark/zap.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.deployJed",
-        "title": "Deploy JED",
-        "icon": {
-          "light": "assets/images/light/arrow-circle-up.svg",
-          "dark": "assets/images/dark/arrow-circle-up.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.runMiniProDump",
-        "title": "Dump chip (minipro)",
-        "icon": {
-          "light": "assets/images/light/arrow-circle-down.svg",
-          "dark": "assets/images/dark/arrow-circle-down.svg"
-        }        
-      },
-      {
-        "command": "vs-cupl.eraseChipMiniPro",
-        "title": "Erase Chip (minipro)",
-        "icon": {
-          "light": "assets/images/light/trash.svg",
-          "dark": "assets/images/dark/trash.svg"
-        }  
-      },
-      {
-        "command": "vs-cupl-project-files.on_item_clicked",
-        "title": "VS project item"
-      },
-      {
-        "command": "vs-cupl-project-files.refreshEntry",
-        "title": "Refresh",
-        "icon": {
-          "light": "assets/images/light/refresh.svg",
-          "dark": "assets/images/dark/refresh.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.closeProject",
-        "title": "Close Project",
-        "icon": {
-          "light": "assets/images/light/exit.svg",
-          "dark": "assets/images/dark/exit.svg"
-        }
-      },
-      {
-        "command": "vs-cupl-project-files.addEntry",
-        "title": "Add PLD",
-        "icon": {
-          "light": "assets/images/light/plus.svg",
-          "dark": "assets/images/dark/plus.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.editEntry",
-        "title": "Edit",
-        "icon": {
-          "light": "assets/images/light/edit.svg",
-          "dark": "assets/images/dark/edit.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.openInExplorer",
-        "title": "Open in Explorer",
-        "icon": {
-          "light": "assets/images/light/edit.svg",
-          "dark": "assets/images/dark/edit.svg"
-        }
-      },
-      {
-        "command": "vs-cupl-project-files.deleteEntry",
-        "title": "Delete",
-        "icon": {
-          "light": "assets/images/light/trash.svg",
-          "dark": "assets/images/dark/trash.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.checkPrerequisite",
-        "title": "Check Prerequisites",
-        "icon": {
-          "light": "assets/images/light/waveform-ecg.svg",
-          "dark": "assets/images/dark/waveform-ecg.svg"
-        }
-      },
-      {
-        "command": "vs-cupl.showActiveProject",
-        "title":"Show Active Project Panel"
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
-  },
-  "devDependencies": {
-    "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "16.x",
-    "@types/vscode": "^1.77.0",
-    "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
-    "@vscode/test-electron": "^2.3.0",
-    "eslint": "^8.36.0",
-    "glob": "^8.1.0",
-    "mocha": "^10.2.0",
-    "ts-loader": "^9.4.2",
-    "typescript": "^4.9.5",
-    "webpack": "^5.76.3",
-    "webpack-cli": "^5.0.1"
-  },
-  "dependencies": {
-    "resolve-cwd": "^3.0.0",
-    "@vscode/vsce": "^2.15.0",
-    "yo": "^4.3.1"
-  }
+    "devDependencies": {
+        "@types/glob": "^8.1.0",
+        "@types/mocha": "^10.0.1",
+        "@types/node": "16.x",
+        "@types/vscode": "^1.77.0",
+        "@typescript-eslint/eslint-plugin": "^5.56.0",
+        "@typescript-eslint/parser": "^5.56.0",
+        "@vscode/test-electron": "^2.3.0",
+        "eslint": "^8.36.0",
+        "glob": "^8.1.0",
+        "mocha": "^10.2.0",
+        "ts-loader": "^9.4.2",
+        "typescript": "^4.9.5",
+        "webpack": "^5.76.3",
+        "webpack-cli": "^5.0.1"
+    },
+    "dependencies": {
+        "@vscode/vsce": "^2.15.0",
+        "resolve-cwd": "^3.0.0",
+        "vsce": "^2.15.0",
+        "yo": "^4.3.1"
+    }
 }

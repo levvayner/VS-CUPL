@@ -1,0 +1,23 @@
+<svg width="260" height="128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="260" height="128" fill="#1e1e1e"/>
+
+  <!-- Code editor -->
+  <rect x="16" y="32" width="84" height="64" rx="6" fill="#2d2d2d" stroke="#444"/>
+  <circle cx="24" cy="40" r="3" fill="#ff5f56"/>
+  <circle cx="34" cy="40" r="3" fill="#ffbd2e"/>
+  <circle cx="44" cy="40" r="3" fill="#27c93f"/>
+  <rect x="20" y="50" width="72" height="4" fill="#00ffcc"/>
+  <rect x="20" y="58" width="50" height="4" fill="#ffaa00"/>
+  <rect x="20" y="66" width="60" height="4" fill="#ff66cc"/>
+  <rect x="20" y="74" width="40" height="4" fill="#999"/>
+
+  <!-- Small arrow -->
+  <polygon points="108,64 116,58 116,62 148,62 148,66 116,66 116,70" fill="#ffaa00"/>
+
+  <!-- Output box -->
+  <rect x="160" y="32" width="84" height="64" rx="6" fill="#2a2a2a" stroke="#444"/>
+  <text x="202" y="72" text-anchor="middle" font-family="monospace" font-size="12" fill="#00ffcc">&lt;/code&gt;</text>
+
+  <!-- Label -->
+  <text x="130" y="120" text-anchor="middle" font-family="monospace" font-size="20" fill="#00ffcc">Wincupl</text>
+</svg>

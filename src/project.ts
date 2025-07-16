@@ -20,6 +20,9 @@ export class Project {
     public readonly projectPath: vscode.Uri;
     public readonly projectName: string;
     public readonly buildFilePath: vscode.Uri;
+
+    public readonly cuplOptimizationLevel: number = 1;
+    
     private _windowsPldFilePath: string = "";
     private _windowsJedFilePath: string = "";
     private _windowsChnFilePath: string = "";
@@ -173,25 +176,27 @@ export class Project {
             return;
         }
         const extConfig = vscode.workspace.getConfiguration("vs-cupl");
-        //const workingWindowsFolder = path.join( (extConfig.get('WinCPath') as string).replace('~',homedir()), (extConfig.get('WinTempPath') as string));
+        //const workingWindowsFolder = path.join( (extConfig.get('PathWinDrive') as string).replace('~',homedir()), (extConfig.get('WinTempPath') as string));
         const workingWindowsFolder = path.join(
-            "c:\\",
-            extConfig.get("WinTempPath") as string
+            `c:`,
+            extConfig.get("PathWinTemp") as string
         );
         console.log(`Initializing project ${this.projectName}`);
         //(this.winBaseFolder + this.winTempPath).replace(/\//gi,'\\');
-        this.windowsPldFilePath =
-            workingWindowsFolder.replace(/\\\\/gi, "\\") +
-            "\\" +
-            this.projectName +
-            ".pld";
-        this.windowsJedFilePath =
-            workingWindowsFolder.replace(/\\\\/gi, "\\") +
-            "\\" +
-            this.projectName +
-            ".jed";
-        this.windowsChnFilePath =
-            workingWindowsFolder + "\\" + this.projectName + ".chn";
+        this.windowsPldFilePath = path
+            .join(workingWindowsFolder, this.projectName,this.projectName + '.pld')
+            .replace(/\//g, '\\');
+
+            // workingWindowsFolder.replace(/\\\\/gi, "\\") +
+            // "\\" +
+            // this.projectName +
+            // ".pld";
+        this.windowsJedFilePath = path
+            .join(workingWindowsFolder, this.projectName,this.projectName + '.jed')
+            .replace(/\//g, '\\');
+        this.windowsChnFilePath = path
+        .join(workingWindowsFolder, this.projectName,this.projectName + '.chn')
+        .replace(/\//g, '\\');
         if (!pathExists(this.projectPath.fsPath)) {
             await vscode.workspace.fs.createDirectory(this.projectPath);
         }
@@ -247,7 +252,7 @@ export class Project {
         this._devicePins = getDevicePins(
             device?.pinConfiguration ?? "",
             device?.pinCount ?? 0,
-            (device?.packageType.toLowerCase() as DevicePackageType) ??
+            (device?.packageType?.toLowerCase() as DevicePackageType) ??
                 DevicePackageType.any
         );
     }

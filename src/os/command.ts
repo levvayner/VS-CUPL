@@ -1,8 +1,15 @@
 import * as cp from "child_process";
 import * as vscode from "vscode";
-import { ProjectFilesProvider } from "../explorer/project-files-provider";
 import { isWindows } from "./platform";
+import { extensionState } from "../states/state.global";
+import path = require("path/posix");
 export let atfOutputChannel: vscode.OutputChannel;
+
+export enum ShellType {
+    cmd = "cmd.exe",
+    bash = "bash",
+    powershell = "powershell.exe",
+}
 
 export class Command {
     public debugMessages: boolean;
@@ -22,11 +29,11 @@ export class Command {
     async runCommand(
         title: string,
         workingPath: string | undefined,
-        buildCommand: string
+        buildCommand: string,
+        commandProc : ShellType = ShellType.cmd
     ): Promise<ShellResponse> {
         const extConfig = vscode.workspace.getConfiguration("vs-cupl");
-        const projectFileProvider = await ProjectFilesProvider.instance();
-
+        
         this.debugMessages = extConfig.get("DebugLevel") as boolean;
         if (this.runInIntegratedTerminal) {
             // call terminal to run md file
@@ -42,8 +49,8 @@ export class Command {
                 t.sendText(
                     `cd "${
                         isWindows()
-                            ? projectFileProvider.winBaseFolder
-                            : projectFileProvider.wineBaseFolder
+                            ? extensionState.pathWinDrive
+                            : path.join(extensionState.pathWineBase ??'',extensionState.pathWinDrive??'')
                     }"`
                 );
             }
@@ -73,11 +80,12 @@ export class Command {
                             ? workingPath
                             : isWindows()
                             ? undefined
-                            : projectFileProvider.wineBaseFolder;
+                            : extensionState.pathWineBase;
                 }
                 const cmdResponse = await this.execShell(
                     buildCommand,
-                    workingDirectory
+                    workingDirectory,
+                    commandProc
                 );
                 if (this.debugMessages) {
                     atfOutputChannel.appendLine(
@@ -91,10 +99,10 @@ export class Command {
                 return cmdResponse;
             } catch (err: any) {
                 atfOutputChannel.appendLine(
-                    " @ " +
+                    " ** ERROR ** @ " +
                         new Date().toLocaleString() +
                         ":" +
-                        err.responseText.replace("\r\n", "\n")
+                        err.responseText.replace("\r\n", "\n")                       
                 );
                 //vscode.window.showErrorMessage(err.responseError.message, err.responseError.stack);
                 return err;
@@ -102,24 +110,13 @@ export class Command {
         }
     }
 
-    private execShell = (cmd: string, dir: string | undefined = undefined) =>
-        new Promise<ShellResponse>((resolve, reject) => {
-            // try{
-            //     const out = cp.spawn(cmd,{
-            //         cwd: dir,
-            //         shell: true
-            //     });
-            //     out.stdout.addListener
-            //     resolve(new ShellResponse(0, , undefined) );
-            // }
-            // catch(err){
-
-            // }
-            // shell.cd(dir);
-
+    private execShell = (cmd: string, dir: string | undefined = undefined, commandProc: ShellType = 
+        ShellType.cmd
+    ) =>
+        new Promise<ShellResponse>((resolve, reject) => {            
             cp.exec(
                 cmd,
-                { cwd: dir, shell: isWindows() ? "cmd.exe" : "bash" },
+                { cwd: dir, shell: isWindows() ? commandProc : "bash" },
                 (err, out) => {
                     if (err) {
                         if (atfOutputChannel && this.debugMessages) {
@@ -136,6 +133,31 @@ export class Command {
                 }
             );
         });
+
+        private execPowerShell = (cmd: string, dir: string | undefined = undefined) =>
+            new Promise<ShellResponse>((resolve, reject) => {            
+                if(!isWindows() ){
+                    return;
+                }
+                cp.exec(
+                    cmd,
+                    { cwd: dir, shell: "powershell.exe" },
+                    (err, out) => {
+                        if (err) {
+                            if (atfOutputChannel && this.debugMessages) {
+                                atfOutputChannel.appendLine(
+                                    `Error executing: ${cmd}\nOutput:\n${out}\nError Details:\n${err.message}`
+                                );
+                            }
+    
+                            return reject(
+                                new ShellResponse((err as any).code, out, err)
+                            );
+                        }
+                        return resolve(new ShellResponse(0, out, undefined));
+                    }
+                );
+            });
 }
 
 export class ShellResponse {

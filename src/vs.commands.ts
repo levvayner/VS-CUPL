@@ -9,6 +9,7 @@ export const openProjectCommand = "vs-cupl.openProject";
 export const importProjectCommand = "vs-cupl.importProject";
 export const closeProjectCommand = "vs-cupl.closeProject";
 export const compileProjectCommand = "vs-cupl.compileProject";
+export const cleanTempDirectory = "vs-cupl.eraseTempFiles";
 export const deleteEntryCommand = "vs-cupl-project-files.deleteEntry";
 export const deployJedCommand = "vs-cupl.deployJed";
 export const runISPCommand = "vs-cupl.runISP";
@@ -17,3 +18,13 @@ export const runMiniProDumpCommand = "vs-cupl.runMiniProDump";
 export const runMiniProEraseChipCommand = "vs-cupl.eraseChipMiniPro";
 export const checkPrerequisiteCommand = "vs-cupl.checkPrerequisite";
 export const openInExplorerCommand = "vs-cupl.openInExplorer";
+export const checkCuplDependencyCommand = "vs-cupl.checkCuplCommand";
+export const checkMiniproDependencyCommand = "vs-cupl.checkMiniproCommand";
+export const checkAtmispDependencyCommand = "vs-cupl.checkAtmispCommand";
+export const checkPof2JedDependencyCommand = "vs-cupl.checkPof2JedCommand";
+export const checkWineDependencyCommand = "vs-cupl.checkWineCommand";
+export const checkWslDependencyCommand = "vs-cupl.checkWslCommand";
+export const checkUsbipdDependencyCommand = "vs-cupl.checkUsbipdCommand";
+export const checkOpenOcdDependencyCommand = "vs-cupl.checkOpenOcdCommand";
+
+

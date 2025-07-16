@@ -1,0 +1,22 @@
+<svg width="260" height="128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="260" height="128" fill="#1e1e1e"/>
+
+  <!-- Left: Windows-style app window -->
+  <rect x="16" y="36" width="72" height="56" rx="6" fill="#2d2d2d" stroke="#444"/>
+  <circle cx="24" cy="44" r="3" fill="#ff5f56"/>
+  <circle cx="34" cy="44" r="3" fill="#ffbd2e"/>
+  <circle cx="44" cy="44" r="3" fill="#27c93f"/>
+  <rect x="20" y="52" width="64" height="4" fill="#00ffcc"/>
+  <rect x="20" y="60" width="48" height="4" fill="#ffaa00"/>
+  <rect x="20" y="68" width="40" height="4" fill="#999999"/>
+
+  <!-- Arrow -->
+  <polygon points="100,64 108,58 108,62 140,62 140,66 108,66 108,70" fill="#ffaa00"/>
+
+  <!-- Right: Linux terminal block -->
+  <rect x="152" y="36" width="92" height="56" rx="6" fill="#2a2a2a" stroke="#444"/>
+  <text x="198" y="64" text-anchor="middle" font-family="monospace" font-size="12" fill="#00ffcc">$ _</text>
+
+  <!-- Label -->
+  <text x="130" y="120" text-anchor="middle" font-family="monospace" font-size="20" fill="#00ffcc">Wine</text>
+</svg>

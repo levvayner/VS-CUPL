@@ -1,24 +1,40 @@
-# vs-cupl README
+# VS CUPL Documentation
+## Table of Contents
+- [Background](#background)
+- [Features](#features)
+- [Deployment](#deployment)
+- [Getting Started](#getting-started)
+- [User Environment](#user-environment)
+- [Using VS Cupl](#using-vs-cupl)
+- [Extension Settings](#vs-cupl-extension-settings)
+- [CUPL Language](#cupl-language)
+- [Release Notes](#release-notes)
+- [Roadmap](#roadmap)
+## Background
+ Atmel and Lattice corporations created CPLDs, or Complex Programmable Logical Devices in the late 80s and 90s. These allowed designs for combinational logic to be more robust, with support for ISP (In System Programming) for some of the later models.
+
+ These PLDs can be very useful in many circuits, but the software and other deployment tools are all but abandoned. While they are still available online, their user interface and experience are sub par. And most of the tools require Windows with a Linux Subsystem for some devices, or Linux with Wine.
+
+ While developing with these PLDs, I was fed up with the experience, and decided to create an extension for Visual Studio Code, to improve the development and deployment process.
+
+ This extension is the result of that effort; I continue to improve on it as I use it and find places for improvement. 
+
+ **New contributors are always welcome!**
+
 ## Features
 
-![Preview](assets/images/vs-cupl-crete-project-2.gif)
+Manage CUPL projects with functionality to automate build, convert, and deployment to CPLDs.
+Gives your PLD design projects version control through git!
 
-- VS Project veiwer with functionality to automate build, convert, and deploy cupl code to CPLDs.
----
-- Project Management
-  - Create a project
+
+#### Project Management
+  - Create a project, or import an existing `Cupl` PLD file.
   
-  - Edit ``PLD`` file
-
-  - Import `Cupl` (.PLD files) into projects
-
-  - Configure project - define chip to program  
-
   - Open multiple Projects
 
   - View Pin Layout and signals for CPLD
 
-- Code assistance
+#### Code assistance
 
   - Double click pins on chip viewer to insert snippet
 
@@ -27,258 +43,109 @@
   - Intellisense for logical signal type
 
 
-- Deployment
-  - Output window to show all ineractions with third party software
-
-  - Pre-requisite check to ensure all tools are installed and configured
-
-  - Supports deployment paths to TL886+ for DIP and other 24 and 28 pin CPLDs and homebrew programmer for QFP chips.
-
-  - Compile ``PLD`` to ``jed`` format
-
-  ![Preview](assets/images/vs-cupl-compile.gif)
-
-  - ## For **ATF15xx** family:
-
-    - ATMISP to convert ``jed`` to ``svf`` format
-
-    - Program ``svf`` file to an ISP homebrew ATF1500 family chip programmer
-
-    ![Preview](assets/images/vs-cupl-deploy-openocd.gif)
-
-  - ## For **ATF22/G16/G20/G22/V750** families:
-
-    -Use minipro to deploy ``jed`` file to device
-
----
-
-
----
-### **TESTED ON A LIMITED SET OF CPLDs (ATF1504AS, g20v10)**
-
----
-## Workspace folders
-
-Use VS Code workspace feature to keep your projects organized.
-Structure should be
-
- - ```/workspace``` folder - when creating a project, use this folder as your root folder.
-
-- ```/workspace/PROJECT1``` - creating a project named PROJECT1 would create the folder
-
-- ```/workspace/PROJECT1\PROJECT1.pld``` - creating a project named PROJECT1 would create the default cupl file
-
-> For multiple projects, the same root folder wiil have several project folders
-
-- ```/workspace``` 
-
-- ```/workspace/PROJECT1```
-
-- ```/workspace/PROJECT1\PROJECT1.pld``` 
-
-- ```/workspace/PROJECT2```
-
-- ```/workspace/PROJECT2\PROJECT2.pld```
-
-
-Save your Code Workspace file to the workspace folder.
-This folder can represent one product that has seceral chips or projects.
-- ```/workspace/my-widget-project.code-workspace``` 
-
----
-
-# Installation (Linux)
-
-## Requirements
-### **Wine**
-```sudo apt update```
-
-```sudo apt install wine64```
-
-#### Updated winetricks
-```sudo winetricks --self-update```
-
-
-#### Wine must have MFC42.DLL installed
-```./winetricks mfc40```
-
-```./winetricks mfc42```
-
-### Download and copy to wine windows folder
->[Dwsbc32.ocx](assets/bin/Dwsbc32.ocx) to ~/.wine/drive_c/windows/system32
-
->[ftd2xx.dll](assets/bin/ftd2xx.dll) to ~/.wine/drive_c/windows/syswow64
-
-### **Prochip 5.0.1**
-Need to have Atmel ProChip (5.0.1) installed [Download ProChip 5.0.1](https://www.microchip.com/prochiplicensing/#/)
-### **ATMISP**
-  Need to have Atmel ATMISP (v7.3) [Download ATMISP](http://ww1.microchip.com/downloads/en/DeviceDoc/ATMISP7.zip)
-  Need to have FTD2xx.dll file in ATMISP folder
-
-### **WinCUPL**
-[Download WinCUPL](https://www.microchip.com/en-us/products/fpgas-and-plds/spld-cplds/pld-design-resources)
-
-### **Minipro**
-  Used for programming jed files using TL866II programmer
-```shell
-sudo apt-get install build-essential pkg-config git libusb-1.0-0-dev fakeroot debhelper dpkg-dev
-
-git clone https://gitlab.com/DavidGriffith/minipro.git
-
-cd minipro
-
-fakeroot dpkg-buildpackage -b -us -uc
-
-sudo dpkg -i ../minipro_0.4-1_amd64.deb
-```
----
-
-# Installtion (Windows)
-### **Prochip 5.0.1**
-Need to have Atmel ProChip (5.0.1) installed [Download ProChip 5.0.1](https://www.microchip.com/prochiplicensing/#/)
-### **ATMISP**
-  Need to have Atmel ATMISP (v7.3) [Download ATMISP](http://ww1.microchip.com/downloads/en/DeviceDoc/ATMISP7.zip)
-  Need to have FTD2xx.dll file in ATMISP folder
-
-### **WinCUPL**
-[Download WinCUPL](https://www.microchip.com/en-us/products/fpgas-and-plds/spld-cplds/pld-design-resources)
-
- Additional considerations for cupl
- > Register directory with fitters (in administrative command prompt)
-
- ```
-  @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "[Environment]::SetEnvironmentVariable('path',\"c:\Wincupl\WinCupl\Fitters;$([Environment]::GetEnvironmentVariable('path','Machine'))\",'Machine');"
- ```
- ### **OpenOCD** 
-
- Download [OpenOCD](https://github.com/xpack-dev-tools/openocd-xpack/releases)
- - Download and extract to path (C:\Programs\openocd)
- - Execute in Administrative command window
- ```
- @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "[Environment]::SetEnvironmentVariable('path',\"C:\Programs\openocd\bin;$([Environment]::GetEnvironmentVariable('path','Machine'))\",'Machine');"
- ```
- ### **minipro** 
-
-Download [minipro](https://gitlab.com/DavidGriffith/minipro.git)
-
-Install MSYS2 from here: [MSYS2](https://www.msys2.org/)
-### **In msys2 terminal**
-```
-pacman -S mingw-w64-ucrt-x86_64-gcc
-pacman -S make
-pacman -S pkg-config
-pacman -S git
-pacman -S gcc
-
-git clone https://gitlab.com/DavidGriffith/minipro.git
-cd minipro
-
-
-
-make
-```
-
-## ***IF** make fails*
-
-```
-#fix errors preventing compilation
-echo -e '#include "minipro.h" \n#include "version.h"' > version.c
-echo -e '#define VERSION "0.6"\n#ifndef GIT_DATE\n\t#define GIT_DATE "01/01/2001"\n#endif\n#ifndef GIT_BRANCH\n\t#define GIT_BRANCH "main"\n#endif\n#ifndef  GIT_HASH\n\t#define GIT_HASH "blahblahblah"\n#endif' > version.h
-```
-
-
-cd c:\\msys64\\home\\%USERNAME%\\minipro
-SETX PATH=%PATH%;%cd%;
-
-### **In an *elevated* command prompt(NOT MSYS2)**
-
-
-cd [path of where minipro build saved minipro.exe]
-
-e.g.
-
-```
-
-cd c:\\msys64\\home\\%USERNAME%\\minipro
-
-SETX PATH=%PATH%;%cd%;C:\\msys64\\usr\\bin
-
-```
-or
- ```
- @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "[Environment]::SetEnvironmentVariable('path',\""C:\msys64\usr\bin;C:\msys64\home\\minipro;$([Environment]::GetEnvironmentVariable('path','Machine'))\",'Machine');"
- ```
-### **VS Code must be restarted after updating these paths**
----
-</br>
-</br>
-
-
-# Extension Settings
+### Deployment
+
+There are two deployment chains available, depending on your PLD.
+#### Small PLDs
+[Detailed instructions for minipro based deployment](assets/docs/DEPLOY-MINIPRO.md)
+
+Deployment is a one step process for PLDs like ATF22xx, G16xx, G20xx, G22xx, V750
+![Minipro Deployment](assets/docs/minipro-deployment-workflow.png)
+- **Uses a TL886+ or similar programmer**
+- Once you have completed your changes in the PLD file, compile.
+- Once compiled, press F6 or use the menu shortcut to deploy your JED file to your PLD using minipro.
+
+#### Large PLDs
+[Detailed instructions for OpenOCD based deployment](assets/docs/DEPLOY-OPENOCD.md)
+
+For larger PLDs like the ATF1500 family, there is an additional step required to convert the JDEC file to SVF format
+![OpenOCD Deployment](assets/docs/openocd-deployment-workflow.png)
+ - **Uses a [homebrew ATF1500 family chip programmer](https://github.com/hackup/ATF2FT232HQ)**
+ 
+
+## Getting Started
+### Environment Configuration Walkthrough
+When you first install the extension, you should see a walkthrough screen to help you set up your environment. If you do not, open your command pallette and search for Walkthrough
+![Open Walkthroughs](assets/docs/walkthrough.png)
+and select the PLD walkthrough
+![PLD Walkthough](assets/docs/pld-walkthrough.png)
+
+Follow the steps to ensure your environment is ready for deployment to your PLD
+![PLD Walkthough Details](assets/docs/pld-walkthrough-details.png)
+
+For troubleshooting toolchain or environment issues, it may be useful to read the legacy [Installation instructions](assets/docs/INSTALL.md)
+
+### User Environment
+#### Using VS Cupl
+VS Cupl has seven parts for your PLD project development:
+![VS Cupl User Interface](assets/docs/user-interface-parts.png)
+**1. Project View**
+Header lets you create new projects, import existing PLD files into new projects, open existing VS Cupl projects, or access extension settings
+![Project Header](assets/docs/user-interface-projects-top.png)
+Project details lets you view and modify your design file, as well as execute actions for each type of file
+![](assets/docs/user-interface-projects-project-items.png)
+
+**2. Project Tasks**
+Header lets you create, import, or open a project, or check prerequsites
+![Project Tasks Header](assets/docs/user-interface-project-tasks-top.png)
+Project Items let you execite all build and deployment actions for the project
+![Project Tasks Details](assets/docs/user-interface-project-tasks-project-items.png)
+
+**3. Active Project View**
+Shows you details about the project. You can access project configuration screen for here.
+![Active Project](assets/docs//user-interface-active-project.png)
+
+**4. Output**
+View details of commands and tools executed on your behalf.
+![output window](assets/docs/user-interface-output.png)
+
+**5. Chip View**
+Visual representation of your selected PLD. 
+Click on a pin to select it, giving you the pin assignment and type information.
+Double click a pin to add to your design file
+![Chip View](assets/docs/user-interface-chip-view.png)
+
+**6. PLD editor**
+Supports intellisence for CUPL keywords and signals.
+![Editor](assets/docs/user-interface-editor.png)
+
+**7. Pin View**
+Listing of all pins of your project's PLD.
+Shows type of pin and any additional functionality it might support
+![](assets/docs/user-interface-pin-view.png)
+
+#### VS Cupl Extension Settings
 
 This extension contributes the following settings:
 
 *Can be configured in File > Preferences > Settings `` |`` Extensions > VS Cupl*
+*Or accessed through the projects view header* 
+![Project Header](assets/docs/user-interface-projects-top-settings.png)
 
-* `vs-cupl.WinePath`: Set wine binary path (default: /usr/bin/wine).
-* `vs-cupl.OpenOCDPath`: Set OpenOCD binary path (default: /usr/bin/openocd).
-* `vs-cupl.MiniproPath`: Set minipro binary path (default: /usr/bin/minipro).
-* `vs-cupl.WinCPath`: Set Windows C:\ path (default: /home/user1/.wine/drive_c).
-*  `vs-cupl.CuplBinPath`: Cupl executable path relative to WinePath (default: Wincupl/Shared/ for c:\\Wincupl\\Shared\\cupl.exe)
-* `vs-cupl.AtmIspBinPath`: ATMISP executable path (default: ATMEL_PLS_Tools/ATMISP/ATMISP.exe)
-* `vs-cupl.WinTempPath`: Temp path on C:\ drive (default: temp)
-* `vs-cupl.DebugLevel`: Show Debug Level Messages
-* `vs-cupl.CuplDefinitions`: Chose CUPL definition file (.dl) to use
-* `vs-cupl.RunInIntegratedTerminal`: Chose if commands are executed in integrated terminal. *This option may cause unexpected behavior. Useful for debugging
-
-*depricated*
-* `vs-cupl.SetFolder`: Set working folder each time you execute a command in a terminal session.
+Settings are split into several sections
+![Settings Categories](/assets/docs/user-interface-settings-categories.png)
+**Be sure to pay extra attention to the paths section if you are having any issues with deployment**
+*Some sections are explicitly available for various operating systems, e.g. Wine is not available on windows*
 
 
 ---
 
-## CUPL Language and toolchain
-
+## CUPL Language
+Quick reference guide [Cupl Reference Guide](assets/docs/CUPL.md)
 **Read more about [Cupl](https://ece-classes.usc.edu/ee459/library/documents/CUPL_Reference.pdf)**
 
----
-## Known Issues
-
- - required additional testing on windows
-
- - would be good to have a guide step thrugh prerequisites
-
- - would be good to launch prerequisite check once on first start up automatically
-
----
-
-
-### **Homebrew programmer for ATF15xx CPLDs**
-
-https://github.com/hackup/ATF2FT232HQ
-
----
 ## Release Notes
-### v0.3.4
- - Added support for optimization in cupl (setting in VS Cupl Settings)
-
-![Preview](assets/images/vs-cupl-chip-viewer.gif)
-### v0.2.8
- - Ignore T48 unsupported hardware detection
- - Conditional tee for minipro programmer PROGRAM command
-### v0.2.7
- - Fix file access issue in some linux distros
-### v0.2.5
- - Fixed asynchronous bug when creating project
- - Full end to end testing of ATF22V10C using g22v10 programming (lattice-> dip-> 24 pin)
-### v0.2.4
-- clean up devices
-- minipro commands to dump and erase
-
 
 See [Change Log](CHANGELOG.md) for changes in each version.
 
 ---
+
+# Roadmap
+In future releases, several features are eagerly awaited:
+1. Action history - currently a user needs to scroll through output of various length to determine if a task succeeded or not. It would be very nice to have a window that shows a list/grid of previous commands (build, deploy, run atmisp), their status (running, done, failed), and output available per command
+2. Including SI and possibly other files when copying back to linux. Integrate calling cupl simulator application with the project's SI file.
+3. Debug environment configuration during walkthrough, especially adding the necessary comctl32 and comctl32ocx, comdlg32ocs, mcf40 and mcf42 wine components. Make sure DLLs from assets are copied to windows system32 and syswow64 folders
+4. Add step for walkthrough, download Pof2jed (optional) - useful for VHDL/Verilog development with QuartusII
 
 # For developers
 
@@ -303,10 +170,4 @@ This will open up the project in visual studio. You can press F5 to start debugg
 Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
 
 * [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 

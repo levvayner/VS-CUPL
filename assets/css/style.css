@@ -5,13 +5,14 @@ html, body{
     flex-direction: column; 
 }
 #ic{
-    width:100%;
-    height: 100%;
+    /* width:100%;
+    height: 100%; */
 }
 .pin-list{
     display: flex;
     flex-direction: column;
     width: 100%;
+    /* overflow: auto; */
 }
 .pin-header{
     display: grid;
