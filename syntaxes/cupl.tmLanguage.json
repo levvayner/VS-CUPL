@@ -26,7 +26,7 @@
             "patterns": [
                 {
                     "name": "keyword.cupl",
-                    "match": "(?i)\\b(append|assembly|assy|company|condition|date|default|designer|device|else|field|fld|format|function|fuse|group|if|jump|loc|location|macro|min|name|node|out|partno|pin|pinnode|present|rev|revision|sequence|sequenced|sequencejk|sequencers|sequencet|table)\\b"
+                    "match": "(?i)\\b(APPEND|ASSEMBLY|ASSY|Company|CONDITION|DATE|DEFAULT|Designer|Device|ELSE|FIELD|FLD|FORMAT|FUNCTION|FUSE|GROUP|IF|JUMP|LOC|Location|MACRO|MIN|Name|NODE|OUT|PartNo|PIN|PINNODE|PRESENT|REV|Revision|SEQUENCE|SEQUENCED|SEQUENCEJK|SEQUENCERS|SEQUENCET|TABLE)\\b"
                 },
                 {
                     "name": "keyword.extensions",
