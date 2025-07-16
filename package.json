@@ -23,7 +23,13 @@
     "keywords": [
         "cupl",
         "atmisp",
-        "vs-cupl"
+        "vs-cupl",
+        "minipro",
+        "jdec",
+        "pld",
+        "cpld",
+        "jed",
+        "svf"
     ],
     "activationEvents": [
         "workspaceContains:**.pld"
