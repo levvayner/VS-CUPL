@@ -12,6 +12,8 @@ import { stateProjects } from "../states/state.projects";
 import { isWindows } from "../os/platform";
 import { extensionUri } from "../extension";
 import { pathExists } from "../explorer/fileFunctions";
+import { DeviceDeploymentType } from "../devices/devices";
+import { extensionState } from "../states/state.global";
 
 export enum DeployCommandType {
     Program = "Program",
@@ -64,11 +66,17 @@ export async function registerDeploySvfCommand(
                 vscode.Uri.parse(p.substring(0, p.lastIndexOf("/")))
             );
         }
+        if (!project) {
+            project = extensionState.activeProject;
+        }
 
         if (!project) {
             atfOutputChannel.appendLine(
-                `Failed to deploy JEDEC file. Unable to read project information`
+                `Failed to deploy SVF file. Unable to read project information`
             );
+            return;
+        }
+        if(project.deviceProgrammer !== DeviceDeploymentType.atmisp){
             return;
         }
         await runUpdateDeployScript(project);

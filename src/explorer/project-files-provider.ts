@@ -270,7 +270,7 @@ export class VSProjectTreeItem extends vscode.TreeItem {
     public files: VSProjectTreeItem[] = [];
 
     iconPath = {
-        light: path.join(
+        light: vscode.Uri.parse(path.join(
             __filename,
             "..",
             "..",
@@ -278,8 +278,8 @@ export class VSProjectTreeItem extends vscode.TreeItem {
             "images",
             "light",
             "edit.svg"
-        ),
-        dark: path.join(
+        )),
+        dark: vscode.Uri.parse(path.join(
             __filename,
             "..",
             "..",
@@ -287,6 +287,6 @@ export class VSProjectTreeItem extends vscode.TreeItem {
             "images",
             "dark",
             "edit.svg"
-        ),
+        )),
     };
 }

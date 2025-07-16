@@ -70,7 +70,9 @@ export async function buildProject(project: Project) {
     const cuplBinPath = getPath(VSCuplPaths.cupl);   
     const cuplDLPath =  getPath(VSCuplPaths.cuplDl);            
     const cuplFittersPath =  getPath(VSCuplPaths.cuplFitters);
-    const cuplOptimization =  project.cuplOptimizationLevel;
+    const extConfig = vscode.workspace.getConfiguration("vs-cupl");
+    const cuplOptimization =  (extConfig.get("CuplOptimization") as number) ?? 1;
+
             
     
     const cuplWindowsBinPath = getWindowsPath(cuplBinPath);   
@@ -103,7 +105,7 @@ export async function buildProject(project: Project) {
     //execute build command
     const result = await cmd
         .runCommand("vs-cupl Build", `${project.projectPath.fsPath}`, cmdString)
-        .then((result) => {
+        .then(async (result) => {
             if (result.responseCode !== 0) {
                 atfOutputChannel.appendLine(
                     "** Failed to build: ** " +
@@ -115,6 +117,18 @@ export async function buildProject(project: Project) {
                 atfOutputChannel.appendLine(
                     `** Built module ** ${project.projectName} successfully`
                 );
+                 if (!isWindows()) {
+                    //copy results back
+                    let fileName = project.device?.usesPldNameFieldForJedFile
+                        ? await getNameFromPldFile(project.pldFilePath)
+                        : project.jedFilePath.fsPath.substring(
+                            project.jedFilePath.fsPath.lastIndexOf("/")
+                        );
+
+                    await copyToLinux(`${fileName}`, `${project.projectPath.fsPath}`);
+                }
+                await projectFileProvider.refresh();
+                vscode.window.setStatusBarMessage("Compiled " + project.projectName, 2000);
             }
         })
         .catch((err) => {
@@ -126,16 +140,5 @@ export async function buildProject(project: Project) {
             );
         });
 
-    if (!isWindows()) {
-        //copy results back
-        let fileName = project.device?.usesPldNameFieldForJedFile
-            ? await getNameFromPldFile(project.pldFilePath)
-            : project.jedFilePath.fsPath.substring(
-                  project.jedFilePath.fsPath.lastIndexOf("/")
-              );
-
-        await copyToLinux(`${fileName}`, `${project.projectPath.fsPath}`);
-    }
-    await projectFileProvider.refresh();
-    vscode.window.setStatusBarMessage("Compiled " + project.projectName, 2000);
+   
 }

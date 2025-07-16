@@ -15,7 +15,7 @@
     const extensionMessageType = { error: 0, initialize: 1, clear: 2 };
     
     const inputFields = {
-        projectName: 1,
+        /* projectName: 1, */
         deviceManufacturer: 2,
         deviceSocket: 3,
         devicePinCount: 4,
@@ -75,7 +75,7 @@
                     "deviceConfiguration"
                 ]);
                 populateForm(inputDeviceManufacturer.value);
-                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.deviceManufacturer), inputDeviceManufacturer.value);
+                updateBackendState("manufacturer", inputDeviceManufacturer.value);
                 break;
             }
             case clickMessageType.deviceSocket: {
@@ -89,7 +89,7 @@
                 ]);
 
                 populateForm(null, inputDeviceSocket.value);   
-                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.deviceSocket), inputDeviceSocket.value);
+                updateBackendState("packageType", inputDeviceSocket.value);
                 
                 break;             
 
@@ -103,20 +103,20 @@
                     "deviceConfiguration"
                 ]);
                 populateForm(null, null, inputDevicePinCount.value); 
-                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.devicePinCount), inputDevicePinCount.value);
+                updateBackendState("pinCount", inputDevicePinCount.value);
                 break;
             }
             case clickMessageType.deviceModel: {
                 clearInputs(["deviceName", "deviceCode", "pinOffset", "deviceConfiguration"]);                
                 populateForm(null, null, null,inputDeviceModel.value);
-                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.deviceModel), inputDeviceModel.value);
+                updateBackendState("deviceUniqueName", inputDeviceModel.value);
                 break;
             }
 
             case clickMessageType.deviceConfiguration: {
                 clearInputs(["deviceCode", "pinOffset"]);
                 populateForm(null, null, null,null, inputDeviceConfiguration.value);
-                updateBackendState(Object.keys(inputFields).find(k => inputFields[k] === inputFields.deviceConfiguration), inputDeviceConfiguration.value);
+                updateBackendState("deviceOptions", inputDeviceConfiguration.value);
                 break;
             }
             // ..
@@ -148,13 +148,8 @@
                 return;
             }
         }
-        //check if changes exist, if so, show pending changes label
-        const projDeviceName = project?.device?.deviceUniqueName;
-        const projDeviceCode = project?.device?.deviceCode;       
-        
-        
-        showPendingChanges = (projDeviceName !== inputDeviceName.value || projDeviceCode !== inputDeviceCode.value);
-        pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
+
+        toggleFormState();        
     }
     function registerExtensionListner(){
         // Handle messages sent from the extension to the webview
@@ -208,6 +203,21 @@
             }
         });
     }
+
+    function toggleFormState(){
+        //check if changes exist, if so, show pending changes label
+        const projDeviceName = project?.deviceConfiguration?.deviceUniqueName;
+        const projDeviceCode = project?.deviceConfiguration?.deviceCode;       
+        
+        
+        showPendingChanges = (projDeviceName !== inputDeviceName.value || projDeviceCode !== inputDeviceCode.value);
+        pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
+        if(showPendingChanges){
+            resetButton.removeAttribute('disabled');    
+        } else{
+            resetButton.setAttribute('disabled','disabled');
+        }
+    }
     
 
     function updateProjectView() {
@@ -231,9 +241,10 @@
         wireEvent(resetButton,"mouseup");
         wireEvent(saveButton,"mouseup");
 
-        pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
+        // pendingChangesLabel.style.display = showPendingChanges ? 'block' : 'none';
         console.log(`drew project-configurator component for ${project?.deviceConfiguration?.deviceUniqueName}`);
         setDeviceDetails();
+        toggleFormState();
         // Update the saved state
         vscode.setState({ project: project, loaded: true });
     }
@@ -258,7 +269,9 @@
         }
     }
 
-    function populateForm(...args ){        
+    function populateForm(...args ){  
+        
+        saveButton.setAttribute('disabled','disabled');
         if(args.length === 0 || args[0] === undefined){
             inputDeviceManufacturer.value = '';
         }
@@ -294,6 +307,7 @@
             //if(args[4].length > 0){                
                 setDeviceDetails();
             //}
+            saveButton.removeAttribute('disabled');
         }
     }
 
@@ -419,12 +433,19 @@
     function setDeviceDetails(){      
         const uniqueDevice = getUniqueDevice(inputDeviceManufacturer.value, inputDeviceSocket.value, Number(inputDevicePinCount.value), inputDeviceModel.value, inputDeviceConfiguration.value);
         //set device name field
+        // if(inputDeviceCode.value === uniqueDevice.deviceCode && inputDeviceName.value === inputDeviceModel.value){
+        //     return;
+        // }
         inputDeviceName.value = inputDeviceModel.value;
         inputDeviceCode.value = uniqueDevice.deviceCode;        
         const pinConfig = pinConfigurations.find(pc => 
             pc !== null && pc.name === uniqueDevice.pinConfiguration && pc.deviceType === uniqueDevice.packageType && pc.pinCount === uniqueDevice.pinCount
         );
         inputPinOffset.value = pinConfig?.pinOffset ?? 0;
+        updateBackendState('deviceCode', uniqueDevice.deviceCode);
+        if(pinConfig !== undefined){
+            updateBackendState('pinConfiguration', pinConfig.name);
+        }
     }
     registerExtensionListner();
     vscode.postMessage({ type: 'ready' });

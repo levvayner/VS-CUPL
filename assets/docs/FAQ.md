@@ -1,0 +1,2 @@
+- Nothing happens when I press the button to run ATMISP.
+   - Verify that your USB programming device is unplugged.

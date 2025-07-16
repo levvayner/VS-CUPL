@@ -44,6 +44,7 @@ import { extensionState } from "./states/state.global";
 import path = require("path/posix");
 import { registerWalkthroughTools } from "./services/setup-walkthrough";
 import { PLDProjectEditorProvider } from "./modules/project-configurator/projectEditor";
+import { registerCleanTempFolderCommand } from "./services/svc.environment";
 
 export let extensionUri: vscode.Uri;
 export async function activate(context: vscode.ExtensionContext) {
@@ -85,6 +86,7 @@ async function registerCommands(context: vscode.ExtensionContext) {
     await registerMiniProCommand(cmd.runMiniProCommand, context);
     await registerMiniProDumpCommand(cmd.runMiniProDumpCommand, context);
     await registerMiniProEraseCommand(cmd.runMiniProEraseChipCommand, context);
+    await registerCleanTempFolderCommand(cmd.cleanTempDirectory, context);
 }
 
 async function registerProjectViewProviders(context: vscode.ExtensionContext) {

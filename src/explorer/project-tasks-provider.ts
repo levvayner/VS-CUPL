@@ -27,7 +27,6 @@ export class ProjectTasksProvider
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
     }
 
-    // children: ProjectFile[] = [];
     getTreeItem(element: VSProjectTreeItem): vscode.TreeItem {
         let title = element.label;
         let result = new vscode.TreeItem(
@@ -48,21 +47,13 @@ export class ProjectTasksProvider
     }
 
     getChildren(element?: VSProjectTreeItem): Thenable<VSProjectTreeItem[]> {
-        // if (!this.workspaceRoot) {
-        //   vscode.window.showInformationMessage("No dependency in empty workspace");
-        //   return Promise.resolve([]);
-        // }
         try {
             if (!element) {
                 return Promise.resolve(treeItemProjects);
             }
-            // else if (element.file.toLowerCase().endsWith('.prj'))
-            // {
-            //   return Promise.resolve(this.getProjectFiles(element));
-            // }
             else {
                 return Promise.resolve([]);
-                //
+                //return Promise.resolve([new VSProjectTreeItem("Build",element.project.pldFilePath, element.project, vscode.TreeItemCollapsibleState.None)]);
             }
         } catch (err: any) {
             atfOutputChannel.appendLine(

@@ -56,7 +56,8 @@
         for (const pin of pins) {
             const li = document.createElement('div');
             
-            li.className = pin.pin === this.selectedPin ? 'pin-entry-selected' : 'pin-entry';
+            li.className = 'pin-entry';
+            li.id = 'pin-' + pin.pin;
             li.addEventListener('click', () => {
                 onPinClicked(pin);
             });
@@ -93,18 +94,27 @@
                 
                 
             }            
-            
-            
             ul.appendChild(li);
-            console.log(`Selected pin: ${this.selectedPin}`);
-            if(pin.pin === this.selectedPin){
-                coord = {left: li.offsetLeft, top: li.offsetTop - 10};
-            }
+            console.log(`Selected pin: ${this.selectedPin}`);           
         }
-        
-
+        updateSelected();
         // Update the saved state
         //vscode.setState({ pinId: 1 });
+    }
+
+    function updateSelected(){
+        const selected = document.querySelector('.pin-entry-selected');
+        if(selected !== undefined && selected !== null){
+            selected.className = 'pin-entry';
+        }
+
+        const pinElements = document.querySelectorAll('.pin-entry');
+        pinElements.forEach(pe => {           
+            if(pe.id === 'pin-' + this.selectedPin){
+                pe.classList.add('pin-entry-selected');
+                coord = {left: pe.offsetLeft, top: pe.offsetTop - 10};
+            }             
+        });
     }
 
     /** 
@@ -113,15 +123,17 @@
     function onPinClicked(pin) {
         vscode.postMessage({ type: 'pinSelected', value: pin });
         this.selectedPin = pin.pin;
-        updatePinList(pins);
+        updateSelected();
+        //updatePinList(pins);
     }
 
     function selectPin(pin) {
         // pins.push({ pinId: pin });
         this.selectedPin = pin;
-        updatePinList(pins);
-        if(coord.x !== 0 && coord.y !== 0){
-            scroll(coord);
+        //updatePinList(pins);
+        updateSelected();
+        if(coord.left !== 0 && coord.top !== 0){
+            scroll(coord.left, coord.top);
         }
         
         
@@ -133,7 +145,7 @@
     }
     function onPinLeave(li,pin){
         vscode.postMessage({ type: 'pinPreview', value: undefined });
-        li.className = this.selectedPin === pin.pin && this.selectedPin !== undefined ? 'pin-entry-selected' : 'pin-entry';
+        li.className = this.selectedPin ===  pin.pin && this.selectedPin !== undefined ? 'pin-entry-selected' : 'pin-entry';
     }
 
 }());

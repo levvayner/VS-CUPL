@@ -7,6 +7,7 @@ import {
 import { providerChipView } from "./chip-view";
 import { Project } from "../project";
 import { deviceList } from "../devices/devices";
+import { extensionState } from "../states/state.global";
 /*
 Custom pin layout viewer
 
@@ -51,6 +52,7 @@ export class PinViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = "vs-cupl.pin-view";
 
     public pins = [] as Pin[];
+    public selectedPin : number | undefined;
 
     private _view?: vscode.WebviewView;
 
@@ -66,9 +68,20 @@ export class PinViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.options = {
             // Allow scripts in the webview
             enableScripts: true,
-
             localResourceRoots: [this._extensionUri],
         };
+        this._view.onDidChangeVisibility(() => {
+            if(this._view?.visible && extensionState.activeProject !== undefined){
+                webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+                providerPinView.setPins(extensionState.activeProject?.devicePins);
+                providerPinView.setColors(providerChipView.colors);
+                if(this.selectedPin !== undefined)
+                {
+                    providerPinView.selectPin(this.selectedPin);
+                }
+            }            
+        });
+
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
@@ -77,6 +90,7 @@ export class PinViewProvider implements vscode.WebviewViewProvider {
             switch (data.type) {
                 case "pinSelected":
                     //console.log(`[Pin View] Pin Selected ${pin.pin}`);
+                    this.selectedPin = pin.pin;
                     providerChipView.selectPin(pin);
                     //TODO: implement select pin (show on chip view as selected)
                     //vscode.window.activeTextEditor?.insertSnippet(new vscode.SnippetString(`#${data.value}`));
@@ -97,6 +111,7 @@ export class PinViewProvider implements vscode.WebviewViewProvider {
         if (this._view) {
             this._view.show?.(true);
             this._view.webview.postMessage({ message: "selectPin", pin: pin });
+            this.selectedPin = pin;
         }
     }
     public setPins(pins: PinConfiguration | undefined) {

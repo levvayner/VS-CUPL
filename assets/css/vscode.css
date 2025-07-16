@@ -133,11 +133,15 @@ select{
 .button{
     margin:5px 10px;
 }
-input[type='button']:hover{
+input[type='button'][disabled]{
+    background-color: #a39d9d;
+    cursor: not-allowed;
+}
+input[type='button']:not([disabled]):hover{
     background-color: #43414e;
     cursor: pointer;
 }
-input[type='button']:active{
+input[type='button']:not([disabled]):active{
     background-color: #7d7991;
     cursor: grabbing;
 }

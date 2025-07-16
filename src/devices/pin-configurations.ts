@@ -1830,7 +1830,7 @@ export function getDevicePins(
             (d) =>
                 d &&
                 d.name === name &&
-                d.pinCount === pinCount &&
+                d.pinCount === Number(pinCount) &&
                 d.deviceType === packageType
         );
     } catch (err: any) {

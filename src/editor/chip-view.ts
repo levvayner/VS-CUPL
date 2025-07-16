@@ -110,6 +110,11 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
     public selectPin(pin: Pin) {
         if (this._view) {
             this._view.show?.(true);
+            //get pin declarations. If pld file opened, get from editor window, otherwise get from disk
+            //const pldFile = vscode.workspace.textDocuments.some(doc => doc.uri.toString() === uri.toString());
+            if(vscode.window.activeTextEditor?.document === undefined){
+                return;
+            }
             const pinDeclarations = vscode.window.activeTextEditor?.document
                 .getText()
                 .split("\n")

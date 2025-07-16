@@ -9,6 +9,7 @@ export const openProjectCommand = "vs-cupl.openProject";
 export const importProjectCommand = "vs-cupl.importProject";
 export const closeProjectCommand = "vs-cupl.closeProject";
 export const compileProjectCommand = "vs-cupl.compileProject";
+export const cleanTempDirectory = "vs-cupl.eraseTempFiles";
 export const deleteEntryCommand = "vs-cupl-project-files.deleteEntry";
 export const deployJedCommand = "vs-cupl.deployJed";
 export const runISPCommand = "vs-cupl.runISP";

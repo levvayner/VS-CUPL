@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!--
+    Use a content security policy to only allow loading images from https or from our extension directory,
+    and only allow scripts that have a specific nonce.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="${stylesResetUri}" rel="stylesheet">
+    <link href="${styleVSCodeUri}" rel="stylesheet">
+    <link href="${stylesMainUri}" rel="stylesheet">	
+    
+
+    <title>PLD Project</title>
+</head>
+<body>
+    <div class="wide">
+        <div class="header-row">
+            <div id="projectName">
+            </div>
+        </div>
+        <div class="data-row">
+            <div class="data-title">
+                <b>Manufacturer</b>
+            </div>
+            <div class="data-entry">
+                <select id="deviceManufacturer">
+                </select>
+            </div>
+        </div>
+        <div class="data-row">
+            <div class="data-title">
+                <b>Socket</b>
+            </div>
+            <div class="data-entry">
+                <select id="deviceSocket">
+                </select>
+            </div>
+        </div>       
+        <div class="data-row">
+            <div class="data-title">
+                <b>Pins</b>
+            </div>
+            <div class="data-entry">
+                <select id="devicePinCount">
+                </select>
+            </div>
+        </div>
+        <div class="data-row">
+            <div class="data-title">
+                <b>Model</b>
+            </div>
+            <div class="data-entry">
+                <select id="deviceModel">
+                </select>
+            </div>
+        </div>
+        <div class="data-row">
+            <div class="data-title">
+                <b>Configuration</b>
+            </div>
+            <div class="data-entry">
+                <select id="deviceConfiguration">
+                </select>
+            </div>
+        </div>
+        
+        <br/>
+
+        <div class="data-row">
+            <div class="data-title">
+                <b>Device Name</b>
+            </div>
+            <div class="data-entry">
+                <input readonly id="deviceName"/>
+            </div>
+        </div>
+        <div class="data-row">
+            <div class="data-title">
+                <b>Device Code</b>
+            </div>
+            <div class="data-entry">
+                <input readonly id="deviceCode"/>
+            </div>
+        </div>
+        <div class="data-row">
+            <div class="data-title">
+                <b>Pin Offset</b>
+            </div>
+            <div class="data-entry">
+                <input readonly id="pinOffset"/>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <div id="pendingChanges">
+                * You have pending changes
+            </div>
+            <div class="button">
+                <input type="button" id="clear" value="Clear" />
+            </div>
+                <div class="button">
+                <input type="button" id="refresh" value="Reset" />
+            </div>
+            <div class="button">
+                <input type="button" id="save" value="Save" />
+            </div>
+        </div>
+    </div>
+    <div id="errorPanel"></div>
+    
+    <script nonce="${nonce}" src="${scriptUri}"></script>
+</body>
+</html>

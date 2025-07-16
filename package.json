@@ -2,8 +2,8 @@
     "name": "vs-cupl",
     "displayName": "VS Cupl",
     "publisher": "VaynerSystems",
-    "description": "Tools for ATMEL and Lattice CPLD programming projects.\n Helps create and manage projects and connect to tools.",
-    "version": "0.3.7",
+    "description": "Tools for ATMEL and Lattice CPLD programming.\n Create and manage multiple projects, connect to build and deployment tools.",
+    "version": "0.4.0",
     "pricing": "Free",
     "repository": {
         "url": "https://github.com/levvayner/ATF15xx-cupl",
@@ -33,8 +33,8 @@
         "walkthroughs": [
             {
                 "id": "cupl-dev-install",
-                "title": "CUPL Development Enviroment",
-                "description": "A guide to configure the development environment needed for CUPL development and deployment.",
+                "title": "PLD Development Enviroment",
+                "description": "A guide to configure your environment for CUPL development.",
                 "steps": [
                     {
                         "id": "linux-wine",
@@ -176,23 +176,22 @@
                 "when": "resourceExtname =~ /.*\\.pld$/ || resourceExtname =~ /.*\\.prj$/"
             },
             {
-                "command": "vs-cupl.runMiniProDump",
+                "command": "vs-cupl.configureProject",
                 "key": "f4",
-                "mac": "f4",
-                "when": "resourceDirname in vscupl.projectCanDeployToMinipro"
-            },
+                "mac": "f4"
+                
+            },            
             {
                 "command": "vs-cupl.deployJed",
-                "key": "f5",
-                "mac": "f5",
-                "when": "resourceDirname in vscupl.projectCanDeployToMinipro"
-            },
-            {
-                "command": "vs-cupl.configureProject",
                 "key": "f6",
                 "mac": "f6"
-                
+            },
+            {
+                "command": "vs-cupl.deploySvf",
+                "key": "f7",
+                "mac": "f7"                
             }
+            
             
         ],
         "configuration": [
@@ -755,19 +754,24 @@
                     "group": "inline@6"
                 },
                 {
+                    "command": "vs-cupl.eraseTempFiles",
+                    "when": "view == vs-cupl-project-tasks && !isWindows",
+                    "group": "inline@7"
+                },
+                {
                     "command": "vs-cupl.configureProject",
                     "when": "view == vs-cupl-project-tasks",
-                    "group": "inline@7"
+                    "group": "inline@8"
                 },
                 {
                     "command": "vs-cupl.closeProject",
                     "when": "view == vs-cupl-project-tasks && viewItem in vscupl.projectCanBuildPld",
-                    "group": "inline@8"
+                    "group": "inline@9"
                 },
                 {
                     "command": "vs-cupl.cloneProject",
                     "when": "view == vs-cupl-project-tasks && viewItem =~ /.*\\.prj$/",
-                    "group": "inline@9"
+                    "group": "inline@10"
                 },
                 {
                     "command": "vs-cupl.openInExplorer",
@@ -964,6 +968,14 @@
                 "icon": {
                     "light": "assets/images/light/trash.svg",
                     "dark": "assets/images/dark/trash.svg"
+                }
+            },
+            {
+                "command": "vs-cupl.eraseTempFiles",
+                "title": "Erase Temp Files",
+                "icon": {
+                    "light": "assets/images/light/delete.svg",
+                    "dark": "assets/images/dark/delete.svg"
                 }
             },
             {
