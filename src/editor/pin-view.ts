@@ -179,7 +179,7 @@ export class PinViewProvider implements vscode.WebviewViewProvider {
 				<link href="${styleVSCodeUri}" rel="stylesheet">
 				<link href="${styleMainUri}" rel="stylesheet">
 
-				<title>Chip View</title>
+				<title>Pin View</title>
 			</head>
 			<body>
                 <div class="pin-header">

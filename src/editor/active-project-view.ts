@@ -4,6 +4,7 @@ import { stateProjects } from "../states/state.projects";
 import { atfOutputChannel } from "../os/command";
 import { configureProjectCommand } from "../vs.commands";
 import { extensionState } from "../states/state.global";
+import { providerChipView } from "./chip-view";
 /*
 Active project panel
 */
@@ -106,6 +107,7 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
             if (pins) {
                 //extensionState.setActiveProject(project);
                 this.setProject(project);
+                providerChipView.openProjectChipView(project);
             } else {
                 atfOutputChannel.appendLine(
                     `Noproject found for device ${project.device?.pinConfiguration} with ${project.device?.pinCount} pins in a ${project.device?.packageType} package.`

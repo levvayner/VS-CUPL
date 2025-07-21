@@ -60,7 +60,7 @@ const pinNumberingScheme = {
 
 window.addEventListener('resize', () => {
     console.log("RESIZE");
-    component.selectedPin = undefined;
+    //component.selectedPin = undefined;
     component.updatePinCoordinates();
     component.drawDevice();
 });
@@ -102,20 +102,15 @@ class PlccChipViewComponent {
     previewingPin;
     selectedPin;
     use;
-    ctx;
+    
     colors = [];
+    initalized = false;
    
     init() {
-        //const ic = document.getElementById("ic");
         this.ic = document.getElementById('ic');
         if(!this.ic){
             return;
         }
-        this.ic.onmousemove = function(event) {
-            component.previewPin(event);
-        };
-
-        
 
         const maxMsBetweenClicks = 250;
         var clickTimeoutId = null;
@@ -131,41 +126,30 @@ class PlccChipViewComponent {
             clearTimeout(clickTimeoutId); 
             component.addPin(e);            
         }
-        // @ts-ignore
-        if(this.ic.getContext){
-            // @ts-ignore
-            this.ctx = this.ic.getContext('2d');
-        }
+       
         this.selectedPin = undefined;
         this.use = undefined;
         this.previewingPin = undefined;
-        this.drawDevice();
-    }
 
-    getPinAtCoord(x,y){
-        const testX = x / devicePixelRatio * .98; //not sure why but have to offset after moving into vscode
-        const testY = y / devicePixelRatio * .98;
-        const pin = this.pins.find(p => p.x <= testX  && testX <= p.x + p.w && p.y <= testY  && testY <= p.y + p.h );
-        if(this.debugUI){
-            //since preview and selected pin are englarged now, must redraw device
-            console.log('-'.repeat(30));
-            console.log(`Testing (X,Y)): (${testX}, ${testY})`);
-            
-            if(pin !== undefined){
-                console.log(`Pin (X, Y) (W, H)): (${pin.x}, ${pin.y}) (${pin.w}, ${pin.h})`);
-            }
-            console.log('-'.repeat(30));
-        }
-        return pin;
+        //events
+        document.body.onmousemove = function(event) {
+            component.previewPin(event);
+        };    
+
+        this.initalized = true;
+        this.drawDevice();
         
     }
+
+   
 
     previewPin(event){
         if(event === undefined){
             this.previewingPin = undefined;            
             return;
         }
-        const pin = this.getPinAtCoord(event.offsetX, event.offsetY);
+        
+        const pin =this.pins.find(p => p.id == event.target.id.replace("pin-",""));
         
         /* for debugging */
         // console.log(`Mouse (X,Y)): (${event.x}, ${event.y})`);
@@ -176,9 +160,8 @@ class PlccChipViewComponent {
         // console.log(`Page (X,Y): (${event.pageX}, ${event.pageY})`);
         // console.log(`Screen (X,Y)): (${event.screenX}, ${event.screenY})`);        
 
-        if(!pin){
+        if(!pin || (event.type !== "mousemove" && event.type !== "mouseenter")){
             this.previewingPin = undefined;
-            //this.ctx.clearRect(130,typeYCoord - 18,130,120);
             this.drawDevice();
             return;
         }
@@ -188,16 +171,10 @@ class PlccChipViewComponent {
         }        
        
         if(this.previewingPin){
-            this.ctx.fillStyle = this.colors.find(c => c.type === 'accent1').color;
+            event.target.style.backgroundColor = this.colors.find(c => c.type === 'accent1').color;
         }
         this.previewingPin = pin.id;
         this.drawDevice();
-
-        if(this.debugUI){
-            this.ctx.fillStyle = '#fff';
-            this.ctx.fillText(`Mouse Coords: (${(event.offsetX / devicePixelRatio).toFixed(0)}, ${(event.offsetY / devicePixelRatio).toFixed(0)})`,0,this.height - 40,150);
-            this.ctx.fillText(`Pin Coords: (${pin.x.toFixed(0)}, ${pin.y.toFixed(0)}) width: ${pin.w.toFixed(0)} height: ${pin.h.toFixed(0)}`, 160, this.height - 40,260);
-        }        
     }
 
     selectPin(event){
@@ -206,7 +183,7 @@ class PlccChipViewComponent {
             this.use = undefined;
             return;
         }
-        const pin = this.getPinAtCoord(event.offsetX, event.offsetY);
+        const pin =this.pins.find(p => p.id == event.target.id.replace("pin-",""));
         
         //if(pin){
             vscode.postMessage({
@@ -220,8 +197,8 @@ class PlccChipViewComponent {
     }
 
     addPin(event){
-        
-        const pin = this.getPinAtCoord(event.offsetX, event.offsetY);
+        const pin =this.pins.find(p => p.id == event.target.id.replace("pin-",""));
+        //const pin = this.getPinAtCoord(event.offsetX, event.offsetY);
         
         if(pin){
             vscode.postMessage({
@@ -250,13 +227,16 @@ class PlccChipViewComponent {
 
 
     drawDevice(){
+        if(!component.initalized){
+            console.log('Draw Device: not initialized - intializing');
+            component.init();
+        }
         if(this.pinConfiguration === undefined){
             return;
         }
         this.updateDeviceCooridnates();
         this.pins = [];
         
-        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
         /*               DIP IC                                              PLCC, TQFP, PQFP layout
                     +------------------------+           +--------------------------------------+
                     | Text Info ...          |           | Text Info ...                        |
@@ -278,42 +258,73 @@ class PlccChipViewComponent {
                     | +----------margin---+  |           | +----------margin-----------------+  |
                     +------------------------+           +--------------------------------------+
         */
-        if(this.debugMessages)
-        {
-            this.drawHeader();
-        }        
+         
         this.updatePinCoordinates();
 
         if( this.colors.length === 0){
             setTimeout(this.drawDevice, 300);
             return;
         }
-        
+        this.drawIC();   
+        this.drawUse();
+        console.log('drawDevice called');
+    }
+
+    drawIC(){
+          if(this.pinConfiguration === undefined){
+            return;
+        }
         //draw IC
-        this.ctx.fillStyle = this.colors.find(c => c.type === 'background').color;
-        if(this.pinConfiguration.deviceType === DevicePackageType.plcc){
-            this.ctx.fillRect(this.chipLeft - .75*this.horizontalPinWidth,this.chipTop - .75*this.verticalPinHeight,this.chipWidth + 1.5*this.horizontalPinWidth ,this.chipHeight +  1.5*this.verticalPinHeight);
+        //create div that is large enough to cover the are of the ic;
+        
+        let chipDiv = document.getElementById('chip');
+        if(chipDiv === undefined || chipDiv === null){
+            chipDiv = document.createElement('div');
+            chipDiv.id = 'chip';
+            document.body.appendChild(chipDiv);
+             //this.colors.find(c => c.type === 'foreground').color;
+        }
+        let icDiv = document.getElementById('ic');
+        if(icDiv === null || icDiv === undefined){
+            icDiv = document.createElement('div');
+            chipDiv.appendChild(icDiv);            
         } else{
-            this.ctx.fillRect(this.chipLeft,this.chipTop,this.chipWidth,this.chipHeight);
+            icDiv.innerHTML = '';
         }
-        this.ctx.strokeStyle = this.ctx.fillStyle = this.colors.find(c => c.type === 'accent2').color;
-        if(this.pinConfiguration.deviceType === DevicePackageType.plcc){
-            this.ctx.strokeRect(this.chipLeft - .75*this.horizontalPinWidth,this.chipTop - .75*this.verticalPinHeight,this.chipWidth + 1.5*this.horizontalPinWidth ,this.chipHeight +  1.5*this.verticalPinHeight);
+        
+        icDiv.style.height = `${this.chipHeight}px`;
+        icDiv.style.left = `${this.horizontalPinWidth + this.horizontalPinOffset}px`;
+        icDiv.style.top = `${this.verticalPinHeight + this.verticalPinOffset}px`;
+        icDiv.style.width = `${this.chipWidth}px`;
+
+        if(this.pinPerSide !== this.pinConfiguration.pinCount / 2){
+            icDiv.style.width = `${this.chipWidth + (this.horizontalPinWidth/2)}px`;
+            icDiv.style.height = `${this.chipHeight + (this.verticalPinHeight/2)}px`;            
         }
-        else{
-            this.ctx.strokeRect(this.chipLeft,this.chipTop,this.chipWidth,this.chipHeight);
-        }
+        icDiv.style.position = 'fixed';
+        icDiv.style.backgroundColor = this.colors.find(c => c.type === 'background').color;
+        icDiv.style.borderColor = this.colors.find(c => c.type === 'accent2').color;
+        icDiv.id = 'ic';
+      
+        chipDiv.appendChild(icDiv);
+
         this.calculatePinPositions();
         this.drawPins();
 
-        this.ctx.beginPath();
-        this.ctx.fillStyle = this.colors.find(c => c.type === 'accent3').color;
-        this.ctx.arc(this.chipLeft + this.chipWidth/10, this.chipTop +  + this.chipWidth/10, this.chipWidth / 20, 0,2 * Math.PI);
-        this.ctx.fill();
+        //draw orientation indicator
+        const indicatorDiv = document.createElement('div');
+        indicatorDiv.style.left = `${(this.chipLeft + this.chipLeft/10) + + this.horizontalPinOffset}px`;
+        indicatorDiv.style.top = `${(this.chipTop + this.chipTop/10) + + this.verticalPinOffset}px`;
+        indicatorDiv.style.width = `${this.chipWidth / 20}px`; //keep both same -- circle
+        indicatorDiv.style.height = `${this.chipWidth / 20}px`;
+        indicatorDiv.style.borderRadius = '50%';
+        indicatorDiv.style.backgroundColor = this.colors.find(c => c.type === 'accent3').color;
+        indicatorDiv.style.borderColor = this.colors.find(c => c.type === 'background').color;
+        indicatorDiv.style.position = 'fixed';
+
+        icDiv.appendChild(indicatorDiv);
+
         
-        this.ctx.strokeStyle = this.colors.find(c => c.type === 'background').color;
-        this.ctx.arc(this.chipLeft + this.chipWidth/10, this.chipTop +  + this.chipWidth/10, this.chipWidth / 20, 0,2 * Math.PI);
-        this.ctx.stroke();
         
         /*
             chip has 5px padding
@@ -322,81 +333,54 @@ class PlccChipViewComponent {
 
         */
 
-        if(this.debugUI){
-            //border bounds
-            this.ctx.strokeStyle ='#f11';
-            this.ctx.strokeRect(0,0,this.width, this.height);
-            //chip bounds
-            this.ctx.strokeStyle ='#1f1';
-            this.ctx.strokeRect(this.chipLeft,this.chipTop,this.chipWidth, this.chipHeight);
-        }
-       
-        this.drawUse();
-        console.log('drawDevice called');
     }
 
     drawUse(){
-        if(this.selectedPin !== undefined ){
-            const pin = this.pins.find(p => p.id === this.selectedPin);
-            const unassignedText = pin.type.find(t => t === "VCC" || t === "GND") === undefined ? 'Unassigned' : "N/A";
-
-            this.ctx.fillStyle = this.colors.find(c => c.type === 'foreground').color;
-            this.ctx.font = `${14}px Arial`;
-            this.ctx.fillText(`Pin ${this.selectedPin}`,(this.chipWidth -this.chipLeft) / 2,this.chipTop + 24,this.chipWidth / 2);
-            this.ctx.fillText(`Use: ${this.use ?? unassignedText} `,(this.chipWidth -this.chipLeft) / 2,this.chipTop + 48,this.chipWidth / 2);
-            this.ctx.fillText(`Type: ${pin.type}`,(this.chipWidth -this.chipLeft) / 2,this.chipTop + 72,this.chipWidth / 2);
+        const icElement = document.getElementById('ic');
+        const pin = this.pins.find(p => p.id === this.selectedPin);
+        if(pin === undefined){
+            return;
         }
+        const useLabel = document.createElement('div');
+        useLabel.className = 'use-label';
+        let useText = `<div class='header'>Pin Details</div> <div>Pin ${this.selectedPin}<br>Use: ${this.use ?? 'Unassigned'}<br>Type: ${pin.type}<div>`;
+        useLabel.innerHTML = useText;
+        icElement?.appendChild(useLabel);
     }
-    drawHeader(){
-        const fontSize = 14;
-        const paragraphWidth = 140;
-        this.ctx.fillStyle = this.colors.find(c => c.type === 'foreground').color;
-        this.ctx.font = `${fontSize}px Arial`;
-        this.ctx.fillText(`Canvas height: ${this.height}`,0,fontSize+2,100);
-        this.ctx.fillText(`Canvas width: ${this.width}`,0,(fontSize+2) * 2,100);
-
-        this.ctx.fillText(`Chip height: ${this.chipHeight.toFixed(0)}`,0,(fontSize+2) * 3,100);
-        this.ctx.fillText(`Chip margin: ${this.icMargin.toFixed(0)}`,0,(fontSize+2) * 4,100);
-        this.ctx.fillText(`Pin count: ${this.pinConfiguration?.pinCount.toFixed(0)}`,0,(fontSize+2) * 5,100);
-        this.ctx.fillText(`Pixel Ratio: ${window.devicePixelRatio}`,0,(fontSize+2) * 6,100);
-
-        
-        this.ctx.fillText(`Horizontal Pin height: ${this.horizontalPinHeight.toFixed(0)}`,paragraphWidth,(fontSize+2),100);
-        this.ctx.fillText(`Horizontal Pin width: ${this.horizontalPinWidth.toFixed(0)}`,paragraphWidth,(fontSize+2) * 2,100);
-        this.ctx.fillText(`Horizontal Pin offset: ${this.horizontalPinOffset.toFixed(0)}`,paragraphWidth,(fontSize+2) * 3,100);
-
-        this.ctx.fillText(`Vertical Pin height: ${this.verticalPinHeight.toFixed(0)}`,paragraphWidth*2,(fontSize+2) * 1,100);
-        this.ctx.fillText(`Vertical Pin width: ${this.verticalPinWidth.toFixed(0)}`,paragraphWidth*2,(fontSize+2) * 2,100);
-        this.ctx.fillText(`Vertical Pin offset: ${this.verticalPinOffset.toFixed(0)}`,paragraphWidth*2,(fontSize+2) * 3,100);
-
-        this.ctx.fillText(`Catalog Index: ${this.pinCatalogIndex.toFixed(0)}`,paragraphWidth*3,(fontSize+2) * 1,100);
-        this.ctx.fillText(`Name: ${this.pinConfiguration?.name}`,paragraphWidth*3,(fontSize+2) * 2,100);
-        this.ctx.fillText(`Package: ${this.pinConfiguration?.deviceType}`,paragraphWidth*3,(fontSize+2) * 3,100);            
-        
-    }
+   
     updateDeviceCooridnates(){
 
         if(!this.ic || this.pinConfiguration === undefined){
             return;
         }
 
-        this.height = window.innerHeight / window.devicePixelRatio - 50;
-        this.width  = window.innerWidth / window.devicePixelRatio - 50;
+        this.height = window.innerHeight ;//* window.devicePixelRatio;
+        this.width  = window.innerWidth ;//* window.devicePixelRatio;
         if(!this.height || !this.width){
             return;
+        }
+        if(this.pinPerSide === this.pinConfiguration.pinCount / 2){
+            
+        }
+        else{
+            if(this.height > this.width){
+                this.height = this.width;
+            } else if(this.width > this.height){
+                this.width = this.height;
+            }
         }
        
         this.ic.setAttribute('height', this.height.toFixed(0));
         this.ic.setAttribute('width', this.width.toFixed(0));
 
-        const headerHeight = this.debugMessages ? .2*this.height : 0;
-        const icRenderPanelHeight = this.height - headerHeight;
+        
+        const icRenderPanelHeight = this.height;
         const icRenderPanelWidth = this.width;
-
-        this.icMargin = icRenderPanelWidth / 50;
-        if(icRenderPanelHeight / 50 < this.icMargin){
-            this.icMargin = icRenderPanelHeight / 50;
-        }        
+        this.icMargin = 10;
+        // this.icMargin = icRenderPanelWidth / 50;
+        // if(icRenderPanelHeight / 50 < this.icMargin){
+        //     this.icMargin = icRenderPanelHeight / 50;
+        // }        
 
         this.horizontalPinWidth = this.icMargin + icRenderPanelWidth/20 < 40  ?  this.icMargin + icRenderPanelWidth/20 : 40;
         this.verticalPinHeight = this.icMargin + icRenderPanelHeight/ 20 < 40 ? this.icMargin + icRenderPanelHeight/ 20 : 40;
@@ -409,9 +393,9 @@ class PlccChipViewComponent {
         }
 
         //standardize chip sizes
-        let chipHeight = icRenderPanelHeight - (2*this.icMargin) - (2*this.verticalPinHeight);
+        let chipHeight = icRenderPanelHeight - (2*this.icMargin);
         let chipWidth = this.pinConfiguration.deviceType === DevicePackageType.dip ?
-         icRenderPanelWidth < MIN_WIDTH ? icRenderPanelWidth *.75 : icRenderPanelWidth > 500 ? 500 * .75 : icRenderPanelWidth :
+         icRenderPanelWidth - (this.icMargin *2) - (this.horizontalPinWidth * 2) :
         (icRenderPanelWidth- (2*this.icMargin) - (2*this.horizontalPinWidth) > chipHeight )? 
             chipHeight :
             icRenderPanelWidth- (2*this.icMargin) - (2*this.horizontalPinWidth);
@@ -419,6 +403,8 @@ class PlccChipViewComponent {
         
         if(chipWidth < chipHeight && this.pinConfiguration.deviceType !== DevicePackageType.dip){
             chipHeight = chipWidth;
+        }else{
+            chipHeight = chipHeight - this.verticalPinHeight;
         }
         // if(chipHeight > chipWidth){
         //     chipHeight = chipWidth;
@@ -429,7 +415,7 @@ class PlccChipViewComponent {
 
         this.chipLeft = this.horizontalPinWidth + this.icMargin;
         this.chipRight = this.chipWidth + this.horizontalPinWidth + this.icMargin;
-        this.chipTop = headerHeight + this.horizontalPinWidth + this.icMargin;
+        this.chipTop = this.horizontalPinWidth + this.icMargin;
         this.chipBottom = this.chipTop + this.chipHeight;
     }
 
@@ -489,21 +475,36 @@ class PlccChipViewComponent {
         //now draw selected/preview on top
         const previewPin = this.pins.find(p => p.id === this.previewingPin);
         const selectedPin = this.pins.find(p => p.id === this.selectedPin);
-        this.drawPin(previewPin, false, true);
-        this.drawPin(selectedPin, true, false);
+        if(previewPin !== undefined){
+            this.drawPin(previewPin, false, true);
+        }
+        if(selectedPin !== undefined){
+            this.drawPin(selectedPin, true, false);
+        }
     }
 
     drawPin(pin, selected = false, preview = false){
-        let fontSize = this.width < 300 ? 8 : this.width < 600 ? 9 : this.width < 900 ? 10 : this.width < 1200 ? 11 : 12 ;
-        if(selected || preview){
-            fontSize = fontSize + 3;
-        }
-        this.ctx.font = `${fontSize}px Arial`;
-        /*  FILL  */
-        let style = this.colors.find(c => c.type === 'background').color;
-        if(pin === undefined){
+        const icDiv = document.getElementById('ic');
+        if(icDiv === null){
             return;
         }
+        const fontSize = this.width < 300 ? 10 : this.width < 600 ? 12 : this.width < 900 ? 14 : this.width < 1200 ? 16 : 18 ;
+        const pinDiv = document.createElement('div');
+
+        pinDiv.className = 'pin';
+        if(pin === undefined){
+            console.log('undefined pin');
+            return;
+        }
+        pinDiv.id = `pin-${pin.id}`;
+        if(selected || preview){
+            pinDiv.style.fontSize = `${fontSize + 3}px` ;
+        } else{
+            pinDiv.style.fontSize = `${fontSize}px` ;        
+        }
+
+        /*  FILL  */
+        let style = this.colors.find(c => c.type === 'background').color;
         
         /*  STOKE  */
         switch(pin.type[0]){
@@ -551,34 +552,54 @@ class PlccChipViewComponent {
                 style = this.colors.find(c => c.type === 'pinNC').color;
             break;
         }
-        this.ctx.fillStyle = selected ? this.colors.find(c => c.type === 'theme1').color :
-            /*preview ? this.colors.find(c => c.type === 'theme2').color :  */ style;
-        this.ctx.strokeStyle = this.colors.find(c => c.type === 'accent1').color;
+        pinDiv.style.backgroundColor = `${ style}`;
+        pinDiv.style.borderColor = `${ this.colors.find(c => c.type === 'accent1').color}`;
+
+        if(selected){
+            pinDiv.style.borderColor = this.colors.find(c => c.type === 'accent2').color;
+            pinDiv.style.borderWidth = `5px`;
+        }
+
         const x = selected || preview ? pin.x - 6 : pin.x;
         const y = selected || preview ? pin.y - 6 : pin.y;
         const w = selected || preview ? pin.w + 12 : pin.w;
         const h = selected || preview ? pin.h + 12 : pin.h;
-        
-        this.ctx.fillRect(x, y, w, h);
-        this.ctx.strokeRect(x, y, w, h);
-        
-        this.ctx.fillStyle = this.colors.find(c => c.type === 'foreground').color;
-        if(pin.orientation === PinLayoutOrientation.horizontal){
-            
-            this.ctx.fillText(pin.id.toFixed(0), pin.x + (this.horizontalPinWidth * .3), pin.y + pin.h / 2 + fontSize/2);
-        } else {
-            this.ctx.save();
-            this.ctx.translate(0, 0);
-            this.ctx.rotate(-Math.PI * 2 / 4);
-            this.ctx.fillText(pin.id.toFixed(0),-pin.y - (pin.h * .5), pin.x + (pin.w * .5) + fontSize/2);
-            this.ctx.rotate(Math.PI * 2 / 4);
-            this.ctx.restore();
+        pinDiv.style.left = `${x.toFixed(0)}px`;
+        pinDiv.style.top = `${y.toFixed(0)}px`;
+        pinDiv.style.width = `${w.toFixed(0)}px`;
+        pinDiv.style.height = `${h.toFixed(0)}px`;
+        pinDiv.style.lineHeight = `${h.toFixed(0)}px`;
+
+        pinDiv.innerHTML = pin.id;
+        if(pin.orientation === PinLayoutOrientation.horizontal){            
+            pinDiv.style.width = `${w.toFixed(0)}px`;
+            pinDiv.style.height = `${h.toFixed(0)}px`;
+            pinDiv.style.lineHeight = `${h.toFixed(0)}px`;
+        } else{
+            pinDiv.style.transform = 'rotate(270deg)';
+            pinDiv.style.width = `${h.toFixed(0)}px`;
+            pinDiv.style.height = `${w.toFixed(0)}px`;
+            pinDiv.style.lineHeight = `${w.toFixed(0)}px`;
         }
+
+        // //events
+        // pinDiv.onmouseenter = function(event) {
+        //     component.previewPin(event);
+        // };       
+        pinDiv.onmouseout = function(event){
+            component.previewPin(event);
+        };
+        
+        icDiv.appendChild(pinDiv);        
+     
     }
     
     setDevice(configuration){
-        this.selectedPin = undefined;
-        this.use = undefined;
+        if(!component.initalized){
+            component.init();
+        }
+        // this.selectedPin = undefined;
+        // this.use = undefined;
         if(configuration){
             component.pinConfiguration = configuration;
         }

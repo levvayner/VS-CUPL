@@ -116,7 +116,9 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
             this._view.show?.(true);
             //get pin declarations. If pld file opened, get from editor window, otherwise get from disk
             //const pldFile = vscode.workspace.textDocuments.some(doc => doc.uri.toString() === uri.toString());
+            
             if(vscode.window.activeTextEditor?.document === undefined){
+                this._view.webview.postMessage({ type: "selectPin", pin: pin });
                 return;
             }
             const pinDeclarations = vscode.window.activeTextEditor?.document
@@ -542,7 +544,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
 
     public openProjectChipView(project: Project | undefined) {
         if (project === undefined) {
-            extensionState.setActiveProject(undefined);
+            //extensionState.setActiveProject(undefined);
             this.setDevice(undefined);
             //this.setColors();
             providerPinView.setPins(undefined);
@@ -551,7 +553,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
         if (project.devicePins) {
             const pins = project.devicePins;
             if (pins) {
-                extensionState.setActiveProject(project);
+                //extensionState.setActiveProject(project);
                 this.setDevice(pins);
                 this.setColors();
                 providerPinView.setPins(pins);
@@ -739,8 +741,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
 				<title>Chip View</title>
 			</head>
 			<body>
-				<canvas id='ic' width="800" height="500"></canvas>
-
+				<div id="chip"></div>
 				
 				<script nonce="${nonce}" src="${scriptUri}"></script>				
 			</body>

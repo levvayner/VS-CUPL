@@ -498,7 +498,7 @@ export const deviceList = [
         packageType: DevicePackageType.dip,
         pinCount: 40,
         deviceCode: "v2500cppk",
-        deviceName: "ATF22LV10C, ATF22V10C",
+        deviceName: "ATF2500C, ATF2500CL, ATF2500CQ, ATF2500CQL",
         programmer: "minipro",
         pinConfiguration: "v2500",
         deviceOptions: ["PPK"]
@@ -524,7 +524,7 @@ export const deviceList = [
         pinsConfiguration: "16v8",
     },
     {
-        manufacturer: DeviceManufacturer.atmel,
+        manufacturer: DeviceManufacturer.lattice,
         packageType: DevicePackageType.dip,
         pinCount: 20,
         deviceCode: "g16v8cp",
