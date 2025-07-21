@@ -3,10 +3,10 @@
     "displayName": "VS Cupl",
     "publisher": "VaynerSystems",
     "description": "Tools for ATMEL and Lattice CPLD programming.\n Create and manage multiple projects, connect to build and deployment tools.",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "pricing": "Free",
     "repository": {
-        "url": "https://github.com/levvayner/ATF15xx-cupl",
+        "url": "https://github.com/levvayner/VS-CUPL",
         "type": "git"
     },
     "preview": false,
@@ -78,7 +78,6 @@
                             "onContext:VerifyWSLUsbIpdInstalled"
                         ]
                     },
-                    
                     {
                         "id": "checkCupl",
                         "title": "Wincupl",
@@ -100,8 +99,7 @@
                         "completionEvents": [
                             "onContext:VerifyAtmispInstalled"
                         ]
-                    }
-                    ,
+                    },
                     {
                         "id": "checkPof2Jed",
                         "title": "POF2JED",
@@ -112,10 +110,7 @@
                         "completionEvents": [
                             "onContext:VerifyPof2JedInstalled"
                         ]
-                    }
-                    
-                    ,
-
+                    },
                     {
                         "id": "checkMinipro",
                         "title": "Minipro",
@@ -137,7 +132,7 @@
                         "completionEvents": [
                             "onContext:VerifyOpenOcdInstalled"
                         ]
-                    },   
+                    },
                     {
                         "id": "verifyAll",
                         "title": "Verify Environment is Ready",
@@ -147,7 +142,7 @@
                         },
                         "completionEvents": [
                             "onContext:VerifyPrerequisitesInstalled"
-                        ]                        
+                        ]
                     }
                 ]
             }
@@ -185,8 +180,7 @@
                 "command": "vs-cupl.configureProject",
                 "key": "f4",
                 "mac": "f4"
-                
-            },            
+            },
             {
                 "command": "vs-cupl.deployJed",
                 "key": "f6",
@@ -195,10 +189,8 @@
             {
                 "command": "vs-cupl.deploySvf",
                 "key": "f7",
-                "mac": "f7"                
+                "mac": "f7"
             }
-            
-            
         ],
         "configuration": [
             {
@@ -232,7 +224,7 @@
                         "description": "Completed On-boarding Walkthrough"
                     }
                 }
-            },           
+            },
             {
                 "title": "Paths",
                 "properties": {
@@ -338,7 +330,7 @@
                     "vs-cupl.MiniproPerformUnprotect": {
                         "type": "boolean",
                         "default": false,
-                        "description": "Unprotect before programming?"                        ,
+                        "description": "Unprotect before programming?",
                         "order": 4
                     },
                     "vs-cupl.MiniproPerformProtect": {
@@ -421,7 +413,7 @@
                             "19V - TL866II+ only",
                             "21V - TL866A/CS only"
                         ],
-                        "description": "Set Progamming Voltage"                        ,
+                        "description": "Set Progamming Voltage",
                         "order": 8
                     },
                     "vs-cupl.MiniproOptionVdd": {
@@ -445,14 +437,13 @@
                             "5.5v",
                             "6.5v"
                         ],
-                        "description": "Set VDD Write Voltage"                        ,
+                        "description": "Set VDD Write Voltage",
                         "order": 9
                     },
                     "vs-cupl.MiniproOptionVcc": {
                         "type": "number",
                         "default": "1",
-                        "description": "Set VCC Verify Voltage (0 - AUTO)"
-                        ,
+                        "description": "Set VCC Verify Voltage (0 - AUTO)",
                         "order": 10
                     },
                     "vs-cupl.MiniproOptionPulse": {
@@ -460,7 +451,7 @@
                         "default": 0,
                         "description": "Set Programming Pulse Delay (0 - 65535 usec)",
                         "minimum": 0,
-                        "maximum": 65535                        ,
+                        "maximum": 65535,
                         "order": 11
                     },
                     "vs-cupl.MiniproCustomArgs": {
@@ -1052,7 +1043,6 @@
                 "command": "catCoding.start",
                 "title": "Start Cat Coding"
             }
-
         ]
     },
     "scripts": {
@@ -1085,7 +1075,6 @@
     "dependencies": {
         "@vscode/vsce": "^2.15.0",
         "resolve-cwd": "^3.0.0",
-        "vsce": "^2.15.0",
         "yo": "^4.3.1"
     }
 }

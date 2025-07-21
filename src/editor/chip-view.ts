@@ -81,6 +81,10 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.onDidReceiveMessage((message) => {
             if (message.type === "selectPin") {
+                if(message.pin === undefined || message.pin === null){
+                    console.log("Pin not passed in message.");
+                    return;
+                }
                 console.log(`[Chip View] selected pin ` + message.pin.id);
                 providerPinView.selectPin(message.pin.id);
                 this.selectPin(Object.assign({pin: message.pin.id, pinType: message.pin.type}));
@@ -680,7 +684,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
     private _getHtmlForWebview(webview: vscode.Webview) {
         // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
         const scriptUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "assets", "js", "script.js")
+            vscode.Uri.joinPath(this._extensionUri, "assets", "js", "chipView.js")
         );
 
         // Do the same for the stylesheet.

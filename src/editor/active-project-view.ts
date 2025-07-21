@@ -5,8 +5,7 @@ import { atfOutputChannel } from "../os/command";
 import { configureProjectCommand } from "../vs.commands";
 import { extensionState } from "../states/state.global";
 /*
-Custom pin layout viewer
-
+Active project panel
 */
 export let providerActiveProject: ActiveProjectProvider;
 
@@ -26,11 +25,6 @@ export function registerActiveProjectPanelProvider(
             providerActiveProject.show();
         })
     );
-
-    // const prj = stateProjects.openProjects[0];
-    // if(prj){
-    //     providerActiveProject.openProjectActiveProject(prj);
-    // }
 
     context.subscriptions.push(
         vscode.workspace.onDidOpenTextDocument(

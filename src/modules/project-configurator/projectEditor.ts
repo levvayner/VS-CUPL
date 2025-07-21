@@ -12,7 +12,6 @@ import { PLDProjectDocument } from './projectDocument';
 import { WebviewCollection } from '../shared/webview.utils';
 import * as path from 'path';
 import * as fs from 'fs';
-import { extensionState } from '../../states/state.global';
 
 /**
  * Provider for PLD Project editors.
@@ -192,7 +191,7 @@ export class PLDProjectEditorProvider implements vscode.CustomEditorProvider<PLD
         );
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
-        const htmlPath = this._context.asAbsolutePath(path.join( 'src', 'modules', 'project-configurator',  'project.html')); // Adjust path
+        const htmlPath = this._context.asAbsolutePath(path.join( 'assets', 'html', 'project-configurator',  'project.html')); // Adjust path
         let htmlContent = fs.readFileSync(htmlPath, 'utf8');
         
 

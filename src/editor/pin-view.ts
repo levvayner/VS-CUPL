@@ -129,7 +129,7 @@ export class PinViewProvider implements vscode.WebviewViewProvider {
         // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
         //const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'assets', 'js',  'main.js'));
         const scriptUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "assets", "js", "ic-pin.js")
+            vscode.Uri.joinPath(this._extensionUri, "assets", "js", "pinView.js")
         );
 
         // Do the same for the stylesheet.
