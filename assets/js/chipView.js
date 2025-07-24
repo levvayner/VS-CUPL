@@ -284,6 +284,7 @@ class PlccChipViewComponent {
             document.body.appendChild(chipDiv);
              //this.colors.find(c => c.type === 'foreground').color;
         }
+        chipDiv.style.backgroundColor = this.colors.find(c => c.type === 'background').color; 
         let icDiv = document.getElementById('ic');
         if(icDiv === null || icDiv === undefined){
             icDiv = document.createElement('div');
@@ -292,17 +293,13 @@ class PlccChipViewComponent {
             icDiv.innerHTML = '';
         }
         
-        icDiv.style.height = `${this.chipHeight}px`;
-        icDiv.style.left = `${this.horizontalPinWidth + this.horizontalPinOffset}px`;
-        icDiv.style.top = `${this.verticalPinHeight + this.verticalPinOffset}px`;
-        icDiv.style.width = `${this.chipWidth}px`;
+        icDiv.style.left = `${this.chipLeft}px`;
+        icDiv.style.top = `${this.chipTop}px`;
+        icDiv.style.width = `${this.chipWidth  }px`;
+        icDiv.style.height = `${this.chipHeight }px`;
 
-        if(this.pinPerSide !== this.pinConfiguration.pinCount / 2){
-            icDiv.style.width = `${this.chipWidth + (this.horizontalPinWidth/2)}px`;
-            icDiv.style.height = `${this.chipHeight + (this.verticalPinHeight/2)}px`;            
-        }
         icDiv.style.position = 'fixed';
-        icDiv.style.backgroundColor = this.colors.find(c => c.type === 'background').color;
+        icDiv.style.backgroundColor = this.colors.find(c => c.type === 'accent1').color;
         icDiv.style.borderColor = this.colors.find(c => c.type === 'accent2').color;
         icDiv.id = 'ic';
       
@@ -393,7 +390,7 @@ class PlccChipViewComponent {
         }
 
         //standardize chip sizes
-        let chipHeight = icRenderPanelHeight - (2*this.icMargin);
+        let chipHeight = icRenderPanelHeight - (2*this.icMargin) - 2*(this.verticalPinHeight);
         let chipWidth = this.pinConfiguration.deviceType === DevicePackageType.dip ?
          icRenderPanelWidth - (this.icMargin *2) - (this.horizontalPinWidth * 2) :
         (icRenderPanelWidth- (2*this.icMargin) - (2*this.horizontalPinWidth) > chipHeight )? 
@@ -404,7 +401,7 @@ class PlccChipViewComponent {
         if(chipWidth < chipHeight && this.pinConfiguration.deviceType !== DevicePackageType.dip){
             chipHeight = chipWidth;
         }else{
-            chipHeight = chipHeight - this.verticalPinHeight;
+            //chipHeight = chipHeight - this.verticalPinHeight;
         }
         // if(chipHeight > chipWidth){
         //     chipHeight = chipWidth;
@@ -415,7 +412,7 @@ class PlccChipViewComponent {
 
         this.chipLeft = this.horizontalPinWidth + this.icMargin;
         this.chipRight = this.chipWidth + this.horizontalPinWidth + this.icMargin;
-        this.chipTop = this.horizontalPinWidth + this.icMargin;
+        this.chipTop = this.verticalPinHeight + this.icMargin;
         this.chipBottom = this.chipTop + this.chipHeight;
     }
 
@@ -459,8 +456,8 @@ class PlccChipViewComponent {
             this.pins.push({ x: leftPinLeft, y: pinTopOffset + idx * (this.horizontalPinHeight + this.horizontalPinOffset), w: this.horizontalPinWidth, h: this.horizontalPinHeight, id: leftNum , type:this.pinConfiguration.pins[leftNum - 1].pinType, orientation: PinLayoutOrientation.horizontal });
             this.pins.push({ x: this.chipRight, y: pinTopOffset + idx * (this.horizontalPinHeight + this.horizontalPinOffset), w: this.horizontalPinWidth, h: this.horizontalPinHeight, id: rightNum , type:this.pinConfiguration.pins[rightNum - 1].pinType, orientation: PinLayoutOrientation.horizontal });
             if(this.pinConfiguration.deviceType !== DevicePackageType.dip){
-                this.pins.push({ x: this.chipLeft + this.verticalPinOffset + idx * (this.verticalPinWidth + this.verticalPinOffset), y: topPinTop, w: this.verticalPinWidth, h: this.verticalPinHeight, id: topNum , type:this.pinConfiguration.pins[topNum - 1].pinType, orientation: PinLayoutOrientation.vertical });
-                this.pins.push({ x: this.chipLeft + this.verticalPinOffset + idx * (this.verticalPinWidth + this.verticalPinOffset), y: this.chipBottom, w: this.verticalPinWidth, h: this.verticalPinHeight, id: bottomNum , type:this.pinConfiguration.pins[bottomNum - 1].pinType, orientation: PinLayoutOrientation.vertical });
+                this.pins.push({ x: leftPinLeft + this.horizontalPinWidth + this.verticalPinOffset + idx * (this.verticalPinWidth + this.verticalPinOffset), y: topPinTop, w: this.verticalPinWidth, h: this.verticalPinHeight, id: topNum , type:this.pinConfiguration.pins[topNum - 1].pinType, orientation: PinLayoutOrientation.vertical });
+                this.pins.push({ x: leftPinLeft + this.horizontalPinWidth + this.verticalPinOffset + idx * (this.verticalPinWidth + this.verticalPinOffset), y: this.chipBottom, w: this.verticalPinWidth, h: this.verticalPinHeight, id: bottomNum , type:this.pinConfiguration.pins[bottomNum - 1].pinType, orientation: PinLayoutOrientation.vertical });
             }
         }
     }

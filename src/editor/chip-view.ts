@@ -304,7 +304,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
                 });
                 providerChipView._colors.push({
                     type: "accent1",
-                    color: "#eef",
+                    color: "#445",
                 });
                 providerChipView._colors.push({
                     type: "accent2",
@@ -413,11 +413,11 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
                 });
                 providerChipView._colors.push({
                     type: "pinIN",
-                    color: "#ACEDAF",
+                    color: "#90a5e9ff",
                 });
                 providerChipView._colors.push({
                     type: "pinINOUT",
-                    color: "#adFFEF",
+                    color: "#69bccaff",
                 });
                 providerChipView._colors.push({
                     type: "pinOUT",
@@ -425,7 +425,7 @@ export class ChipViewProvider implements vscode.WebviewViewProvider {
                 });
                 providerChipView._colors.push({
                     type: "pinOE",
-                    color: "#C9C596",
+                    color: "#c9bc2bff",
                 });
                 providerChipView._colors.push({
                     type: "pinCLR",
