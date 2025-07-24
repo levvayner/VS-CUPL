@@ -2,11 +2,47 @@ html, body{
     width:100%;
     height:100%;
     display:flex;   
-    flex-direction: column; 
+    flex-direction: column;
+    margin:0;
+    padding:0; 
+}
+#chip{
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    margin:0;
+    padding:0; 
 }
 #ic{
-    /* width:100%;
-    height: 100%; */
+    border: solid 1px black;
+    margin:0;
+    padding:0; 
+}
+.pin{
+    position: fixed;
+    text-align: center;
+    border: solid 1px;
+}
+.pin:hover{
+    cursor: pointer;
+}
+.use-label{
+    margin: auto;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 10%;
+    
+    .header{
+        background-color: var(--accent1);        
+        font-weight: 800;
+        font-size: 12pt;
+        padding-bottom:10px;
+    }
+
 }
 .pin-list{
     display: flex;

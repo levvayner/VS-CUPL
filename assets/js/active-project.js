@@ -38,11 +38,15 @@
      */
     function updateProjectView(project) {   
         const panel = document.getElementById('active-project-panel');
+        const noActiveProject = document.getElementById('no-active-project');
         if(project === undefined){
             panel.style.visibility = 'hidden';
+            noActiveProject.style.display = 'block';
             return;
         }     
+        noActiveProject.style.display = 'none';
         panel.style.visibility = 'visible';
+        
         
         const projName = project?.projectName;
         const projDeviceName = project?.deviceConfiguration?.deviceUniqueName;

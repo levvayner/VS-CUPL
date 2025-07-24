@@ -56,8 +56,7 @@ export const pinConfigurations = [
             { pin: 15, pinType: [PinType.INOUT] },
             { pin: 16, pinType: [PinType.INOUT] },
             { pin: 17, pinType: [PinType.INOUT] },
-            { pin: 17, pinType: [PinType.INOUT] },
-            { pin: 18, pinType: [PinType.INOUT] },
+            { pin: 18, pinType: [PinType.INOUT] },            
             { pin: 19, pinType: [PinType.INOUT] },
             { pin: 20, pinType: [PinType.VCC] },
         ] as Pin[],
@@ -83,7 +82,6 @@ export const pinConfigurations = [
             { pin: 14, pinType: [PinType.INOUT] },
             { pin: 15, pinType: [PinType.INOUT] },
             { pin: 16, pinType: [PinType.INOUT] },
-            { pin: 17, pinType: [PinType.INOUT] },
             { pin: 17, pinType: [PinType.INOUT] },
             { pin: 18, pinType: [PinType.INOUT] },
             { pin: 19, pinType: [PinType.INOUT] },
@@ -511,6 +509,7 @@ export const pinConfigurations = [
     },
     {
         name: "v2500",
+        pinCount:40,
         deviceType: DevicePackageType.dip,
         pins: [
             { pin: 1, pinType: [PinType.IN, PinType.CLK] },
@@ -558,6 +557,7 @@ export const pinConfigurations = [
     {
         name: "v2500b",
         deviceType: DevicePackageType.dip,
+        pinCount:40,
         pins: [
             { pin: 1, pinType: [PinType.IN, PinType.CLK] },
             { pin: 2, pinType: [PinType.IN] },
@@ -604,6 +604,7 @@ export const pinConfigurations = [
     {
         name: "v2500clcc",
         deviceType: DevicePackageType.plcc,
+        pinCount:44,
         pins: [
             { pin: 1, pinType: [PinType.IN, PinType.CLK] },
             { pin: 2, pinType: [PinType.IN] },

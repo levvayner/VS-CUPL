@@ -1,6 +1,16 @@
 # Change Log
 
 All notable changes to the "vs-cupl" extension will be documented in this file.
+## [v0.4.2](https://github.com/levvayner/ATF15xx-cupl/tree/releases/v0.4.2)
+ - rework chip view to use HTML elements instead of drawing on canvas
+## [v0.4.1](https://github.com/levvayner/ATF15xx-cupl/tree/releases/v0.4.1)
+ - fix project view permissions issue
+## [v0.4.0](https://github.com/levvayner/ATF15xx-cupl/tree/releases/v0.4.0)
+ - Project configuration view
+ - improvements to user experience
+ - additional information on chip view
+ - fix chip view offset issues when selecting pin
+ - updated documentation
 ## [v0.3.7](https://github.com/levvayner/ATF15xx-cupl/tree/releases/v0.3.7)
 - Reworked state management
 - Implemented Environment Setup Guide

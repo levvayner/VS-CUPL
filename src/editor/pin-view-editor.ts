@@ -129,7 +129,7 @@ export class PinViewEditorProvider implements vscode.CustomTextEditorProvider {
                 this.context.extensionUri,
                 "assets",
                 "js",
-                "script.js"
+                "chipView.js"
             )
         );
 

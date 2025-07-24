@@ -4,9 +4,9 @@ import { stateProjects } from "../states/state.projects";
 import { atfOutputChannel } from "../os/command";
 import { configureProjectCommand } from "../vs.commands";
 import { extensionState } from "../states/state.global";
+import { providerChipView } from "./chip-view";
 /*
-Custom pin layout viewer
-
+Active project panel
 */
 export let providerActiveProject: ActiveProjectProvider;
 
@@ -26,11 +26,6 @@ export function registerActiveProjectPanelProvider(
             providerActiveProject.show();
         })
     );
-
-    // const prj = stateProjects.openProjects[0];
-    // if(prj){
-    //     providerActiveProject.openProjectActiveProject(prj);
-    // }
 
     context.subscriptions.push(
         vscode.workspace.onDidOpenTextDocument(
@@ -112,6 +107,7 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
             if (pins) {
                 //extensionState.setActiveProject(project);
                 this.setProject(project);
+                providerChipView.openProjectChipView(project);
             } else {
                 atfOutputChannel.appendLine(
                     `Noproject found for device ${project.device?.pinConfiguration} with ${project.device?.pinCount} pins in a ${project.device?.packageType} package.`
@@ -263,33 +259,37 @@ export class ActiveProjectProvider implements vscode.WebviewViewProvider {
 
 				<title>Active Project View</title>
 			</head>
-			<body id='active-project-panel'>
-				<div class='row'>
-                    <div class='title'>Project</div>
-                    <div class='project-name'></div>
+			<body>
+                <div id='no-active-project'><h2>No project selected</h2>
                 </div>
-                <div class='row'>
-                    <div class='title'>Socket</div>
-                    <div class='project-socket'></div>
-                </div>
-                <div class='row'>
-                    <div class='title'>Manufacturer</div>
-                    <div class='project-manufacturer'></div>
-                </div>
-                <div class='row'>
-                    <div class='title'>Device Name</div>
-                    <div class='project-device-name'></div>
-                </div>
-                <div class='row'>
-                    <div class='title'>Device Code</div>
-                    <div class='project-device-code'></div>
-                </div>
-                <div class='row'>
-                    <div class='title'>Device Pin Offset</div>
-                    <div class='project-pin-offset'></div>
-                </div>
+                <div id='active-project-panel'>
+                    <div class='row'>
+                        <div class='title'>Project</div>
+                        <div class='project-name'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='title'>Socket</div>
+                        <div class='project-socket'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='title'>Manufacturer</div>
+                        <div class='project-manufacturer'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='title'>Device Name</div>
+                        <div class='project-device-name'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='title'>Device Code</div>
+                        <div class='project-device-code'></div>
+                    </div>
+                    <div class='row'>
+                        <div class='title'>Device Pin Offset</div>
+                        <div class='project-pin-offset'></div>
+                    </div>
                 
-				<div><button id='configure-project-button'>Configure</button>
+				    <div><button id='configure-project-button'>Configure</button>
+                </div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>				
 			</body>
 			</html>`;

@@ -10,6 +10,7 @@
 - [CUPL Language](#cupl-language)
 - [Release Notes](#release-notes)
 - [Roadmap](#roadmap)
+
 ## Background
  Atmel and Lattice corporations created CPLDs, or Complex Programmable Logical Devices in the late 80s and 90s. These allowed designs for combinational logic to be more robust, with support for ISP (In System Programming) for some of the later models.
 
@@ -50,7 +51,9 @@ There are two deployment chains available, depending on your PLD.
 [Detailed instructions for minipro based deployment](assets/docs/DEPLOY-MINIPRO.md)
 
 Deployment is a one step process for PLDs like ATF22xx, G16xx, G20xx, G22xx, V750
+
 ![Minipro Deployment](assets/docs/minipro-deployment-workflow.png)
+
 - **Uses a TL886+ or similar programmer**
 - Once you have completed your changes in the PLD file, compile.
 - Once compiled, press F6 or use the menu shortcut to deploy your JED file to your PLD using minipro.
@@ -77,42 +80,61 @@ For troubleshooting toolchain or environment issues, it may be useful to read th
 
 ### User Environment
 #### Using VS Cupl
+
 VS Cupl has seven parts for your PLD project development:
 ![VS Cupl User Interface](assets/docs/user-interface-parts.png)
+
 **1. Project View**
+
 Header lets you create new projects, import existing PLD files into new projects, open existing VS Cupl projects, or access extension settings
+
 ![Project Header](assets/docs/user-interface-projects-top.png)
+
 Project details lets you view and modify your design file, as well as execute actions for each type of file
 ![](assets/docs/user-interface-projects-project-items.png)
 
 **2. Project Tasks**
+
 Header lets you create, import, or open a project, or check prerequsites
+
 ![Project Tasks Header](assets/docs/user-interface-project-tasks-top.png)
+
 Project Items let you execite all build and deployment actions for the project
+
 ![Project Tasks Details](assets/docs/user-interface-project-tasks-project-items.png)
 
 **3. Active Project View**
+
 Shows you details about the project. You can access project configuration screen for here.
+
 ![Active Project](assets/docs//user-interface-active-project.png)
 
 **4. Output**
+
 View details of commands and tools executed on your behalf.
+
 ![output window](assets/docs/user-interface-output.png)
 
 **5. Chip View**
+
 Visual representation of your selected PLD. 
 Click on a pin to select it, giving you the pin assignment and type information.
 Double click a pin to add to your design file
+
 ![Chip View](assets/docs/user-interface-chip-view.png)
 
 **6. PLD editor**
+
 Supports intellisence for CUPL keywords and signals.
+
 ![Editor](assets/docs/user-interface-editor.png)
 
 **7. Pin View**
+
 Listing of all pins of your project's PLD.
 Shows type of pin and any additional functionality it might support
-![](assets/docs/user-interface-pin-view.png)
+
+![Pin View](assets/docs/user-interface-pin-view.png)
 
 #### VS Cupl Extension Settings
 
@@ -120,10 +142,13 @@ This extension contributes the following settings:
 
 *Can be configured in File > Preferences > Settings `` |`` Extensions > VS Cupl*
 *Or accessed through the projects view header* 
+
 ![Project Header](assets/docs/user-interface-projects-top-settings.png)
 
 Settings are split into several sections
+
 ![Settings Categories](/assets/docs/user-interface-settings-categories.png)
+
 **Be sure to pay extra attention to the paths section if you are having any issues with deployment**
 *Some sections are explicitly available for various operating systems, e.g. Wine is not available on windows*
 
@@ -131,7 +156,9 @@ Settings are split into several sections
 ---
 
 ## CUPL Language
+
 Quick reference guide [Cupl Reference Guide](assets/docs/CUPL.md)
+
 **Read more about [Cupl](https://ece-classes.usc.edu/ee459/library/documents/CUPL_Reference.pdf)**
 
 ## Release Notes
